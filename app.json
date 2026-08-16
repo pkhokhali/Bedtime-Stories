@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Saanjh",
+    "slug": "saanjh-bedtime",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "saanjh",
+    "userInterfaceStyle": "dark",
+    "primaryColor": "#E8A04A",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pkhokhali.saanjh"
+    },
+    "android": {
+      "package": "com.pkhokhali.saanjh",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#1A1410",
+        "foregroundImage": "./assets/images/adaptive-icon.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "resize",
+      "allowBackup": true,
+      "label": "Saanjh",
+      "navigationBarColor": "#1A1410"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1A1410"
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

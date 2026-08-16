@@ -1,0 +1,145 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { AgeCategoryRow } from '@/components/AgeCategoryRow';
+import { SettingsButton } from '@/components/SettingsButton';
+import { t, ui } from '@/constants/ui';
+import { colors, radii, spacing } from '@/constants/theme';
+import { ageBands, categoryLabel, storiesForAge } from '@/data/catalog';
+import { useSettingsStore } from '@/store/useSettingsStore';
+
+export default function LibraryScreen() {
+  const router = useRouter();
+  const language = useSettingsStore((s) => s.language);
+  const ageBand = useSettingsStore((s) => s.ageBand);
+  const band = ageBands.find((item) => item.id === ageBand) ?? ageBands[1];
+  const stories = storiesForAge(ageBand);
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.side}>
+          <Ionicons name="chevron-back" size={24} color={colors.cream} />
+        </Pressable>
+        <Text style={[styles.title, language === 'ne' && styles.neBold]}>{t(ui.moreStories, language)}</Text>
+        <View style={styles.side}>
+          <SettingsButton />
+        </View>
+      </View>
+      <ScrollView contentContainerStyle={styles.list}>
+        <Text style={[styles.who, language === 'ne' && styles.neBold]}>{t(ui.whoListening, language)}</Text>
+        <AgeCategoryRow />
+        <Text style={[styles.section, language === 'ne' && styles.neBold]}>
+          {t(ui.storiesFor, language)} · {band.ages[language]}
+        </Text>
+        {stories.map((story) => (
+          <Pressable
+            key={story.id}
+            style={styles.card}
+            onPress={() => router.push(`/story/${story.id}`)}
+          >
+            <View style={[styles.dot, { backgroundColor: story.accent }]} />
+            <View style={styles.body}>
+              <Text style={[styles.kicker, language === 'ne' && styles.kickerNe]}>
+                {categoryLabel(story, language)}
+              </Text>
+              <Text style={[styles.cardTitle, language === 'ne' && styles.cardTitleNe]}>
+                {story.title[language]}
+              </Text>
+              <Text style={[styles.sub, language === 'ne' && styles.subNe]}>
+                {story.subtitle[language]}
+              </Text>
+              <Text style={styles.meta}>
+                {story.runtimeMinutes} {t(ui.minutes, language)}
+              </Text>
+            </View>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  side: { width: 44, alignItems: 'center' },
+  title: {
+    color: colors.cream,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 18,
+  },
+  list: { paddingHorizontal: spacing.xl, paddingBottom: 48 },
+  who: {
+    color: colors.creamMuted,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 13,
+    marginBottom: 10,
+    marginTop: 8,
+  },
+  section: {
+    color: colors.amber,
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 14,
+    marginTop: 22,
+    marginBottom: 12,
+  },
+  neBold: { fontFamily: 'NotoSansDevanagari_700Bold' },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.card,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: 10,
+  },
+  dot: { width: 10, height: 10, borderRadius: 5, marginTop: 8 },
+  body: { flex: 1 },
+  kicker: {
+    color: colors.amber,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  kickerNe: {
+    fontFamily: 'NotoSansDevanagari_700Bold',
+    textTransform: 'none',
+    letterSpacing: 0,
+    fontSize: 13,
+  },
+  cardTitle: {
+    color: colors.cream,
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 20,
+  },
+  cardTitleNe: {
+    fontFamily: 'NotoSansDevanagari_700Bold',
+    lineHeight: 30,
+  },
+  sub: {
+    color: colors.textMuted,
+    fontFamily: 'Nunito_500Medium',
+    marginTop: 6,
+    lineHeight: 22,
+  },
+  subNe: {
+    fontFamily: 'NotoSansDevanagari_400Regular',
+    lineHeight: 26,
+  },
+  meta: {
+    color: colors.textSubtle,
+    fontFamily: 'Nunito_600SemiBold',
+    marginTop: 10,
+    fontSize: 12,
+  },
+});
