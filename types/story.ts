@@ -81,6 +81,7 @@ export type Story = {
   // Fields for remote streaming/downloaded stories
   mediaType?: MediaType;
   mediaUrl?: string;
+  mediaAssets?: any[]; // For local bundled files using require(), array supports multi-part stories
   coverImage?: string;
 };
 

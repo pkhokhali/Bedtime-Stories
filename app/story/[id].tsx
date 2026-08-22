@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 import { colors } from '@/constants/theme';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
+import { getStory } from '@/data/catalog';
 import MediaStoryPlayer from '@/components/player/MediaStoryPlayer';
 
 const StoryPlayer = lazy(() => import('@/components/player/StoryPlayer'));
@@ -12,11 +13,13 @@ export default function StoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const remoteStories = useDownloadsStore((s) => s.remoteStories);
   
-  // Check if this is a remote media story
-  const isMediaStory = remoteStories.some((s) => s.id === id);
+  // Check if this is a remote media story or a local bundled media story
+  const isRemoteMedia = remoteStories.some((s) => s.id === id);
+  const localStory = getStory(id as string);
+  const isLocalMedia = !!localStory?.mediaAssets || !!localStory?.mediaType;
 
-  if (isMediaStory) {
-    return <MediaStoryPlayer storyId={id as string} />;
+  if (isRemoteMedia || isLocalMedia) {
+    return <MediaStoryPlayer storyId={id as string} isLocalMedia={isLocalMedia} />;
   }
 
   return (

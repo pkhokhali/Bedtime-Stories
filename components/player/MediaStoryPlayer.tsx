@@ -4,24 +4,42 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '@/constants/theme';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
+import { getStory } from '@/data/catalog';
+import { useState, useEffect } from 'react';
+import { useEvent } from 'expo';
 
-export default function MediaStoryPlayer({ storyId }: { storyId: string }) {
+export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: string, isLocalMedia?: boolean }) {
   const router = useRouter();
   const remoteStories = useDownloadsStore((s) => s.remoteStories);
   const downloads = useDownloadsStore((s) => s.downloads);
   
-  const story = remoteStories.find(s => s.id === storyId);
+  const story = isLocalMedia ? getStory(storyId) : remoteStories.find(s => s.id === storyId);
   const dl = downloads[storyId];
   
-  // Use local URI if downloaded, otherwise stream the remote URL
-  const videoSource = dl?.status === 'completed' && dl.localUri 
-    ? dl.localUri 
-    : story?.mediaUrl;
+  const [currentPartIndex, setCurrentPartIndex] = useState(0);
+
+  // For multi-part local media, use the current index
+  const hasMultipleParts = isLocalMedia && story?.mediaAssets && story.mediaAssets.length > 0;
+  
+  // Use local URI if downloaded, otherwise stream the remote URL, or use local bundled asset
+  const videoSource = hasMultipleParts
+    ? story!.mediaAssets![currentPartIndex]
+    : (dl?.status === 'completed' && dl.localUri ? dl.localUri : story?.mediaUrl);
 
   const player = useVideoPlayer(videoSource || '', player => {
     player.loop = false;
     player.play();
   });
+
+  const { status } = useEvent(player, 'statusChange', { status: player.status });
+
+  useEffect(() => {
+    if (status === 'idle' && hasMultipleParts && currentPartIndex < (story!.mediaAssets!.length - 1)) {
+      // Auto-play next part
+      setCurrentPartIndex(prev => prev + 1);
+    }
+  }, [status, hasMultipleParts, currentPartIndex]);
+
 
   if (!story || !videoSource) {
     return (

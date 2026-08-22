@@ -88,6 +88,26 @@ export const ageBands: {
 
 export const stories: Story[] = [
   {
+    id: 'sleepy-cloud',
+    category: 'universal',
+    form: 'story',
+    ageBand: '4-6',
+    runtimeMinutes: 10,
+    accent: '#8395A7',
+    stage: 'stars',
+    title: { en: 'The Sleepy Little Cloud', ne: 'निद्रालु सानो बादल' },
+    subtitle: { en: 'A bedtime adventure in the sky.', ne: 'आकाशमा सुत्ने बेलाको साहसिक यात्रा।' },
+    theme: { en: 'Rest is important', ne: 'आराम महत्त्वपूर्ण छ' },
+    mediaType: 'video',
+    mediaAssets: [
+      require('@/assets/videos/sleepy_cloud_1.mp4'),
+      require('@/assets/videos/sleepy_cloud_2.mp4'),
+      require('@/assets/videos/sleepy_cloud_3.mp4'),
+      require('@/assets/videos/sleepy_cloud_4.mp4'),
+      require('@/assets/videos/sleepy_cloud_5.mp4'),
+    ],
+  },
+  {
     id: 'moon-rabbit',
     category: 'roots',
     form: 'story',
