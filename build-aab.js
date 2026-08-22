@@ -63,6 +63,17 @@ if (!fs.existsSync(localPropertiesPath) && process.platform === 'win32') {
   console.log(`Set sdk.dir to ${sdkPath}`);
 }
 
+// 2.75 Inject Kotlin Metadata version bypass (fixes AdMob Kotlin 2.3 metadata check on older Kotlin compilers)
+const rootBuildGradlePath = path.join(__dirname, 'android', 'build.gradle');
+if (fs.existsSync(rootBuildGradlePath)) {
+  let rootBg = fs.readFileSync(rootBuildGradlePath, 'utf8');
+  if (!rootBg.includes('-Xskip-metadata-version-check')) {
+    rootBg += `\nallprojects {\n    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {\n        kotlinOptions {\n            freeCompilerArgs += ['-Xskip-metadata-version-check']\n        }\n    }\n}\n`;
+    fs.writeFileSync(rootBuildGradlePath, rootBg);
+    console.log('Injected Kotlin metadata version check bypass.');
+  }
+}
+
 // 3. Build the AAB
 console.log('Building Android App Bundle...');
 try {
