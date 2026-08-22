@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AgeCategoryRow } from '@/components/AgeCategoryRow';
 import { SettingsButton } from '@/components/SettingsButton';
+import { AdBanner } from '@/components/AdBanner';
 import { t, ui } from '@/constants/ui';
 import { colors, radii, spacing } from '@/constants/theme';
 import { ageBands, categoryLabel, storiesForAge } from '@/data/catalog';
@@ -105,6 +106,7 @@ export default function LibraryScreen() {
           );
         })}
       </ScrollView>
+      <AdBanner />
     </SafeAreaView>
   );
 }

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AgeCategoryRow } from '@/components/AgeCategoryRow';
 import { SettingsButton } from '@/components/SettingsButton';
+import { AdBanner } from '@/components/AdBanner';
 import { brand, colors, radii, spacing } from '@/constants/theme';
 import { t, ui } from '@/constants/ui';
 import { categoryLabel, featuredForAge, isGrownListening } from '@/data/catalog';
@@ -66,6 +67,7 @@ export default function TonightScreen() {
             <Text style={styles.moreText}>{t(ui.moreStories, language)}</Text>
           </Pressable>
         </ScrollView>
+        <AdBanner />
       </SafeAreaView>
     </View>
   );
