@@ -54,6 +54,15 @@ if (fs.existsSync(buildGradlePath)) {
   process.exit(1);
 }
 
+// 2.5 Ensure local.properties exists with Android SDK path (Windows fix)
+const localPropertiesPath = path.join(__dirname, 'android', 'local.properties');
+if (!fs.existsSync(localPropertiesPath) && process.platform === 'win32') {
+  console.log('Generating local.properties for Windows...');
+  const sdkPath = path.join(process.env.LOCALAPPDATA, 'Android', 'Sdk').replace(/\\/g, '\\\\');
+  fs.writeFileSync(localPropertiesPath, `sdk.dir=${sdkPath}\n`);
+  console.log(`Set sdk.dir to ${sdkPath}`);
+}
+
 // 3. Build the AAB
 console.log('Building Android App Bundle...');
 try {
