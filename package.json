@@ -11,7 +11,7 @@
     "prebuild:android": "expo prebuild --platform android --non-interactive",
     "build:apk": "cd android && gradlew.bat assembleDebug -PreactNativeArchitectures=armeabi-v7a,arm64-v8a",
     "build:apk:release": "cd android && gradlew.bat assembleRelease",
-    "build:aab": "cd android && gradlew.bat bundleRelease"
+    "build:aab": "node build-aab.js"
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
