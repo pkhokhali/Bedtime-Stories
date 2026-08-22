@@ -19,6 +19,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { hydrateVoices } from '@/lib/speech';
 import { colors } from '@/constants/theme';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { fetchRemoteCatalog } from '@/lib/catalogFetcher';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -37,6 +38,7 @@ export default function RootLayout() {
   useEffect(() => {
     hydrate();
     hydrateVoices().catch(() => undefined);
+    fetchRemoteCatalog();
     SplashScreen.hideAsync().catch(() => undefined);
   }, [hydrate]);
 

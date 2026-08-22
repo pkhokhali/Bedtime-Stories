@@ -9,13 +9,33 @@ import { t, ui } from '@/constants/ui';
 import { colors, radii, spacing } from '@/constants/theme';
 import { ageBands, categoryLabel, storiesForAge } from '@/data/catalog';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useDownloadsStore } from '@/store/useDownloadsStore';
+import { downloadStoryMedia, deleteStoryMedia } from '@/lib/downloadManager';
+import { Story } from '@/types/story';
 
 export default function LibraryScreen() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const ageBand = useSettingsStore((s) => s.ageBand);
   const band = ageBands.find((item) => item.id === ageBand) ?? ageBands[1];
-  const stories = storiesForAge(ageBand);
+  
+  const localStories = storiesForAge(ageBand);
+  const remoteStoriesAll = useDownloadsStore((s) => s.remoteStories);
+  const downloads = useDownloadsStore((s) => s.downloads);
+  
+  // Filter remote stories for this age band
+  const remoteStories = remoteStoriesAll.filter((s) => s.ageBand === ageBand);
+  
+  const allStories: Story[] = [...remoteStories, ...localStories];
+
+  const handleDownloadPress = (story: Story) => {
+    const dl = downloads[story.id];
+    if (dl?.status === 'completed') {
+      deleteStoryMedia(story.id);
+    } else if (dl?.status !== 'downloading' && story.mediaUrl) {
+      downloadStoryMedia(story.id, story.mediaUrl);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -34,29 +54,56 @@ export default function LibraryScreen() {
         <Text style={[styles.section, language === 'ne' && styles.neBold]}>
           {t(ui.storiesFor, language)} · {band.ages[language]}
         </Text>
-        {stories.map((story) => (
-          <Pressable
-            key={story.id}
-            style={styles.card}
-            onPress={() => router.push(`/story/${story.id}`)}
-          >
-            <View style={[styles.dot, { backgroundColor: story.accent }]} />
-            <View style={styles.body}>
-              <Text style={[styles.kicker, language === 'ne' && styles.kickerNe]}>
-                {categoryLabel(story, language)}
-              </Text>
-              <Text style={[styles.cardTitle, language === 'ne' && styles.cardTitleNe]}>
-                {story.title[language]}
-              </Text>
-              <Text style={[styles.sub, language === 'ne' && styles.subNe]}>
-                {story.subtitle[language]}
-              </Text>
-              <Text style={styles.meta}>
-                {story.runtimeMinutes} {t(ui.minutes, language)}
-              </Text>
-            </View>
-          </Pressable>
-        ))}
+        {allStories.map((story) => {
+          const isRemote = !!story.mediaUrl;
+          const dl = downloads[story.id];
+          const isDownloaded = dl?.status === 'completed';
+          const isDownloading = dl?.status === 'downloading';
+          
+          return (
+            <Pressable
+              key={story.id}
+              style={styles.card}
+              onPress={() => router.push(`/story/${story.id}`)}
+            >
+              <View style={[styles.dot, { backgroundColor: story.accent }]} />
+              <View style={styles.body}>
+                <Text style={[styles.kicker, language === 'ne' && styles.kickerNe]}>
+                  {categoryLabel(story, language)}
+                </Text>
+                <Text style={[styles.cardTitle, language === 'ne' && styles.cardTitleNe]}>
+                  {story.title[language]}
+                </Text>
+                <Text style={[styles.sub, language === 'ne' && styles.subNe]}>
+                  {story.subtitle[language]}
+                </Text>
+                <View style={styles.metaRow}>
+                  <Text style={styles.meta}>
+                    {story.runtimeMinutes} {t(ui.minutes, language)}
+                  </Text>
+                  
+                  {isRemote && (
+                    <Pressable 
+                      style={styles.dlBtn} 
+                      onPress={() => handleDownloadPress(story)}
+                      hitSlop={12}
+                    >
+                      {isDownloading ? (
+                        <Text style={styles.dlText}>{Math.round(dl.progress * 100)}%</Text>
+                      ) : (
+                        <Ionicons 
+                          name={isDownloaded ? 'checkmark-circle' : 'cloud-download-outline'} 
+                          size={20} 
+                          color={isDownloaded ? colors.amber : colors.textSubtle} 
+                        />
+                      )}
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,10 +183,23 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSansDevanagari_400Regular',
     lineHeight: 26,
   },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
   meta: {
     color: colors.textSubtle,
     fontFamily: 'Nunito_600SemiBold',
-    marginTop: 10,
+    fontSize: 12,
+  },
+  dlBtn: {
+    padding: 4,
+  },
+  dlText: {
+    color: colors.amber,
+    fontFamily: 'Nunito_700Bold',
     fontSize: 12,
   },
 });

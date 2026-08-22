@@ -61,6 +61,8 @@ export type Beat = {
   sfx?: SoundId;
 };
 
+export type MediaType = 'video' | 'audio';
+
 export type Story = {
   id: string;
   category: StoryCategory;
@@ -75,6 +77,11 @@ export type Story = {
   cast?: 'rabbit' | 'none';
   locked?: boolean;
   beats?: Beat[];
+  
+  // Fields for remote streaming/downloaded stories
+  mediaType?: MediaType;
+  mediaUrl?: string;
+  coverImage?: string;
 };
 
 export type SceneState = {
