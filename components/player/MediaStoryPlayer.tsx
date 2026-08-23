@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '@/constants/theme';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { getStory } from '@/data/catalog';
 import { useState, useEffect } from 'react';
 import { useEvent } from 'expo';
