@@ -30,6 +30,7 @@ export default function LibraryScreen() {
     return rs ? { ...ls, ...rs } : ls;
   });
   
+  const remoteStories = remoteStoriesAll.filter((s) => s.ageBand === ageBand);
   const purelyRemote = remoteStories.filter(rs => !localStories.some(ls => ls.id === rs.id));
   const allStories: Story[] = [...mergedLocal, ...purelyRemote];
 
