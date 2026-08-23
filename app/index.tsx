@@ -1,229 +1,200 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
-import { AgeCategoryRow } from '@/components/AgeCategoryRow';
 import { SettingsButton } from '@/components/SettingsButton';
-import { AdBanner } from '@/components/AdBanner';
+import { StoryCarousel } from '@/components/StoryCarousel';
 import { brand, colors, radii, spacing } from '@/constants/theme';
-import { t, ui } from '@/constants/ui';
-import { categoryLabel, featuredForAge, isGrownListening } from '@/data/catalog';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
-import { storiesForAge } from '@/data/catalog';
+import { storiesForAge, ageBands, stories as allLocalStories } from '@/data/catalog';
 
-export default function TonightScreen() {
+export default function NetflixStyleHome() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
-  const ageBand = useSettingsStore((s) => s.ageBand);
+  
   const remoteStoriesAll = useDownloadsStore((s) => s.remoteStories);
   
-  const remoteStories = remoteStoriesAll.filter((s) => s.ageBand === ageBand);
-  const localStories = storiesForAge(ageBand);
-  
-  // Merge and prefer remote stories but keep local beats/mediaAssets
-  const mergedStories = localStories.map(ls => {
+  // Merge all stories across all age bands for the global catalog
+  const mergedStories = allLocalStories.map(ls => {
     const rs = remoteStoriesAll.find(r => r.id === ls.id);
     return rs ? { ...ls, ...rs } : ls;
   });
+  const purelyRemote = remoteStoriesAll.filter(rs => !allLocalStories.some(ls => ls.id === rs.id));
+  const fullCatalog = [...mergedStories, ...purelyRemote];
   
-  // Add any purely remote stories that don't exist locally
-  const purelyRemote = remoteStories.filter(rs => !localStories.some(ls => ls.id === rs.id));
-  const finalStories = [...mergedStories, ...purelyRemote].filter(s => s.ageBand === ageBand);
-  
-  // Use the first available story, fallback to first local if none
-  const story = finalStories[0] ?? featuredForAge(ageBand);
-  const grown = isGrownListening(ageBand);
+  // Filter into categories
+  const featuredStory = fullCatalog[0];
+  const toddlers = fullCatalog.filter(s => s.ageBand === '2-4' || s.ageBand === '4-6');
+  const kids = fullCatalog.filter(s => s.ageBand === '6-8' || s.ageBand === '9-12');
+  const parents = fullCatalog.filter(s => s.ageBand === 'parents' || s.ageBand === '25+');
+  const teens = fullCatalog.filter(s => s.ageBand === '13-17' || s.ageBand === '18-25');
 
   return (
     <View style={styles.root}>
-      <LinearGradient
-        colors={[colors.skyTop, colors.skyMid, colors.skyHorizon]}
-        style={StyleSheet.absoluteFill}
-      />
-      <View style={styles.moon} />
-      <View style={styles.hillFar} />
-      <View style={styles.hillNear} />
-      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.brandNe}>{brand.nameNe}</Text>
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+        
+        {/* HERO SECTION */}
+        <View style={styles.heroContainer}>
+          {featuredStory?.coverImage ? (
+             <ImageBackground source={{ uri: featuredStory.coverImage }} style={styles.heroImage} />
+          ) : (
+             <View style={[styles.heroImage, { backgroundColor: featuredStory?.accent || colors.forestFar, justifyContent: 'center', alignItems: 'center', padding: 40 }]}>
+                <Text style={{ fontSize: 50, color: 'rgba(255,255,255,0.2)', fontFamily: 'Nunito_800ExtraBold', textAlign: 'center' }}>
+                  {featuredStory?.title[language] || featuredStory?.title.en}
+                </Text>
+             </View>
+          )}
+          
+          <LinearGradient
+            colors={['transparent', 'rgba(15,23,42,0.8)', colors.background]}
+            style={styles.heroGradient}
+          />
+          
+          <SafeAreaView style={styles.headerSafe} edges={['top']}>
+            <View style={styles.header}>
               <Text style={styles.brand}>{brand.name}</Text>
+              <SettingsButton />
             </View>
-            <SettingsButton />
+          </SafeAreaView>
+
+          <View style={styles.heroContent}>
+            <Text style={styles.heroKicker}>{language === 'ne' ? '?????? ??????' : 'Recently Added'}</Text>
+            <Text style={styles.heroTitle}>
+              {featuredStory?.title[language] || featuredStory?.title.en}
+            </Text>
+            
+            <View style={styles.heroButtons}>
+              <Pressable style={styles.playButton} onPress={() => router.push('/story/' + featuredStory.id)}>
+                <Ionicons name="play" size={24} color="#000" />
+                <Text style={styles.playButtonText}>{language === 'ne' ? '???? ?????????' : 'Play'}</Text>
+              </Pressable>
+              
+              <Pressable style={styles.infoButton} onPress={() => router.push('/library')}>
+                <Ionicons name="albums-outline" size={24} color="#fff" />
+                <Text style={styles.infoButtonText}>{language === 'ne' ? '?????????' : 'Library'}</Text>
+              </Pressable>
+            </View>
           </View>
+        </View>
 
-          <Text style={[styles.who, language === 'ne' && styles.whoNe]}>{t(ui.whoListening, language)}</Text>
-          <AgeCategoryRow />
-
-          <View style={styles.hero}>
-            <Text style={[styles.kicker, language === 'ne' && styles.kickerNe]}>
-              {t(grown ? ui.tonightAdult : ui.tonight, language)}
-            </Text>
-            <Text style={[styles.title, language === 'ne' && styles.titleNe]}>
-              {story.title[language]}
-            </Text>
-            <Text style={[styles.sub, language === 'ne' && styles.subNe]}>
-              {story.subtitle[language]}
-            </Text>
-            <Text style={styles.meta}>
-              {categoryLabel(story, language)} · {story.runtimeMinutes} {t(ui.minutes, language)}
-            </Text>
-          </View>
-
-          <Pressable style={styles.begin} onPress={() => router.push(`/story/${story.id}`)}>
-            <Text style={styles.beginText}>{t(grown ? ui.beginAdult : ui.begin, language)}</Text>
-          </Pressable>
-
-          <Pressable onPress={() => router.push('/library')} style={styles.more}>
-            <Text style={styles.moreText}>{t(ui.moreStories, language)}</Text>
-          </Pressable>
-        </ScrollView>
-        <AdBanner />
-      </SafeAreaView>
+        {/* CAROUSELS */}
+        <View style={styles.carouselsContainer}>
+          <StoryCarousel title={language === 'ne' ? '???? ????????? ????' : 'For Little Ones'} stories={toddlers} />
+          <StoryCarousel title={language === 'ne' ? '?????????????? ????' : 'Kids & Tweens'} stories={kids} />
+          <StoryCarousel title={language === 'ne' ? '????????? ???? (???????)' : 'After Hours (Parents)'} stories={parents} />
+          <StoryCarousel title={language === 'ne' ? '????????? ????' : 'Young Adults'} stories={teens} />
+        </View>
+        
+        <View style={{height: 100}} />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  safe: { flex: 1 },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.lg,
+  heroContainer: {
+    width: '100%',
+    height: 550,
+    position: 'relative',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  heroGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 300,
+  },
+  headerSafe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  brandNe: {
-    color: colors.amber,
-    fontFamily: 'NotoSansDevanagari_700Bold',
-    fontSize: 28,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
   brand: {
-    color: colors.creamMuted,
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginTop: -4,
-  },
-  who: {
-    color: colors.cream,
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 13,
-    letterSpacing: 0.4,
-    marginBottom: 10,
-    opacity: 0.9,
-  },
-  whoNe: {
-    fontFamily: 'NotoSansDevanagari_700Bold',
-    fontSize: 16,
-  },
-  hero: { flex: 1, justifyContent: 'center', paddingTop: 28, paddingBottom: 20 },
-  kicker: {
-    color: colors.amber,
-    fontFamily: 'Nunito_700Bold',
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    fontSize: 12,
-  },
-  kickerNe: {
-    fontFamily: 'NotoSansDevanagari_700Bold',
-    textTransform: 'none',
-    fontSize: 16,
-    letterSpacing: 0,
-  },
-  title: {
-    color: colors.cream,
+    color: '#fff',
     fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 30,
-    lineHeight: 38,
-    marginTop: 10,
+    fontSize: 24,
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
-  titleNe: {
-    fontFamily: 'NotoSansDevanagari_700Bold',
-    fontSize: 28,
-    lineHeight: 40,
-  },
-  sub: {
-    color: colors.creamMuted,
-    fontFamily: 'Nunito_500Medium',
-    fontSize: 16,
-    lineHeight: 24,
-    marginTop: 10,
-    maxWidth: 320,
-  },
-  subNe: {
-    fontFamily: 'NotoSansDevanagari_400Regular',
-    lineHeight: 26,
-  },
-  meta: {
-    color: colors.cream,
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    marginTop: 14,
-    opacity: 0.72,
-  },
-  moon: {
+  heroContent: {
     position: 'absolute',
-    top: 72,
-    right: 36,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.cream,
-    opacity: 0.9,
-  },
-  hillFar: {
-    position: 'absolute',
-    left: -40,
-    right: 80,
-    bottom: 88,
-    height: 120,
-    borderTopLeftRadius: 180,
-    borderTopRightRadius: 180,
-    backgroundColor: colors.forestFar,
-    opacity: 0.7,
-  },
-  hillNear: {
-    position: 'absolute',
-    left: 40,
-    right: -60,
-    bottom: 0,
-    height: 140,
-    borderTopLeftRadius: 200,
-    borderTopRightRadius: 160,
-    backgroundColor: colors.forestNear,
-  },
-  begin: {
-    backgroundColor: colors.amber,
-    borderRadius: radii.pill,
+    bottom: 40,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    paddingVertical: 16,
-    marginBottom: spacing.md,
+    paddingHorizontal: 20,
   },
-  beginText: {
-    color: colors.background,
+  heroKicker: {
+    color: colors.amber,
     fontFamily: 'Nunito_800ExtraBold',
-    fontSize: 18,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    fontSize: 12,
+    marginBottom: 8,
   },
-  more: { alignItems: 'center', paddingBottom: spacing.sm },
-  moreText: {
-    color: colors.cream,
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 15,
-    opacity: 0.85,
+  heroTitle: {
+    color: '#fff',
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 40,
+    textAlign: 'center',
+    marginBottom: 24,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
+  heroButtons: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  playButton: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 4,
+    gap: 8,
+  },
+  playButtonText: {
+    color: '#000',
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 16,
+  },
+  infoButton: {
+    backgroundColor: 'rgba(81, 84, 91, 0.7)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 4,
+    gap: 8,
+  },
+  infoButtonText: {
+    color: '#fff',
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 16,
+  },
+  carouselsContainer: {
+    paddingTop: 20,
+  }
 });
