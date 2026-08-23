@@ -8,6 +8,6 @@ compatibility_date = "2023-12-01"
 # ]
 
 # We will bind the KV namespace for the database later
-# [[kv_namespaces]]
-# binding = "SAANJH_DB"
-# id = "your_kv_namespace_id"
+[[kv_namespaces]]
+binding = "SAANJH_DB"
+id = "97f579307cd347ee8f0904b6c7230813"

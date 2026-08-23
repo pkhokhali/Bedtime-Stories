@@ -1,7 +1,11 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
-const app = new Hono();
+type Env = {
+  SAANJH_DB: KVNamespace;
+};
+
+const app = new Hono<{ Bindings: Env }>();
 
 // Enable CORS so the Admin Panel and Mobile App can fetch data
 app.use('/*', cors());
@@ -10,23 +14,34 @@ app.get('/', (c) => {
   return c.json({ message: 'Welcome to the Saanjh API' });
 });
 
-// Mock Catalog Endpoint - We will connect this to Cloudflare KV or D1 next!
+// GET the active catalog for the mobile app
 app.get('/catalog', async (c) => {
-  // In the future, this will read from: await c.env.SAANJH_DB.get('catalog');
-  const catalog = {
-    version: 1,
-    stories: [
-      {
-        id: 'sleepy-cloud',
-        title: { en: 'The Sleepy Little Cloud', ne: 'निद्रालु सानो बादल' },
-        mediaType: 'video',
-        // Example of how the R2 CDN subdomain will look
-        mediaUrl: 'https://cdn.saanjh.prabinkhokhali.com.np/videos/sleepy_cloud.mp4'
-      }
-    ]
-  };
-  
-  return c.json(catalog);
+  try {
+    const catalogStr = await c.env.SAANJH_DB.get('catalog');
+    
+    if (catalogStr) {
+      return c.json(JSON.parse(catalogStr));
+    }
+    
+    // Fallback if the database is empty
+    return c.json({ version: 1, stories: [] });
+  } catch (err) {
+    return c.json({ error: 'Failed to fetch catalog' }, 500);
+  }
+});
+
+// POST to update the catalog (Called by your Admin Panel)
+app.post('/catalog', async (c) => {
+  try {
+    const body = await c.req.json();
+    
+    // Save the new JSON tree to the KV Database
+    await c.env.SAANJH_DB.put('catalog', JSON.stringify(body));
+    
+    return c.json({ success: true, message: 'Catalog updated successfully!' });
+  } catch (err) {
+    return c.json({ success: false, error: 'Failed to update catalog' }, 500);
+  }
 });
 
 export default app;
