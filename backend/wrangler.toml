@@ -1,0 +1,13 @@
+name = "saanjh-api"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+
+# We will map this to api.saanjh.prabinkhokhali.com.np in your Cloudflare Dashboard
+# routes = [
+#   { pattern = "api.saanjh.prabinkhokhali.com.np", custom_domain = true }
+# ]
+
+# We will bind the KV namespace for the database later
+# [[kv_namespaces]]
+# binding = "SAANJH_DB"
+# id = "your_kv_namespace_id"
