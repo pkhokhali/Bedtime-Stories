@@ -1,7 +1,6 @@
 import { useDownloadsStore } from '@/store/useDownloadsStore';
 import { Story } from '@/types/story';
-
-const CATALOG_URL = 'https://api.saanjh.prabinkhokhali.com.np/catalog';
+const CATALOG_URL = 'https://saanjh-api.prabinkhokhali89.workers.dev/catalog';
 
 interface CatalogResponse {
   version: number;

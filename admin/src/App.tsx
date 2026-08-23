@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Save, Trash2, Video, Headphones, EyeOff, BookOpen, AlertCircle } from 'lucide-react';
 
-const API_URL = 'https://api.saanjh.prabinkhokhali.com.np/catalog';
+const API_URL = 'https://saanjh-api.prabinkhokhali89.workers.dev/catalog';
 
 type LocalizedString = { en: string; ne: string };
 
