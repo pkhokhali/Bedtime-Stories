@@ -24,10 +24,14 @@ export default function LibraryScreen() {
   const remoteStoriesAll = useDownloadsStore((s) => s.remoteStories);
   const downloads = useDownloadsStore((s) => s.downloads);
   
-  // Filter remote stories for this age band
-  const remoteStories = remoteStoriesAll.filter((s) => s.ageBand === ageBand);
+  // Remote stories override local metadata but keep local animation beats
+  const mergedLocal = localStories.map(ls => {
+    const rs = remoteStoriesAll.find(r => r.id === ls.id);
+    return rs ? { ...ls, ...rs } : ls;
+  });
   
-  const allStories: Story[] = [...remoteStories, ...localStories];
+  const purelyRemote = remoteStories.filter(rs => !localStories.some(ls => ls.id === rs.id));
+  const allStories: Story[] = [...mergedLocal, ...purelyRemote];
 
   const handleDownloadPress = (story: Story) => {
     const dl = downloads[story.id];

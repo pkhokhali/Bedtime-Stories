@@ -10,12 +10,30 @@ import { brand, colors, radii, spacing } from '@/constants/theme';
 import { t, ui } from '@/constants/ui';
 import { categoryLabel, featuredForAge, isGrownListening } from '@/data/catalog';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useDownloadsStore } from '@/store/useDownloadsStore';
+import { storiesForAge } from '@/data/catalog';
 
 export default function TonightScreen() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const ageBand = useSettingsStore((s) => s.ageBand);
-  const story = featuredForAge(ageBand);
+  const remoteStoriesAll = useDownloadsStore((s) => s.remoteStories);
+  
+  const remoteStories = remoteStoriesAll.filter((s) => s.ageBand === ageBand);
+  const localStories = storiesForAge(ageBand);
+  
+  // Merge and prefer remote stories but keep local beats/mediaAssets
+  const mergedStories = localStories.map(ls => {
+    const rs = remoteStoriesAll.find(r => r.id === ls.id);
+    return rs ? { ...ls, ...rs } : ls;
+  });
+  
+  // Add any purely remote stories that don't exist locally
+  const purelyRemote = remoteStories.filter(rs => !localStories.some(ls => ls.id === rs.id));
+  const finalStories = [...mergedStories, ...purelyRemote].filter(s => s.ageBand === ageBand);
+  
+  // Use the first available story, fallback to first local if none
+  const story = finalStories[0] ?? featuredForAge(ageBand);
   const grown = isGrownListening(ageBand);
 
   return (

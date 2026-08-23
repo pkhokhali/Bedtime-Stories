@@ -14,7 +14,10 @@ export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: s
   const downloads = useDownloadsStore((s) => s.downloads);
   const globalLang = useSettingsStore((s) => s.language);
   
-  const story = isLocalMedia ? getStory(storyId) : remoteStories.find(s => s.id === storyId);
+  const rawStory = isLocalMedia ? getStory(storyId) : remoteStories.find(s => s.id === storyId);
+  const remoteMetadata = remoteStories.find(s => s.id === storyId);
+  const story = isLocalMedia && rawStory && remoteMetadata ? { ...rawStory, ...remoteMetadata } : rawStory;
+  
   const dl = downloads[storyId];
   
   const [currentPartIndex, setCurrentPartIndex] = useState(0);
