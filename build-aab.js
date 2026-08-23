@@ -10,7 +10,7 @@ console.log('--- Bedtime Stories Local AAB Builder ---');
 // 1. Ensure prebuild has run
 console.log('Ensuring Android project is prebuilt...');
 try {
-  execSync('npx expo prebuild --platform android', { stdio: 'inherit' });
+  execSync('npx expo prebuild --platform android --clean', { stdio: 'inherit' });
 } catch (e) {
   console.error('Prebuild failed.');
   process.exit(1);
@@ -39,8 +39,9 @@ if (fs.existsSync(buildGradlePath)) {
     );
 
     // Update buildTypes.release to use the new signing config
+    // The default template has comments between `release {` and `signingConfig`.
     buildGradle = buildGradle.replace(
-      /release\s*\{\s*signingConfig signingConfigs\.debug/g,
+      /release\s*\{[\s\S]*?signingConfig signingConfigs\.debug/g,
       `release {\n            signingConfig signingConfigs.release`
     );
 
