@@ -38,12 +38,17 @@ if (fs.existsSync(buildGradlePath)) {
       `signingConfigs {${signingConfigReplacement}`
     );
 
-    // Update buildTypes.release to use the new signing config
-    // The default template has comments between `release {` and `signingConfig`.
-    buildGradle = buildGradle.replace(
-      /release\s*\{[\s\S]*?signingConfig signingConfigs\.debug/g,
-      `release {\n            signingConfig signingConfigs.release`
-    );
+    // Update buildTypes.release to use the new signing config safely
+    const buildTypesIndex = buildGradle.indexOf('buildTypes {');
+    if (buildTypesIndex !== -1) {
+      const releaseIndex = buildGradle.indexOf('release {', buildTypesIndex);
+      if (releaseIndex !== -1) {
+        const debugSignIndex = buildGradle.indexOf('signingConfig signingConfigs.debug', releaseIndex);
+        if (debugSignIndex !== -1) {
+          buildGradle = buildGradle.substring(0, debugSignIndex) + 'signingConfig signingConfigs.release' + buildGradle.substring(debugSignIndex + 'signingConfig signingConfigs.debug'.length);
+        }
+      }
+    }
 
     fs.writeFileSync(buildGradlePath, buildGradle);
     console.log('Injected release configuration into build.gradle.');
