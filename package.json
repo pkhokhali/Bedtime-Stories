@@ -9,9 +9,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "prebuild:android": "expo prebuild --platform android --non-interactive",
-    "build:apk": "cd android && gradlew.bat assembleDebug -PreactNativeArchitectures=armeabi-v7a,arm64-v8a",
+    "build:apk": "node build-apk.js",
     "build:apk:release": "cd android && gradlew.bat assembleRelease",
-    "build:aab": "node build-aab.js"
+    "build:aab": "node build-aab.js",
+    "lint": "expo lint"
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
@@ -34,6 +35,7 @@
     "expo-system-ui": "~57.0.2",
     "expo-video": "~57.0.2",
     "fs-extra": "^11.4.0",
+    "jimp": "^1.6.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
@@ -45,6 +47,7 @@
     "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.10.1",
+    "sharp": "^0.35.3",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
