@@ -13,7 +13,11 @@ export async function fetchRemoteCatalog(): Promise<void> {
     if (!response.ok) throw new Error('Failed to fetch catalog from Cloudflare API');
     
     const data: CatalogResponse = await response.json();
-    useDownloadsStore.getState().setRemoteStories(data.stories);
+    
+    // Filter out hidden stories so they don't appear in the app
+    const visibleStories = data.stories.filter(story => !story.isHidden);
+    
+    useDownloadsStore.getState().setRemoteStories(visibleStories);
     
     
   } catch (error) {

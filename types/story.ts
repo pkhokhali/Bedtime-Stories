@@ -2,7 +2,7 @@ export type Language = 'en' | 'ne';
 
 export type StoryCategory = 'roots' | 'universal' | 'custom';
 
-export type AgeBand = '2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+';
+export type AgeBand = '2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+' | 'parents';
 
 export type AudienceGroup = 'children' | 'young' | 'grown';
 
@@ -69,20 +69,22 @@ export type Story = {
   form: StoryForm;
   ageBand: AgeBand;
   title: Localized;
-  subtitle: Localized;
-  runtimeMinutes: number;
-  theme: Localized;
-  accent: string;
-  stage: StageKind;
+  subtitle?: Localized;
+  runtimeMinutes?: number;
+  theme?: Localized;
+  accent?: string;
+  stage?: StageKind;
   cast?: 'rabbit' | 'none';
   locked?: boolean;
   beats?: Beat[];
   
   // Fields for remote streaming/downloaded stories
   mediaType?: MediaType;
-  mediaUrl?: string;
+  mediaUrl?: string; // English
+  mediaUrl_ne?: string; // Nepali
   mediaAssets?: any[]; // For local bundled files using require(), array supports multi-part stories
   coverImage?: string;
+  isHidden?: boolean;
 };
 
 export type SceneState = {

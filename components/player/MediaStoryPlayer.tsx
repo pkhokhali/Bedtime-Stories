@@ -12,19 +12,31 @@ export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: s
   const router = useRouter();
   const remoteStories = useDownloadsStore((s) => s.remoteStories);
   const downloads = useDownloadsStore((s) => s.downloads);
+  const globalLang = useSettingsStore((s) => s.language);
   
   const story = isLocalMedia ? getStory(storyId) : remoteStories.find(s => s.id === storyId);
   const dl = downloads[storyId];
   
   const [currentPartIndex, setCurrentPartIndex] = useState(0);
+  const [activeLanguage, setActiveLanguage] = useState<'en' | 'ne'>(globalLang || 'en');
+
+  // Check if we have two language tracks available
+  const hasBilingual = !isLocalMedia && story?.mediaUrl && story?.mediaUrl_ne;
 
   // For multi-part local media, use the current index
   const hasMultipleParts = isLocalMedia && story?.mediaAssets && story.mediaAssets.length > 0;
   
-  // Use local URI if downloaded, otherwise stream the remote URL, or use local bundled asset
-  const videoSource = hasMultipleParts
-    ? story!.mediaAssets![currentPartIndex]
-    : (dl?.status === 'completed' && dl.localUri ? dl.localUri : story?.mediaUrl);
+  // Use local URI if downloaded, otherwise stream the remote URL (respecting language choice if bilingual), or use local bundled asset
+  let videoSource = '';
+  if (hasMultipleParts) {
+    videoSource = story!.mediaAssets![currentPartIndex];
+  } else if (dl?.status === 'completed' && dl.localUri) {
+    videoSource = dl.localUri;
+  } else if (hasBilingual && activeLanguage === 'ne') {
+    videoSource = story?.mediaUrl_ne || '';
+  } else {
+    videoSource = story?.mediaUrl || '';
+  }
 
   const player = useVideoPlayer(videoSource || '', player => {
     player.loop = false;
@@ -79,7 +91,16 @@ export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: s
         <Pressable onPress={() => router.back()} hitSlop={20} style={styles.backBtnRound}>
           <Ionicons name="close" size={28} color={colors.cream} />
         </Pressable>
-        <Text style={styles.title}>{story.title.en}</Text>
+        <Text style={styles.title}>{story.title[activeLanguage] || story.title.en}</Text>
+        
+        {hasBilingual && (
+           <Pressable 
+             onPress={() => setActiveLanguage(prev => prev === 'en' ? 'ne' : 'en')} 
+             style={styles.languageToggle}
+           >
+             <Text style={styles.languageToggleText}>{activeLanguage === 'en' ? 'A/क' : 'क/A'}</Text>
+           </Pressable>
+        )}
       </View>
     </View>
   );
@@ -158,5 +179,19 @@ const styles = StyleSheet.create({
   backText: {
     color: colors.cream,
     fontFamily: 'Nunito_700Bold',
+  },
+  languageToggle: {
+    marginLeft: 'auto', // push to the right
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+  },
+  languageToggleText: {
+    color: colors.cream,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 14,
   }
 });

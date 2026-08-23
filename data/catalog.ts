@@ -84,6 +84,14 @@ export const ageBands: {
     icon: 'book',
     group: 'grown',
   },
+  {
+    id: 'parents',
+    ages: { en: 'Parents', ne: 'अभिभावक' },
+    label: { en: 'After Hours', ne: 'काम पछि' },
+    hint: { en: 'Audiobooks and novels just for you.', ne: 'तपाईंको लागि अडियोबुक र उपन्यास।' },
+    icon: 'cafe-outline',
+    group: 'grown',
+  },
 ];
 
 export const stories: Story[] = [
@@ -406,7 +414,7 @@ export function bandsForGroup(group: 'children' | 'young' | 'grown') {
 }
 
 export function isGrownListening(age: AgeBand) {
-  return age === '13-17' || age === '18-25' || age === '25+';
+  return age === '13-17' || age === '18-25' || age === '25+' || age === 'parents';
 }
 
 export function categoryLabel(story: Story, language: 'en' | 'ne') {
