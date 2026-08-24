@@ -13,13 +13,18 @@ export default function StoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const remoteStories = useDownloadsStore((s) => s.remoteStories);
   
-  // Check if this is a remote media story or a local bundled media story
-  const isRemoteMedia = remoteStories.some((s) => s.id === id);
+  // Check if this story has media (video/audio) or is a legacy programmatic animation (beats)
+  const remoteStory = remoteStories.find(s => s.id === id);
   const localStory = getStory(id as string);
-  const isLocalMedia = !!localStory?.mediaAssets || !!localStory?.mediaType;
+  
+  // Merge to see the final story properties
+  const mergedStory = { ...localStory, ...remoteStory };
+  
+  // It's a media story if it has a mediaType, mediaUrl, or local mediaAssets
+  const isMediaStory = !!mergedStory.mediaType || !!mergedStory.mediaUrl || !!mergedStory.mediaAssets;
 
-  if (isRemoteMedia || isLocalMedia) {
-    return <MediaStoryPlayer storyId={id as string} isLocalMedia={isLocalMedia} />;
+  if (isMediaStory) {
+    return <MediaStoryPlayer storyId={id as string} isLocalMedia={!!localStory?.mediaAssets} />;
   }
 
   return (
