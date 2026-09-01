@@ -28,7 +28,7 @@ export default function StoryPlayer() {
   const keepAwake = useSettingsStore((s) => s.keepAwake);
   const story = getStory(id ?? '');
   const beats = story?.beats ?? [];
-  const playback = useStoryPlayback(beats, language);
+  const playback = useStoryPlayback(beats, language, story?.stage);
 
   useEffect(() => {
     if (beats.length) playback.play();
@@ -54,7 +54,7 @@ export default function StoryPlayer() {
           <ForestStage scene={beat.scene} rabbit={beat.rabbit} tiger={beat.tiger} />
         ) : (
           <NightStage
-            stage={story.stage}
+            stage={story.stage || 'moon'}
             scene={beat.scene}
             showRabbit={story.cast !== 'none'}
             rabbitPose={beat.rabbit}

@@ -86,8 +86,7 @@ export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: s
         <VideoView 
           style={styles.video} 
           player={player} 
-          allowsFullscreen 
-          allowsPictureInPicture 
+          nativeControls={true} 
         />
       )}
       

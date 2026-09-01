@@ -1,41 +1,64 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { playBed, playSfx, stopAllAudio } from '@/lib/audio';
+import { fadeBedVolume, playBed, playSfx, resolveAmbientBed, stopAllAudio, windDownFinalBeat } from '@/lib/audio';
+import { prefetchUpcomingBeats } from '@/lib/narrator/cloudTts';
 import { speakBeat, stopSpeech, wait } from '@/lib/speech';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { Beat, Language } from '@/types/story';
+import { Beat, Language, StageKind } from '@/types/story';
 
 type Status = 'idle' | 'playing' | 'paused' | 'done';
 
-export function useStoryPlayback(beats: Beat[], language: Language) {
+export function useStoryPlayback(beats: Beat[], language: Language, stage?: StageKind) {
   const [index, setIndex] = useState(0);
   const [status, setStatus] = useState<Status>('idle');
   const statusRef = useRef(status);
   const indexRef = useRef(index);
   const langRef = useRef(language);
   const beatsRef = useRef(beats);
+  const stageRef = useRef(stage);
   const genRef = useRef(0);
 
   statusRef.current = status;
   indexRef.current = index;
   langRef.current = language;
   beatsRef.current = beats;
+  stageRef.current = stage;
 
   const speakCurrent = useCallback((at: number) => {
     const beat = beatsRef.current[at];
     const gen = ++genRef.current;
     if (!beat) {
       setStatus('done');
-      stopAllAudio().catch(() => undefined);
+      windDownFinalBeat().catch(() => stopAllAudio().catch(() => undefined));
       return;
     }
-    const nightSounds = useSettingsStore.getState().nightSounds;
+
+    const { nightSounds, aiVoice, voiceGender, voicePace } = useSettingsStore.getState();
+
+    // Auto-detect and layer ambient sound bed
     if (nightSounds) {
-      playBed(beat.music).catch(() => undefined);
+      const resolvedBed = resolveAmbientBed(beat.music, beat.scene, stageRef.current);
+      playBed(resolvedBed).catch(() => undefined);
       playSfx(beat.sfx).catch(() => undefined);
     } else {
       stopAllAudio().catch(() => undefined);
     }
+
+    // Pre-fetch upcoming beats for Cloud AI Voice if enabled
+    if (aiVoice) {
+      prefetchUpcomingBeats(beatsRef.current, at + 1, {
+        language: langRef.current,
+        gender: voiceGender,
+        pace: voicePace,
+      }).catch(() => undefined);
+    }
+
+    const isFinalBeat = at >= beatsRef.current.length - 1;
+    if (isFinalBeat && nightSounds) {
+      // Begin gentle sleep wind-down fade during final beat
+      fadeBedVolume(0.06, 3500).catch(() => undefined);
+    }
+
     speakBeat(beat.text[langRef.current], {
       language: langRef.current,
       voice: beat.voice,
@@ -44,7 +67,7 @@ export function useStoryPlayback(beats: Beat[], language: Language) {
         const next = at + 1;
         if (next >= beatsRef.current.length) {
           setStatus('done');
-          stopAllAudio().catch(() => undefined);
+          windDownFinalBeat().catch(() => stopAllAudio().catch(() => undefined));
           return;
         }
         wait(560).then(() => {
