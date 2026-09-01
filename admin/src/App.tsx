@@ -1,279 +1,681 @@
-import { useEffect, useState } from 'react';
-import { Plus, Save, Trash2, Video, Headphones, EyeOff, BookOpen, AlertCircle, Key } from 'lucide-react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import {
+  BookOpen,
+  Plus,
+  Save,
+  Key,
+  Search,
+  Download,
+  AlertCircle,
+  CheckCircle2,
+  X,
+  RefreshCw,
+  FileText,
+  SlidersHorizontal,
+  Info,
+} from 'lucide-react';
+import type {
+  Catalog,
+  Story,
+  StoryForm,
+} from './types/story';
+import { AGE_BANDS } from './types/story';
+import {
+  fetchCatalog,
+  saveCatalog,
+  getStoredAdminSecret,
+  setStoredAdminSecret,
+  ApiError,
+} from './utils/api';
+import { StoryCard } from './components/StoryCard';
 
-const API_URL = 'https://saanjh-api.prabinkhokhali89.workers.dev/catalog';
-
-type LocalizedString = { en: string; ne: string };
-
-interface Story {
+// Toast structure
+interface ToastMessage {
   id: string;
-  title: LocalizedString;
-  subtitle?: LocalizedString;
-  category: string;
-  ageBand: string;
-  mediaType?: 'video' | 'audio' | 'text';
-  mediaUrl?: string; // English / Default
-  mediaUrl_ne?: string; // Nepali specific url
-  coverImage?: string;
-  isHidden?: boolean;
-}
-
-interface Catalog {
-  version: number;
-  stories: Story[];
+  type: 'success' | 'error' | 'info';
+  message: string;
+  timestamp: number;
 }
 
 export default function App() {
+  // Main catalog state
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [originalCatalogJson, setOriginalCatalogJson] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [adminSecret, setAdminSecret] = useState(localStorage.getItem('saanjh_admin_secret') || '');
 
-  useEffect(() => {
-    fetchCatalog();
+  // Authentication & Secrets
+  const [adminSecret, setAdminSecret] = useState<string>(() => getStoredAdminSecret());
+
+  // Expanded stories state
+  const [expandedStoryIds, setExpandedStoryIds] = useState<Record<string, boolean>>({});
+
+  // Search and Filtering
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [ageBandFilter, setAgeBandFilter] = useState<string>('all');
+  const [formFilter, setFormFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Toasts
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Backup Modal
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [backupJsonText, setBackupJsonText] = useState('');
+  const [backupError, setBackupError] = useState('');
+
+  // Toast Helper
+  const addToast = useCallback((type: 'success' | 'error' | 'info', message: string) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const newToast: ToastMessage = { id, type, message, timestamp: Date.now() };
+    setToasts((prev) => [...prev, newToast]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
   }, []);
 
-  const fetchCatalog = async () => {
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  // Load catalog on mount
+  const loadCatalog = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error('Failed to fetch catalog');
-      const data = await res.json();
-      
-      // Ensure structure exists
-      if (!data.stories) data.stories = [];
+      const data = await fetchCatalog();
       setCatalog(data);
+      setOriginalCatalogJson(JSON.stringify(data));
+      addToast('info', `Loaded ${data.stories.length} stories (v${data.version})`);
     } catch (err: any) {
-      setError(err.message);
+      addToast('error', err.message || 'Failed to load catalog from server');
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
 
-  const saveCatalog = async () => {
+  useEffect(() => {
+    loadCatalog();
+  }, [loadCatalog]);
+
+  // Dirty state computation
+  const isDirty = useMemo(() => {
+    if (!catalog) return false;
+    return JSON.stringify(catalog) !== originalCatalogJson;
+  }, [catalog, originalCatalogJson]);
+
+  // Save changes to Cloudflare Workers KV
+  const handleSaveCatalog = async () => {
+    if (!catalog) return;
     setSaving(true);
-    setError('');
-    setSuccess('');
     try {
-      const newCatalog = { ...catalog, version: (catalog?.version || 0) + 1 };
-      
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (adminSecret) {
-        headers['Authorization'] = `Bearer ${adminSecret}`;
+      const res = await saveCatalog(catalog, adminSecret);
+      if (res.success) {
+        const updated = {
+          ...catalog,
+          version: res.version,
+        };
+        setCatalog(updated);
+        setOriginalCatalogJson(JSON.stringify(updated));
+        addToast('success', `Successfully published ${res.count} stories (v${res.version}) live!`);
       }
-
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(newCatalog)
-      });
-      
-      if (res.status === 401) {
-        throw new Error('Unauthorized: Invalid or missing Admin Secret key');
-      }
-      if (!res.ok) throw new Error('Failed to save to database');
-      
-      setCatalog(newCatalog as Catalog);
-      setSuccess('Successfully published to all devices!');
-      setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.message);
+      if (err instanceof ApiError) {
+        if (err.isUnauthorized) {
+          addToast('error', 'Unauthorized: Invalid or missing Admin Secret key.');
+        } else if (err.isOffline) {
+          addToast('error', 'Network error: Cannot publish changes while offline.');
+        } else {
+          addToast('error', err.message);
+        }
+      } else {
+        addToast('error', `Save failed: ${err.message || err}`);
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  const addStory = () => {
+  // Secret persistence
+  const handleSecretChange = (val: string) => {
+    setAdminSecret(val);
+    setStoredAdminSecret(val);
+  };
+
+  // Story Management Actions
+  const handleAddStory = (form: StoryForm = 'story') => {
     if (!catalog) return;
+    const newId = `story-${Date.now().toString(36)}`;
     const newStory: Story = {
-      id: `new-story-${Date.now()}`,
-      title: { en: 'New Story', ne: 'नयाँ कथा' },
+      id: newId,
       category: 'universal',
-      ageBand: '4-6',
-      mediaType: 'video',
-      isHidden: true // Hidden by default until ready
+      form,
+      ageBand: form === 'novel' ? 'parents' : '4-6',
+      title: {
+        en: form === 'novel' ? 'New Bedtime Novel' : 'New Bedtime Story',
+        ne: form === 'novel' ? 'नयाँ सुत्ने बेलाको उपन्यास' : 'नयाँ सुत्ने बेलाको कथा',
+      },
+      subtitle: { en: '', ne: '' },
+      theme: { en: '', ne: '' },
+      accent: '#f59e0b',
+      stage: 'forest',
+      cast: form === 'novel' ? 'none' : 'rabbit',
+      beats: [],
+      runtimeMinutes: 1,
+      isHidden: true, // Draft by default
     };
-    setCatalog({ ...catalog, stories: [newStory, ...catalog.stories] });
+
+    setCatalog({
+      ...catalog,
+      stories: [newStory, ...catalog.stories],
+    });
+    setExpandedStoryIds((prev) => ({ ...prev, [newId]: true }));
+    addToast('info', `Created new ${form}: "${newStory.title.en}"`);
   };
 
-  const updateStory = (index: number, field: keyof Story, value: any) => {
+  const handleUpdateStory = (storyId: string, updates: Partial<Story>) => {
     if (!catalog) return;
-    const updatedStories = [...catalog.stories];
-    updatedStories[index] = { ...updatedStories[index], [field]: value };
-    setCatalog({ ...catalog, stories: updatedStories });
+    const updated = catalog.stories.map((s) => (s.id === storyId ? { ...s, ...updates } : s));
+    setCatalog({ ...catalog, stories: updated });
   };
 
-  const updateLocalized = (index: number, field: 'title' | 'subtitle', lang: 'en' | 'ne', value: string) => {
+  const handleDuplicateStory = (storyId: string) => {
     if (!catalog) return;
-    const updatedStories = [...catalog.stories];
-    const currentVal = updatedStories[index][field] || { en: '', ne: '' };
-    updatedStories[index] = { 
-      ...updatedStories[index], 
-      [field]: { ...currentVal, [lang]: value } 
+    const target = catalog.stories.find((s) => s.id === storyId);
+    if (!target) return;
+
+    const clonedId = `${target.id}-copy-${Math.random().toString(36).slice(2, 6)}`;
+    const clonedStory: Story = {
+      ...target,
+      id: clonedId,
+      title: {
+        en: `${target.title?.en || 'Story'} (Copy)`,
+        ne: `${target.title?.ne || 'कथा'} (प्रतिलिपि)`,
+      },
+      isHidden: true,
+      beats: target.beats ? target.beats.map((b) => ({ ...b, id: `${b.id}-copy` })) : [],
     };
-    setCatalog({ ...catalog, stories: updatedStories });
+
+    const targetIdx = catalog.stories.findIndex((s) => s.id === storyId);
+    const nextStories = [...catalog.stories];
+    nextStories.splice(targetIdx + 1, 0, clonedStory);
+
+    setCatalog({ ...catalog, stories: nextStories });
+    setExpandedStoryIds((prev) => ({ ...prev, [clonedId]: true }));
+    addToast('info', `Duplicated story into "${clonedId}"`);
   };
 
-  const deleteStory = (index: number) => {
+  const handleDeleteStory = (storyId: string) => {
     if (!catalog) return;
-    if (!confirm('Are you sure you want to delete this story?')) return;
-    const updatedStories = [...catalog.stories];
-    updatedStories.splice(index, 1);
-    setCatalog({ ...catalog, stories: updatedStories });
+    const updated = catalog.stories.filter((s) => s.id !== storyId);
+    setCatalog({ ...catalog, stories: updated });
+    addToast('info', `Deleted story "${storyId}"`);
   };
 
-  if (loading) return <div className="p-10 text-center text-xl text-gray-600">Loading Database...</div>;
+  // Toggle expand single story
+  const toggleExpandStory = (storyId: string) => {
+    setExpandedStoryIds((prev) => ({
+      ...prev,
+      [storyId]: !prev[storyId],
+    }));
+  };
+
+  // Expand / Collapse all
+  const expandAllStories = () => {
+    if (!catalog) return;
+    const all: Record<string, boolean> = {};
+    catalog.stories.forEach((s) => (all[s.id] = true));
+    setExpandedStoryIds(all);
+  };
+
+  const collapseAllStories = () => {
+    setExpandedStoryIds({});
+  };
+
+  // Filtered stories calculation
+  const filteredStories = useMemo(() => {
+    if (!catalog?.stories) return [];
+
+    return catalog.stories.filter((story) => {
+      // Category filter
+      if (categoryFilter !== 'all' && story.category !== categoryFilter) {
+        return false;
+      }
+
+      // AgeBand filter
+      if (ageBandFilter !== 'all' && story.ageBand !== ageBandFilter) {
+        return false;
+      }
+
+      // Form filter
+      if (formFilter !== 'all' && story.form !== formFilter) {
+        return false;
+      }
+
+      // Status filter
+      if (statusFilter === 'published' && story.isHidden) {
+        return false;
+      }
+      if (statusFilter === 'hidden' && !story.isHidden) {
+        return false;
+      }
+
+      // Search Query filter (matches EN title, NE title, story ID, or theme)
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        const idMatch = (story.id || '').toLowerCase().includes(query);
+        const titleEnMatch = (story.title?.en || '').toLowerCase().includes(query);
+        const titleNeMatch = (story.title?.ne || '').includes(query);
+        const themeEnMatch = (story.theme?.en || '').toLowerCase().includes(query);
+        const themeNeMatch = (story.theme?.ne || '').includes(query);
+
+        if (!idMatch && !titleEnMatch && !titleNeMatch && !themeEnMatch && !themeNeMatch) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [catalog, categoryFilter, ageBandFilter, formFilter, statusFilter, searchQuery]);
+
+  // Open Backup Modal
+  const handleOpenBackupModal = () => {
+    if (!catalog) return;
+    setBackupJsonText(JSON.stringify(catalog, null, 2));
+    setBackupError('');
+    setIsBackupModalOpen(true);
+  };
+
+  // Import Backup JSON
+  const handleApplyBackupJson = () => {
+    try {
+      const parsed = JSON.parse(backupJsonText);
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.stories)) {
+        throw new Error('Invalid catalog format: JSON must contain a "stories" array.');
+      }
+      setCatalog({
+        version: typeof parsed.version === 'number' ? parsed.version : (catalog?.version || 1),
+        stories: parsed.stories,
+      });
+      setIsBackupModalOpen(false);
+      addToast('success', `Imported ${parsed.stories.length} stories from backup JSON.`);
+    } catch (err: any) {
+      setBackupError(err.message || 'Malformed JSON');
+    }
+  };
+
+  // Download Catalog JSON
+  const handleDownloadBackup = () => {
+    if (!catalog) return;
+    const blob = new Blob([JSON.stringify(catalog, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `saanjh_catalog_v${catalog.version || 1}_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast('info', 'Downloaded local catalog backup file.');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-slate-900 text-white p-6 shadow-md sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <BookOpen className="text-amber-500" /> 
-              Saanjh Admin Panel
-            </h1>
-            <p className="text-sm text-slate-400">Manage Content for {catalog?.stories.length || 0} stories • Version {catalog?.version}</p>
-          </div>
+    <div className="min-h-screen bg-slate-100 text-slate-900 pb-28 font-sans">
+      {/* 1. TOP STICKY APP HEADER */}
+      <header className="bg-slate-950 text-white shadow-lg sticky top-0 z-30 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
+          {/* Logo & Subtitle */}
           <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl shadow-md text-slate-950 font-bold">
+              <BookOpen size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold tracking-tight">Saanjh Admin CMS</h1>
+                <span className="text-[11px] font-bold px-2 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full">
+                  v{catalog?.version || 1}
+                </span>
+                {isDirty && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 bg-rose-500 text-white rounded-full animate-pulse">
+                    Unsaved Changes
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400">
+                Bilingual Content Studio • {catalog?.stories.length || 0} Stories Configured
+              </p>
+            </div>
+          </div>
+
+          {/* Right Actions: Secret, New Story, Save Live */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Secret Toggle / Input */}
             <div className="relative flex items-center">
               <Key size={14} className="absolute left-2.5 text-slate-400 pointer-events-none" />
               <input
                 type="password"
                 value={adminSecret}
-                onChange={(e) => {
-                  setAdminSecret(e.target.value);
-                  localStorage.setItem('saanjh_admin_secret', e.target.value);
-                }}
+                onChange={(e) => handleSecretChange(e.target.value)}
                 placeholder="Admin Secret Key"
-                className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg pl-8 pr-3 py-2 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 w-44"
+                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg pl-8 pr-3 py-1.5 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500 w-36 sm:w-44 transition-all"
+                title="Bearer Token for Cloudflare Workers API authorization"
               />
             </div>
-            <button onClick={addStory} className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
-              <Plus size={18} /> Add New
-            </button>
-            <button 
-              onClick={saveCatalog} 
-              disabled={saving}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg shadow-amber-900/20"
+
+            {/* Refresh from server */}
+            <button
+              type="button"
+              onClick={loadCatalog}
+              disabled={loading}
+              title="Reload catalog from Cloudflare Workers KV"
+              className="p-2 text-slate-400 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition-colors"
             >
-              <Save size={18} /> {saving ? 'Publishing...' : 'Publish Live'}
+              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
+            </button>
+
+            {/* Backup / Restore */}
+            <button
+              type="button"
+              onClick={handleOpenBackupModal}
+              title="Backup & Restore Catalog JSON"
+              className="p-2 text-slate-400 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition-colors"
+            >
+              <SlidersHorizontal size={15} />
+            </button>
+
+            {/* New Story Button */}
+            <button
+              type="button"
+              onClick={() => handleAddStory('story')}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors"
+            >
+              <Plus size={15} /> Story
+            </button>
+
+            {/* New Novel Button */}
+            <button
+              type="button"
+              onClick={() => handleAddStory('novel')}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs font-semibold rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors"
+            >
+              <Plus size={15} /> Novel
+            </button>
+
+            {/* Save All Live Button */}
+            <button
+              type="button"
+              onClick={handleSaveCatalog}
+              disabled={saving || !catalog}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
+                isDirty
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-950/30'
+                  : 'bg-emerald-700 hover:bg-emerald-600 text-white'
+              } disabled:opacity-50`}
+            >
+              <Save size={15} /> {saving ? 'Publishing...' : isDirty ? 'Publish All Changes' : 'Published Live'}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Status Messages */}
-      <div className="max-w-5xl mx-auto mt-4 px-4">
-        {error && <div className="bg-red-100 text-red-700 p-4 rounded-lg flex items-center gap-2"><AlertCircle size={20} /> {error}</div>}
-        {success && <div className="bg-green-100 text-green-700 p-4 rounded-lg font-medium">{success}</div>}
-      </div>
-
-      {/* Editor List */}
-      <main className="max-w-5xl mx-auto mt-6 px-4 space-y-6">
-        {catalog?.stories.map((story, i) => (
-          <div key={story.id} className={`bg-white rounded-xl shadow-sm border-2 overflow-hidden transition-all ${story.isHidden ? 'border-gray-200 opacity-75' : 'border-slate-200'}`}>
-            <div className={`p-4 flex justify-between items-center border-b ${story.isHidden ? 'bg-gray-100' : 'bg-slate-50'}`}>
-              <div className="flex items-center gap-3">
-                {story.mediaType === 'video' ? <Video className="text-blue-500" /> : <Headphones className="text-amber-500" />}
-                <input 
-                  value={story.id} 
-                  onChange={e => updateStory(i, 'id', e.target.value)}
-                  className="font-mono text-sm bg-transparent border-none focus:ring-0 text-slate-600 w-64"
-                  placeholder="unique-story-id"
-                />
-                {story.isHidden && <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full flex items-center gap-1"><EyeOff size={12}/> Hidden from App</span>}
-                {story.ageBand === 'parents' && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">Parent Mode (Novel)</span>}
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                  <input type="checkbox" checked={!story.isHidden} onChange={e => updateStory(i, 'isHidden', !e.target.checked)} className="rounded text-amber-600" />
-                  Published
-                </label>
-                <button onClick={() => deleteStory(i)} className="text-gray-400 hover:text-red-500 p-2"><Trash2 size={18} /></button>
-              </div>
-            </div>
-
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Left Col: Titles & Metadata */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Title (English & Nepali)</label>
-                  <input value={story.title.en} onChange={e => updateLocalized(i, 'title', 'en', e.target.value)} className="w-full border rounded-t-lg p-2 mb-px" placeholder="English Title" />
-                  <input value={story.title.ne} onChange={e => updateLocalized(i, 'title', 'ne', e.target.value)} className="w-full border rounded-b-lg p-2" placeholder="नेपाली शीर्षक" />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Target Audience</label>
-                    <select value={story.ageBand} onChange={e => updateStory(i, 'ageBand', e.target.value)} className="w-full border rounded-lg p-2">
-                      <option value="2-4">Ages 2-4 (Toddlers)</option>
-                      <option value="4-6">Ages 4-6 (Bedtime)</option>
-                      <option value="6-8">Ages 6-8 (Wonder)</option>
-                      <option value="9-12">Ages 9-12 (Growing)</option>
-                      <option value="13-17">Ages 13-17 (Teens)</option>
-                      <option value="18-25">Ages 18-25 (Young Adults)</option>
-                      <option value="25+">Ages 25+ (Grown)</option>
-                      <option value="parents">Parents (Novels / Audiobooks)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Format</label>
-                    <select value={story.mediaType} onChange={e => updateStory(i, 'mediaType', e.target.value)} className="w-full border rounded-lg p-2">
-                      <option value="video">Animated Video</option>
-                      <option value="audio">Audio Only</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Col: Media URLs */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Cover Image URL</label>
-                  <input 
-                    value={story.coverImage || ''} 
-                    onChange={e => updateStory(i, 'coverImage', e.target.value)} 
-                    className="w-full border rounded-lg p-2 text-sm" 
-                    placeholder="https://cdn.saanjh.prabinkhokhali.com.np/covers/image.jpg" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">English Audio/Video URL</label>
-                  <input 
-                    value={story.mediaUrl || ''} 
-                    onChange={e => updateStory(i, 'mediaUrl', e.target.value)} 
-                    className="w-full border rounded-lg p-2 text-sm text-blue-600" 
-                    placeholder="https://cdn.saanjh.prabinkhokhali.com.np/media/english.mp4" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nepali Audio/Video URL (Optional)</label>
-                  <input 
-                    value={story.mediaUrl_ne || ''} 
-                    onChange={e => updateStory(i, 'mediaUrl_ne', e.target.value)} 
-                    className="w-full border rounded-lg p-2 text-sm text-amber-600" 
-                    placeholder="https://cdn.saanjh.prabinkhokhali.com.np/media/nepali.mp4" 
-                  />
-                  <p className="text-xs text-gray-400 mt-1">If provided, app shows a Bilingual toggle.</p>
-                </div>
-              </div>
-            </div>
+      {/* 2. SEARCH & FILTER TOOLBAR */}
+      <section className="bg-white border-b border-slate-200 shadow-2xs sticky top-[57px] z-20">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          {/* Search Input */}
+          <div className="relative flex-1 min-w-[240px] max-w-md">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by title (EN / NE), story ID, or theme..."
+              className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+              >
+                <X size={13} />
+              </button>
+            )}
           </div>
-        ))}
 
-        {catalog?.stories.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300">
-            <h3 className="text-xl font-medium text-gray-600">No stories in database yet.</h3>
-            <p className="text-gray-400 mt-2">Click "Add New" to create your first content.</p>
+          {/* Filters Bar */}
+          <div className="flex items-center gap-2 flex-wrap text-xs">
+            {/* Category Filter */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
+            >
+              <option value="all">Category: All</option>
+              <option value="roots">Roots (Folklore)</option>
+              <option value="universal">Universal</option>
+              <option value="custom">Custom</option>
+            </select>
+
+            {/* AgeBand Filter (Matching all 8 mobile bands) */}
+            <select
+              value={ageBandFilter}
+              onChange={(e) => setAgeBandFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
+            >
+              <option value="all">Age: All Bands</option>
+              {AGE_BANDS.map((band) => (
+                <option key={band} value={band}>
+                  {band === 'parents' ? 'Parents (Novel)' : `Ages ${band}`}
+                </option>
+              ))}
+            </select>
+
+            {/* Form Filter */}
+            <select
+              value={formFilter}
+              onChange={(e) => setFormFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
+            >
+              <option value="all">Format: All</option>
+              <option value="story">Bedtime Stories</option>
+              <option value="novel">Bedtime Novels</option>
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
+            >
+              <option value="all">Status: All</option>
+              <option value="published">Live Published</option>
+              <option value="hidden">Hidden Drafts</option>
+            </select>
+
+            {/* Expand / Collapse All */}
+            <div className="h-4 w-px bg-slate-300 mx-1 hidden sm:block" />
+
+            <button
+              type="button"
+              onClick={expandAllStories}
+              className="text-[11px] font-medium text-slate-600 hover:text-slate-900 px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded"
+            >
+              Expand All
+            </button>
+            <button
+              type="button"
+              onClick={collapseAllStories}
+              className="text-[11px] font-medium text-slate-600 hover:text-slate-900 px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded"
+            >
+              Collapse All
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. MAIN STORY LIST */}
+      <main className="max-w-7xl mx-auto px-4 mt-6">
+        {loading ? (
+          <div className="text-center py-24 bg-white rounded-2xl border border-slate-200 shadow-xs">
+            <RefreshCw size={36} className="mx-auto text-amber-600 animate-spin mb-3" />
+            <h3 className="text-base font-bold text-slate-800">Loading Story Database...</h3>
+            <p className="text-xs text-slate-500 mt-1">Connecting to Cloudflare Workers KV API</p>
+          </div>
+        ) : filteredStories.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-300 p-6">
+            <FileText size={42} className="mx-auto text-slate-400 mb-3 opacity-60" />
+            <h3 className="text-base font-bold text-slate-700">No Stories Match Current Filters</h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Try adjusting your search query or reset the category/age filters.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setCategoryFilter('all');
+                setAgeBandFilter('all');
+                setFormFilter('all');
+                setStatusFilter('all');
+              }}
+              className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center text-xs text-slate-500 px-1">
+              <span>
+                Showing <strong>{filteredStories.length}</strong> of{' '}
+                <strong>{catalog?.stories.length || 0}</strong> stories
+              </span>
+              {isDirty && (
+                <span className="text-rose-600 font-semibold flex items-center gap-1">
+                  <AlertCircle size={14} /> You have unsaved changes
+                </span>
+              )}
+            </div>
+
+            {filteredStories.map((story, i) => (
+              <StoryCard
+                key={story.id}
+                story={story}
+                index={i}
+                isExpanded={Boolean(expandedStoryIds[story.id])}
+                onToggleExpand={() => toggleExpandStory(story.id)}
+                onUpdate={(updates) => handleUpdateStory(story.id, updates)}
+                onDuplicate={() => handleDuplicateStory(story.id)}
+                onDelete={() => handleDeleteStory(story.id)}
+                adminSecret={adminSecret}
+                onNotify={addToast}
+              />
+            ))}
           </div>
         )}
       </main>
+
+      {/* 4. BACKUP & RESTORE MODAL */}
+      {isBackupModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={18} className="text-amber-400" />
+                <h3 className="text-sm font-bold">Catalog JSON Backup & Restore</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBackupModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-4 flex-1 flex flex-col overflow-hidden space-y-3">
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-slate-600">
+                  Export complete database JSON for offline backup or paste external catalog data:
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDownloadBackup}
+                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1 border border-slate-300"
+                >
+                  <Download size={13} /> Download .json
+                </button>
+              </div>
+
+              <textarea
+                value={backupJsonText}
+                onChange={(e) => {
+                  setBackupJsonText(e.target.value);
+                  setBackupError('');
+                }}
+                className="flex-1 font-mono text-xs p-3 bg-slate-900 text-slate-100 rounded-xl border border-slate-700 resize-none focus:outline-none min-h-[300px]"
+              />
+
+              {backupError && (
+                <div className="p-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs flex items-center gap-2">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>{backupError}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+              <span className="text-xs text-slate-500">
+                Catalog Version {catalog?.version || 1}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBackupModalOpen(false)}
+                  className="px-4 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyBackupJson}
+                  className="px-4 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white rounded-lg shadow-sm"
+                >
+                  Restore / Apply JSON
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. FLOATING TOAST NOTIFICATION CONTAINER */}
+      <div className="fixed bottom-5 right-5 z-50 space-y-2.5 max-w-sm pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto p-3.5 rounded-xl shadow-xl border flex items-start justify-between gap-3 text-xs font-medium animate-in slide-in-from-bottom-5 duration-200 ${
+              toast.type === 'success'
+                ? 'bg-emerald-900 text-emerald-100 border-emerald-700'
+                : toast.type === 'error'
+                ? 'bg-rose-900 text-rose-100 border-rose-700'
+                : 'bg-slate-900 text-slate-100 border-slate-700'
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              {toast.type === 'success' && <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />}
+              {toast.type === 'error' && <AlertCircle size={16} className="text-rose-400 shrink-0 mt-0.5" />}
+              {toast.type === 'info' && <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />}
+              <span className="leading-snug">{toast.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeToast(toast.id)}
+              className="text-white/60 hover:text-white shrink-0 p-0.5"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
