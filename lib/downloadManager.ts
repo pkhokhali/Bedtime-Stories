@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
 
 // We'll keep active resumable downloads in memory

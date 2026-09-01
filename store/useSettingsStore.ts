@@ -15,6 +15,7 @@ type Persisted = {
   voiceGender?: VoiceGender;
   nightSounds?: boolean;
   keepAwake?: boolean;
+  aiVoice?: boolean;
 };
 
 type SettingsState = {
@@ -24,6 +25,7 @@ type SettingsState = {
   voiceGender: VoiceGender;
   nightSounds: boolean;
   keepAwake: boolean;
+  aiVoice: boolean;
   ready: boolean;
   hydrate: () => Promise<void>;
   setLanguage: (language: Language) => void;
@@ -32,6 +34,7 @@ type SettingsState = {
   setVoiceGender: (voiceGender: VoiceGender) => void;
   setNightSounds: (nightSounds: boolean) => void;
   setKeepAwake: (keepAwake: boolean) => void;
+  setAiVoice: (aiVoice: boolean) => void;
   toggleLanguage: () => void;
 };
 
@@ -42,13 +45,15 @@ function parseLanguage(value: unknown): Language {
 function parseAgeBand(value: unknown): AgeBand {
   if (value === 'teen') return '13-17';
   if (value === 'adult' || value === '18+') return '18-25';
+  if (value === 'parent' || value === 'parents') return 'parents';
   return value === '2-4' ||
     value === '4-6' ||
     value === '6-8' ||
     value === '9-12' ||
     value === '13-17' ||
     value === '18-25' ||
-    value === '25+'
+    value === '25+' ||
+    value === 'parents'
     ? value
     : '4-6';
 }
@@ -77,6 +82,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   voiceGender: 'female',
   nightSounds: true,
   keepAwake: true,
+  aiVoice: false,
   ready: true,
   hydrate: async () => {
     try {
@@ -90,6 +96,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
           voiceGender: parseVoiceGender(parsed.voiceGender),
           nightSounds: parsed.nightSounds !== false,
           keepAwake: parsed.keepAwake !== false,
+          aiVoice: parsed.aiVoice === true,
           ready: true,
         });
         return;
@@ -122,6 +129,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setKeepAwake: (keepAwake) => {
     set({ keepAwake });
     persist({ keepAwake });
+  },
+  setAiVoice: (aiVoice) => {
+    set({ aiVoice });
+    persist({ aiVoice });
   },
   toggleLanguage: () => {
     const language = get().language === 'ne' ? 'en' : 'ne';

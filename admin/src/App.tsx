@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Save, Trash2, Video, Headphones, EyeOff, BookOpen, AlertCircle } from 'lucide-react';
+import { Plus, Save, Trash2, Video, Headphones, EyeOff, BookOpen, AlertCircle, Key } from 'lucide-react';
 
 const API_URL = 'https://saanjh-api.prabinkhokhali89.workers.dev/catalog';
 
@@ -29,6 +29,7 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [adminSecret, setAdminSecret] = useState(localStorage.getItem('saanjh_admin_secret') || '');
 
   useEffect(() => {
     fetchCatalog();
@@ -57,12 +58,22 @@ export default function App() {
     try {
       const newCatalog = { ...catalog, version: (catalog?.version || 0) + 1 };
       
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (adminSecret) {
+        headers['Authorization'] = `Bearer ${adminSecret}`;
+      }
+
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(newCatalog)
       });
       
+      if (res.status === 401) {
+        throw new Error('Unauthorized: Invalid or missing Admin Secret key');
+      }
       if (!res.ok) throw new Error('Failed to save to database');
       
       setCatalog(newCatalog as Catalog);
@@ -128,7 +139,20 @@ export default function App() {
             </h1>
             <p className="text-sm text-slate-400">Manage Content for {catalog?.stories.length || 0} stories • Version {catalog?.version}</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center">
+              <Key size={14} className="absolute left-2.5 text-slate-400 pointer-events-none" />
+              <input
+                type="password"
+                value={adminSecret}
+                onChange={(e) => {
+                  setAdminSecret(e.target.value);
+                  localStorage.setItem('saanjh_admin_secret', e.target.value);
+                }}
+                placeholder="Admin Secret Key"
+                className="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg pl-8 pr-3 py-2 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 w-44"
+              />
+            </div>
             <button onClick={addStory} className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
               <Plus size={18} /> Add New
             </button>
@@ -189,8 +213,12 @@ export default function App() {
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Target Audience</label>
                     <select value={story.ageBand} onChange={e => updateStory(i, 'ageBand', e.target.value)} className="w-full border rounded-lg p-2">
                       <option value="2-4">Ages 2-4 (Toddlers)</option>
-                      <option value="4-6">Ages 4-6 (Kids)</option>
-                      <option value="7-9">Ages 7-9 (Older Kids)</option>
+                      <option value="4-6">Ages 4-6 (Bedtime)</option>
+                      <option value="6-8">Ages 6-8 (Wonder)</option>
+                      <option value="9-12">Ages 9-12 (Growing)</option>
+                      <option value="13-17">Ages 13-17 (Teens)</option>
+                      <option value="18-25">Ages 18-25 (Young Adults)</option>
+                      <option value="25+">Ages 25+ (Grown)</option>
                       <option value="parents">Parents (Novels / Audiobooks)</option>
                     </select>
                   </div>

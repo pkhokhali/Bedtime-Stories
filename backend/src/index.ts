@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 
 type Env = {
   SAANJH_DB: KVNamespace;
+  ADMIN_SECRET?: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -32,6 +33,14 @@ app.get('/catalog', async (c) => {
 
 // POST to update the catalog (Called by your Admin Panel)
 app.post('/catalog', async (c) => {
+  const authHeader = c.req.header('Authorization');
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  const expectedSecret = c.env.ADMIN_SECRET;
+
+  if (expectedSecret && token !== expectedSecret) {
+    return c.json({ success: false, error: 'Unauthorized: Invalid or missing admin secret' }, 401);
+  }
+
   try {
     const body = await c.req.json();
     

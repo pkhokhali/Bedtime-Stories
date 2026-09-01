@@ -8,6 +8,10 @@ interface CatalogResponse {
 }
 
 export async function fetchRemoteCatalog(): Promise<void> {
+  const store = useDownloadsStore.getState();
+  store.setIsLoadingCatalog(true);
+  store.setCatalogError(null);
+  
   try {
     const response = await fetch(CATALOG_URL);
     if (!response.ok) throw new Error('Failed to fetch catalog from Cloudflare API');
@@ -17,10 +21,11 @@ export async function fetchRemoteCatalog(): Promise<void> {
     // Filter out hidden stories so they don't appear in the app
     const visibleStories = data.stories.filter(story => !story.isHidden);
     
-    useDownloadsStore.getState().setRemoteStories(visibleStories);
-    
-    
-  } catch (error) {
+    store.setRemoteStories(visibleStories);
+    store.setIsLoadingCatalog(false);
+  } catch (error: any) {
     console.warn('Error fetching remote catalog:', error);
+    store.setCatalogError(error?.message || 'Failed to connect to catalog');
+    store.setIsLoadingCatalog(false);
   }
 }
