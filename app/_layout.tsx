@@ -55,6 +55,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="library" />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="story-detail/[id]" options={{ animation: 'fade' }} />
         <Stack.Screen name="story/[id]" options={{ animation: 'fade' }} />
       </Stack>
     </GestureHandlerRootView>

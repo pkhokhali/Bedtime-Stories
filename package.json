@@ -12,7 +12,8 @@
     "build:apk": "node build-apk.js",
     "build:apk:release": "cd android && gradlew.bat assembleRelease",
     "build:aab": "node build-aab.js",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "node scripts/verify_e2e.js"
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
