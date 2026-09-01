@@ -13,24 +13,29 @@ interface Props {
 export function StoryCarousel({ title, stories }: Props) {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
+  const isNe = language === 'ne';
 
   if (stories.length === 0) return null;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, isNe && styles.titleNe]}>{title}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {stories.map(story => (
           <Pressable 
             key={story.id} 
             style={styles.card} 
-            onPress={() => router.push('/story/' + story.id)}
+            onPress={() => router.push('/story-detail/' + story.id)}
           >
             {story.coverImage ? (
               <Image source={{ uri: story.coverImage }} style={styles.cover} />
             ) : (
               <View style={[styles.cover, styles.placeholderCover, { backgroundColor: story.accent || colors.surface }]}>
-                <Text style={styles.placeholderTitle} numberOfLines={3} ellipsizeMode="tail">
+                <Text
+                  style={[styles.placeholderTitle, isNe && styles.placeholderTitleNe]}
+                  numberOfLines={3}
+                  ellipsizeMode="tail"
+                >
                   {story.title[language] || story.title.en}
                 </Text>
               </View>
@@ -77,5 +82,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_700Bold',
     fontSize: 14,
     textAlign: 'center',
-  }
+  },
+  titleNe: {
+    fontFamily: 'NotoSansDevanagari_700Bold',
+  },
+  placeholderTitleNe: {
+    fontFamily: 'NotoSansDevanagari_700Bold',
+  },
 });

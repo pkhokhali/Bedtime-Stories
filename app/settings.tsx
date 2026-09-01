@@ -16,11 +16,13 @@ export default function SettingsScreen() {
   const voiceGender = useSettingsStore((s) => s.voiceGender);
   const nightSounds = useSettingsStore((s) => s.nightSounds);
   const keepAwake = useSettingsStore((s) => s.keepAwake);
+  const aiVoice = useSettingsStore((s) => s.aiVoice);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const setVoicePace = useSettingsStore((s) => s.setVoicePace);
   const setVoiceGender = useSettingsStore((s) => s.setVoiceGender);
   const setNightSounds = useSettingsStore((s) => s.setNightSounds);
   const setKeepAwake = useSettingsStore((s) => s.setKeepAwake);
+  const setAiVoice = useSettingsStore((s) => s.setAiVoice);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -92,6 +94,16 @@ export default function SettingsScreen() {
         <Pressable onPress={previewTeller} style={styles.hear}>
           <Text style={[styles.hearText, language === 'ne' && styles.neBold]}>{t(ui.hearVoice, language)}</Text>
         </Pressable>
+
+        <View style={{ marginTop: 16 }}>
+          <ToggleRow
+            label={t(ui.aiVoice, language)}
+            hint={t(ui.aiVoiceHint, language)}
+            value={aiVoice}
+            onValueChange={setAiVoice}
+            nepali={language === 'ne'}
+          />
+        </View>
 
         <Text style={[styles.section, language === 'ne' && styles.neBold]}>{t(ui.night, language)}</Text>
         <ToggleRow

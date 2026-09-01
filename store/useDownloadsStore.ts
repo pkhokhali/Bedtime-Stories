@@ -16,6 +16,11 @@ interface DownloadsStore {
   remoteStories: Story[];
   setRemoteStories: (stories: Story[]) => void;
   
+  isLoadingCatalog: boolean;
+  setIsLoadingCatalog: (isLoading: boolean) => void;
+  catalogError: string | null;
+  setCatalogError: (error: string | null) => void;
+
   downloads: Record<string, DownloadState>;
   
   setDownloadStatus: (storyId: string, status: DownloadStatus, progress?: number, localUri?: string, error?: string) => void;
@@ -28,6 +33,11 @@ export const useDownloadsStore = create<DownloadsStore>()(
       remoteStories: [],
       setRemoteStories: (stories) => set({ remoteStories: stories }),
       
+      isLoadingCatalog: false,
+      setIsLoadingCatalog: (isLoadingCatalog) => set({ isLoadingCatalog }),
+      catalogError: null,
+      setCatalogError: (catalogError) => set({ catalogError }),
+
       downloads: {},
       setDownloadStatus: (storyId, status, progress = 0, localUri, error) =>
         set((state) => ({

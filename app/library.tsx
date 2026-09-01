@@ -70,7 +70,7 @@ export default function LibraryScreen() {
             <Pressable
               key={story.id}
               style={styles.card}
-              onPress={() => router.push(`/story/${story.id}`)}
+              onPress={() => router.push(`/story-detail/${story.id}`)}
             >
               <View style={[styles.dot, { backgroundColor: story.accent }]} />
               <View style={styles.body}>
@@ -81,7 +81,7 @@ export default function LibraryScreen() {
                   {story.title[language]}
                 </Text>
                 <Text style={[styles.sub, language === 'ne' && styles.subNe]}>
-                  {story.subtitle[language]}
+                  {story.subtitle?.[language] || ''}
                 </Text>
                 <View style={styles.metaRow}>
                   <Text style={styles.meta}>
