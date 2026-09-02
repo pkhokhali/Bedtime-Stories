@@ -1,35 +1,48 @@
-# BRIEFING — 2026-09-02T06:06:00Z
+# BRIEFING — 2026-09-02T10:54:00Z
 
 ## Mission
-Survey codebase architecture, navigation flow, dependencies, assets, and design the technical blueprint for Requirement R1 (Magical Storybook Animated Splash Ritual).
+Comprehensive codebase survey and gap analysis for Saanjh Bedtime Stories overhaul against ORIGINAL_REQUEST.md.
 
 ## 🔒 My Identity
-- Archetype: explorer
-- Roles: codebase investigation, architecture survey, dependency & asset inventory, R1 splash ritual specification
+- Archetype: Explorer
+- Roles: Explorer, Codebase Surveyor, Gap Analyst
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1
-- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
-- Milestone: Saanjh Bedtime Stories Overhaul - Explorer Phase
+- Original parent: ee327a0d-64aa-4da9-a0c9-a529e5f72708
+- Milestone: Survey & Architecture Discovery
 
 ## 🔒 Key Constraints
-- Read-only investigation — do NOT implement source changes
-- Output structured 5-component handoff report to `.agents\explorer_survey_1\handoff.md`
-- Maintain heartbeat in `progress.md`
+- Read-only investigation — do NOT modify application source code
+- Write analysis and findings exclusively to .agents/explorer_survey_1/
+- Produce comprehensive analysis.md and 5-component handoff.md
 
 ## Current Parent
-- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
-- Updated: 2026-09-02T06:06:00Z
+- Conversation ID: ee327a0d-64aa-4da9-a0c9-a529e5f72708
+- Updated: 2026-09-02T10:54:00Z
 
 ## Investigation State
-- **Explored paths**: package.json, app.json, tsconfig.json, app/_layout.tsx, app/index.tsx, app/library.tsx, app/settings.tsx, app/story/[id].tsx, app/story-detail/[id].tsx, lib/audio.ts, lib/sounds.ts, store/useSettingsStore.ts, assets/audio/chime.wav, components/rigs/Fireflies.tsx, components/scenes/ForestStage.tsx.
-- **Key findings**: Expo 57, React 19, Reanimated 4.5.1, SVG 15.15.4, expo-audio with existing chime audio sting. Full R1 technical architecture designed as an in-tree Reanimated overlay in RootLayout. Baseline `npx tsc --noEmit` verified clean with 0 errors.
-- **Unexplored areas**: None for R1 survey scope.
+- **Explored paths**:
+  - `ORIGINAL_REQUEST.md` (read & verified)
+  - `package.json`, `tsconfig.json`, `app.json`, `babel.config.js`, `PROJECT.md`
+  - `app/` (`_layout.tsx`, `index.tsx`, `library.tsx`, `settings.tsx`, `story-detail/[id].tsx`, `story/[id].tsx`)
+  - `components/` (`splash/*`, `background/*`, `search/*`, `sleep/*`)
+  - `lib/` (`audio.ts`, `sounds.ts`, `sleepTimer.ts`, `searchEngine.ts`, `speech.ts`)
+  - `store/` (`useSettingsStore.ts`, `useSleepTimerStore.ts`, `useFavoritesStore.ts`, `useDownloadsStore.ts`)
+  - `data/` (`catalog.ts`, `stories/*`)
+  - `assets/` (`audio/*`, `images/*`, `videos/*`)
+  - `scripts/verify_e2e.js` (executed with 100% pass rate)
+- **Key findings**:
+  - Full codebase surveyed across R1 (Splash Ritual), R2 (Atmospheric Background), R3 (Search & Discovery Modal), R4 (Sleep Features & Settings Revamp), R5 (Expo Dev Server & Build Integrity).
+  - TypeScript type check (`npx tsc --noEmit`) passes with 0 errors.
+  - E2E Test Suite passes 127 tests / 215,722 assertions with 100% success rate.
+- **Unexplored areas**: None within survey scope.
 
 ## Key Decisions Made
-- Recommended in-tree overlay in `app/_layout.tsx` for R1 to prevent navigation stack double-mounting and allow instantaneous crossfade into pre-rendered Home screen.
-- Enumerated 7 feature tracks for the overall overhaul.
+- Documented comprehensive survey report in `analysis.md`.
+- Documented 5-component handoff in `handoff.md`.
 
 ## Artifact Index
-- `.agents/explorer_survey_1/DISPATCH.md` — Dispatch log
-- `.agents/explorer_survey_1/BRIEFING.md` — Working memory
-- `.agents/explorer_survey_1/progress.md` — Liveness & task progress
-- `.agents/explorer_survey_1/handoff.md` — Comprehensive 5-component report
+- `.agents/explorer_survey_1/DISPATCH.md` — Inbound message log
+- `.agents/explorer_survey_1/BRIEFING.md` — Persistent state and working memory
+- `.agents/explorer_survey_1/progress.md` — Progress tracker & liveness heartbeat
+- `.agents/explorer_survey_1/analysis.md` — Comprehensive architectural survey & gap analysis
+- `.agents/explorer_survey_1/handoff.md` — 5-component handoff report

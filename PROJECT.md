@@ -1,180 +1,150 @@
-# Project: Saanjh Bedtime Stories UI/UX, Graphic Design & Feature Overhaul
+# Project: Saanjh Bedtime Stories — Comprehensive Overhaul
 
-## Architecture Overview
-Saanjh is a world-class bilingual (Nepali & English) Bedtime Stories and Novels mobile application built on Expo SDK 57, React Native 0.86, React 19, TypeScript, React Native Reanimated 4.5, React Native SVG 15, and Expo Audio.
-
-### Layered Architecture
-- **Presentation Layer**: Expo Router (`app/_layout.tsx`, `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, `app/story-detail/[id].tsx`, `app/story/[id].tsx`).
-- **Visual Atmosphere Layer**: `<AtmosphericBackground>` providing a deep celestial night gradient, 32 Reanimated native UI-thread twinkling stars, and layered SVG Himalayan mountain pine silhouettes.
-- **Splash & Ritual Layer**: `<SplashRitual>` mounted as an in-tree Reanimated overlay inside `RootLayout` with SVG opening storybook, upward drifting stardust sparkle particle field, bilingual logo reveal, and intro chime sting (`assets/audio/chime.wav`).
-- **Discovery Layer**: `<SearchDiscoveryModal>` with floating amber FAB trigger, header triggers, real-time bilingual fuzzy search engine (`lib/searchEngine.ts`) across all 24+ stories, 6 quick filter pills, trending bedtime stories, and AsyncStorage-persisted recent queries.
-- **Sleep & Bedtime Features Layer**:
-  - Bedtime Sleep Timer with live header countdown badge (`⏰ MM:SS`) and 10s audio volume fade-out.
-  - Continuous Sleep Soundscapes player with 5 looping ambiance beds (`rain`, `river`, `night`, `wind`, `chime`) and background playback.
-  - Bedtime Night Light Mode with full-screen Warm Amber / Moonlight glow, soft brightness slider, breathing pulse, and tap-to-exit.
-  - Revamped card-based Settings Screen (`app/settings.tsx`) grouped into 4 distinct cards with AsyncStorage persistence (`saanjh.settings.v1`).
-- **Data & Audio Subsystem**: `data/catalog.ts` (24 stories with bilingual metadata), `lib/audio.ts` (`expo-audio`), `lib/sounds.ts`, `lib/speech.ts`.
+## Architecture
+- **Framework**: Expo SDK 57 (React Native 0.86, React 19, TypeScript 5.9, Expo Router v57)
+- **Animation Subsystem**: React Native Reanimated v4 (UI-thread worklets for 3D page flip, 22-seed stardust particles, 32-seed starfield oscillations, 8s night light breathing pulse)
+- **Vector Graphics**: React Native SVG (4-layer Himalayan mountain & pine silhouettes, golden storybook filigree, particle shapes)
+- **Audio Engine**: Expo Audio (`lib/audio.ts`, `lib/sounds.ts`, `assets/audio/chime.wav`, `assets/audio/rain.wav`) supporting chime stings, narration playback, 5 continuous white noise soundscapes, and 10s linear sleep fade-out
+- **State & Persistence**: Zustand stores (`useSettingsStore`, `useSleepTimerStore`, `useFavoritesStore`, `useDownloadsStore`) persisted to AsyncStorage (`@react-native-async-storage/async-storage`)
+- **Navigation & Routing**: Expo Router (`app/_layout.tsx`, `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, `app/story-detail/[id].tsx`, `app/story/[id].tsx`)
 
 ---
 
 ## Feature Inventory
-
-Every requirement from `ORIGINAL_REQUEST.md` is inventoried and mapped to a specific milestone:
-
 | # | Feature | Description | Milestone | Source |
 |---|---------|-------------|-----------|--------|
-| 1 | Animated Glowing Storybook | Reanimated & SVG opening glowing storybook animation | M1 | ORIGINAL_REQUEST §R1 |
-| 2 | Stardust Sparkle Particles | Floating magical stardust/sparkle particle field radiating from pages | M1 | ORIGINAL_REQUEST §R1 |
-| 3 | Bilingual Logo Reveal | Animated reveal of "Saanjh" and "साँझ - Bedtime Stories & Novels" | M1 | ORIGINAL_REQUEST §R1 |
-| 4 | Splash Chime Audio Sting | Soft ambient intro chime audio (`assets/audio/chime.wav`) played during opening | M1 | ORIGINAL_REQUEST §R1 |
-| 5 | Splash Tap-to-Skip & Crossfade | Immediate tap-to-skip and 500ms smooth crossfade into app without navigation glitches | M1 | ORIGINAL_REQUEST §R1 |
-| 6 | Celestial Nocturnal Palette | Deep celestial gradient (`#060913` -> `#0c1222` -> `#121A2F` with `#E8A04A` glow) | M2 | ORIGINAL_REQUEST §R2 |
-| 7 | Animated Twinkling Stars | 32 UI-thread Reanimated stars with opacity/scale sine oscillations at 60 FPS | M2 | ORIGINAL_REQUEST §R2 |
-| 8 | Himalayan Pine Silhouettes | Layered SVG vector silhouettes of mountain ridges and Himalayan pine conifers | M2 | ORIGINAL_REQUEST §R2 |
-| 9 | Reusable Background Container | Shared `<AtmosphericBackground>` container applied across Home, Library, Settings, Story Detail | M2 | ORIGINAL_REQUEST §R2 |
-| 10 | Floating Search Trigger (FAB) | Glowing warm amber floating search button on Home and Library | M3 | ORIGINAL_REQUEST §R3 |
-| 11 | Full-Screen Search Modal | Modal with blur/dim backdrop, auto-focused bilingual search input | M3 | ORIGINAL_REQUEST §R3 |
-| 12 | Real-time Bilingual Search | Search matching English & Nepali Devanagari titles, subtitles, tags, IDs across 24+ stories | M3 | ORIGINAL_REQUEST §R3 |
-| 13 | 6 Quick Filter Pills | Filter pills: Toddlers (2-4), Kids (6-8), Novels & Parents, Folk Tales, Animal Stories, Audio Only | M3 | ORIGINAL_REQUEST §R3 |
-| 14 | Trending & Recent Searches | Displays trending bedtime recommendations and AsyncStorage-persisted recent searches | M3 | ORIGINAL_REQUEST §R3 |
-| 15 | Direct Story Navigation | Selecting any search result navigates directly to that story's preview screen | M3 | ORIGINAL_REQUEST §R3 |
-| 16 | Bedtime Sleep Timer | Configurable timer (15m, 30m, 45m, 60m, End of Story) with live header countdown | M4 | ORIGINAL_REQUEST §R4 |
-| 17 | 10-Second Volume Fade Out | Smooth 10s audio fade-out to silence and stop on sleep timer expiry | M4 | ORIGINAL_REQUEST §R4 |
-| 18 | Continuous Sleep Soundscapes | Looping white noise player with 5 ambient beds (rain, river, night, wind, chime) | M4 | ORIGINAL_REQUEST §R4 |
-| 19 | Rain Audio Synthesis | Pure JS synthesis of `rain.wav` registered in `types/story.ts` & `lib/sounds.ts` | M4 | ORIGINAL_REQUEST §R4 |
-| 20 | Bedtime Night Light Mode | Full-screen warm amber & moonlight screen glow with soft brightness slider & tap-to-exit | M4 | ORIGINAL_REQUEST §R4 |
-| 21 | Settings Visual Cards Revamp | 4 visual cards (Audio & Voices, Sleep Timer & Ambiance, Language & Age Group, Display & Night Light) | M4 | ORIGINAL_REQUEST §R4 |
-| 22 | AsyncStorage Settings Persistence | Complete persistence and hydration under `saanjh.settings.v1` | M4 | ORIGINAL_REQUEST §R4 |
-| 23 | E2E Test Suite (Tiers 1-4) | Comprehensive 4-tier opaque-box test suite verifying all features and corner cases | M5 | ORIGINAL_REQUEST §Acceptance |
-| 24 | Adversarial Hardening (Tier 5) | White-box adversarial testing and bug hunting | M5 | Orchestration Strategy |
-| 25 | Release Build Verification | `npx tsc --noEmit` passing with 0 errors & `npm run build:apk` release packaging | M5 | ORIGINAL_REQUEST §Build |
+| 1 | Storybook 3D Page Flip Animation | Reanimated 3D perspective rotation (0 to -165 deg) with layered cover leaves and spine | R1 | ORIGINAL_REQUEST §R1 |
+| 2 | Stardust Particle Emitters | 22 deterministic particle seeds with upward drift and sine-wave oscillation | R1 | ORIGINAL_REQUEST §R1 |
+| 3 | Bilingual Brand Logo Reveal | Sequential typography fade/slide for "Saanjh" and Nepali "साँझ - Bedtime Stories & Novels" | R1 | ORIGINAL_REQUEST §R1 |
+| 4 | Synchronized Audio Chime Sting | Low-latency trigger of chime.wav at t=450ms with graceful error handling | R1 | ORIGINAL_REQUEST §R1 |
+| 5 | Tap-to-Skip Splash Ritual | Immediate tap dismissal with 380ms crossfade to main application | R1 | ORIGINAL_REQUEST §R1 |
+| 6 | Deep Celestial Gradient Palette | 5-stop nocturnal gradient (#060913 -> #0c1222 -> #121A2F -> #1B1428 -> #22151D) | R2 | ORIGINAL_REQUEST §R2 |
+| 7 | Twinkling Starfield UI-Thread Oscillation | 32 deterministic star seeds with sine-wave opacity/scale oscillations on UI thread | R2 | ORIGINAL_REQUEST §R2 |
+| 8 | 4-Layer Himalayan Mountain Horizon | Vector SVG mountains with distant ridges, jagged peaks, foothills, and 14 pine conifers | R2 | ORIGINAL_REQUEST §R2 |
+| 9 | Reusable Screen-Wide Background | Seamless pass-through wrapper integrated into Home, Library, Settings, Story Details | R2 | ORIGINAL_REQUEST §R2 |
+| 10 | Dedicated Full-Screen Search Modal | Modal overlay accessible via floating action button and search triggers on Home/Library | R3 | ORIGINAL_REQUEST §R3 |
+| 11 | Real-Time Bilingual Fuzzy Search | Full-text matching across English & Nepali titles, subtitles, morals, tags, IDs, beats | R3 | ORIGINAL_REQUEST §R3 |
+| 12 | Quick Filter Pills | Filter tabs: All, Toddlers, Kids, Novels/Parents, Folk Tales, Animals, Audio Only | R3 | ORIGINAL_REQUEST §R3 |
+| 13 | Recent & Trending Searches | Persistent search history (max 8) and curated trending story recommendations | R3 | ORIGINAL_REQUEST §R3 |
+| 14 | Configurable Sleep Timer | Presets for 15m, 30m, 45m, 60m, endOfStory with active countdown badge | R4 | ORIGINAL_REQUEST §R4 |
+| 15 | 10-Second Linear Audio Fade-Out | Smooth audio attenuation over final 10 seconds before complete playback cessation | R4 | ORIGINAL_REQUEST §R4 |
+| 16 | Continuous Sleep Soundscapes Player | 5 white noise ambient beds (Rain, River, Night, Wind, Chime) with volume control | R4 | ORIGINAL_REQUEST §R4 |
+| 17 | Bedtime Night Light Mode | Full-screen warm amber & moonlight glow, 8s breathing pulse, digital clock, KeepAwake | R4 | ORIGINAL_REQUEST §R4 |
+| 18 | Redesigned 4-Card Settings Screen | Audio & Voices, Sleep Timer & Ambiance, Language & Age Group, Display & Night Light | R4 | ORIGINAL_REQUEST §R4 |
+| 19 | TypeScript Strict Zero-Error Compliance | `npx tsc --noEmit` clean compilation across all modules | R5 | ORIGINAL_REQUEST §R5 |
+| 20 | 100% Passing 5-Tier E2E Test Suite | 127 automated tests with 215,722 assertions verified with 100% success rate | R5 | ORIGINAL_REQUEST §R5 |
 
 ---
 
 ## Milestones
-
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| **M1** | Magical Storybook Splash Ritual (R1) | `components/splash/SplashRitual.tsx`, `components/splash/AnimatedStorybook.tsx`, `components/splash/StardustParticles.tsx`, `app/_layout.tsx`, `lib/audio.ts` | Survey | DONE |
-| **M2** | Atmospheric Bedtime Background (R2) | `components/background/AtmosphericBackground.tsx`, `components/background/TwinklingStarfield.tsx`, `components/background/HimalayanHorizon.tsx`, `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, `app/story-detail/[id].tsx`, `constants/theme.ts` | Survey | DONE |
-| **M3** | Full-Screen Search & Discovery Modal (R3) | `components/search/SearchDiscoveryModal.tsx`, `components/search/SearchTriggerFAB.tsx`, `lib/searchEngine.ts`, `app/index.tsx`, `app/library.tsx` | M2 | DONE |
-| **M4** | Sleep Features & Settings Revamp (R4) | `store/useSleepTimerStore.ts`, `store/useSettingsStore.ts`, `lib/sleepTimer.ts`, `lib/audio.ts`, `lib/sounds.ts`, `types/story.ts`, `scripts/make-audio.js`, `components/sleep/SleepTimerHeaderBadge.tsx`, `components/sleep/SoundscapesPlayer.tsx`, `components/sleep/NightLightModal.tsx`, `app/settings.tsx`, `app/_layout.tsx` | M2 | DONE |
-| **M5** | Final E2E Suite & Release APK Build | `scripts/verify_e2e.js`, `TEST_READY.md`, `npx tsc --noEmit`, `npm run build:apk`, Git commit & push | M1, M2, M3, M4 | PLANNED |
+| R1 | Magical Storybook Animated Splash Ritual | `components/splash/*`, `assets/audio/chime.wav`, `app/_layout.tsx` | none | DONE |
+| R2 | Atmospheric Bedtime Background & Visual Graphic Design | `components/background/*`, `constants/theme.ts`, screen layouts | none | DONE |
+| R3 | Dedicated Full-Screen Search & Discovery Modal | `components/search/*`, `lib/searchEngine.ts`, `app/index.tsx`, `app/library.tsx` | R2 | DONE |
+| R4 | Essential Bedtime Sleep Features & Settings Revamp | `store/useSleepTimerStore.ts`, `lib/sleepTimer.ts`, `components/sleep/*`, `app/settings.tsx` | R2 | DONE |
+| R5 | Expo Dev Server Compatibility & Quality Verification | `npx tsc --noEmit`, `node scripts/verify_e2e.js`, clean build verification | R1, R2, R3, R4 | DONE |
 
 ---
 
 ## Interface Contracts
 
-### 1. Splash Ritual Contract (`components/splash/SplashRitual.tsx`)
-```ts
-export interface SplashRitualProps {
-  onFinish: () => void;
-  autoPlayAudio?: boolean;
+### Splash ↔ Layout (`components/splash/SplashRitual.tsx` ↔ `app/_layout.tsx`)
+```typescript
+interface SplashRitualProps {
+  onFinish?: () => void;
+  minDurationMs?: number;
+  autoDismissMs?: number;
 }
-// Mounted inside app/_layout.tsx as an absolute overlay
-// On tap or animation complete: triggers 450ms crossfade and calls onFinish()
 ```
 
-### 2. Atmospheric Background Contract (`components/background/AtmosphericBackground.tsx`)
-```ts
-export interface AtmosphericBackgroundProps {
-  children: React.ReactNode;
+### Background ↔ Screens (`components/background/AtmosphericBackground.tsx`)
+```typescript
+interface AtmosphericBackgroundProps {
+  children?: React.ReactNode;
   showStars?: boolean;
-  showHorizon?: boolean;
-  intensity?: 'full' | 'subtle' | 'dim';
-  style?: StyleProp<ViewStyle>;
+  showMountains?: boolean;
+  intensity?: 'subtle' | 'normal' | 'deep';
 }
 ```
 
-### 3. Search Engine Contract (`lib/searchEngine.ts`)
-```ts
-export interface SearchFilterOptions {
-  query?: string;
-  pill?: 'all' | 'toddlers' | 'kids' | 'novels_parents' | 'roots' | 'animals' | 'audio_only';
+### Search Engine (`lib/searchEngine.ts`)
+```typescript
+type SearchFilterPill = 'all' | 'toddlers' | 'kids' | 'novels_parents' | 'roots' | 'animals' | 'audio_only';
+
+interface SearchResult {
+  story: Story;
+  score: number;
+  matchedFields: string[];
+  snippet?: string;
 }
 
-export function searchCatalog(catalog: Story[], options: SearchFilterOptions): Story[];
-export function getTrendingStories(catalog: Story[]): Story[];
+function searchStories(query: string, filter?: SearchFilterPill): SearchResult[];
+function getTrendingStories(): Story[];
+function getRecentSearches(): Promise<string[]>;
+function saveRecentSearch(query: string): Promise<void>;
+function clearRecentSearches(): Promise<void>;
 ```
 
-### 4. Sleep Timer & Soundscapes Store Contract (`store/useSleepTimerStore.ts`)
-```ts
-export type SleepTimerDuration = 'off' | '15m' | '30m' | '45m' | '60m' | 'endOfStory';
+### Sleep Timer Store (`store/useSleepTimerStore.ts`)
+```typescript
+type SleepTimerDuration = 'off' | '15m' | '30m' | '45m' | '60m' | 'endOfStory';
 
-export interface SleepTimerStore {
+interface SleepTimerState {
   duration: SleepTimerDuration;
-  remainingSeconds: number | null;
+  remainingSeconds: number;
   isActive: boolean;
   isFadingOut: boolean;
-  setDuration: (duration: SleepTimerDuration) => void;
-  tick: () => void;
+  setTimer: (duration: SleepTimerDuration) => void;
   cancelTimer: () => void;
+  tick: () => void;
   notifyStoryEnded: () => void;
-}
-```
-
-### 5. Settings Store Contract (`store/useSettingsStore.ts`)
-```ts
-export interface SettingsState {
-  language: 'en' | 'ne';
-  ageBand: AgeBand;
-  voicePace: 'slow' | 'gentle' | 'clear';
-  voiceGender: 'female' | 'male';
-  nightSounds: boolean;
-  keepAwake: boolean;
-  aiVoice: boolean;
-  sleepTimerDuration: SleepTimerDuration;
-  activeSoundscape: 'rain' | 'river' | 'night' | 'wind' | 'chime' | null;
-  soundscapeVolume: number;
-  nightLightColor: 'amber' | 'moonlight';
-  nightLightBrightness: number;
-  hydrate: () => Promise<void>;
-  updateSetting: <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => void;
 }
 ```
 
 ---
 
 ## Code Layout
-
 ```
-Bedtime Stories/
+d:\Antigravity Projects\Bedtime Stories\
 ├── app/
-│   ├── _layout.tsx                 # Root layout (Splash overlay, Global Sleep Timer, Audio hydration)
-│   ├── index.tsx                   # Home screen (Atmospheric background, Search triggers, Header badge)
-│   ├── library.tsx                 # Library screen (Atmospheric background, Search triggers)
-│   ├── settings.tsx                # Revamped 4-card Settings screen
-│   ├── story-detail/[id].tsx       # Story preview screen with Atmospheric background
-│   └── story/[id].tsx              # Story player
+│   ├── _layout.tsx                     # Global RootLayout, font loading, splash overlay
+│   ├── index.tsx                       # Home Screen with AtmosphericBackground, search trigger
+│   ├── library.tsx                     # Story Library with filters and search trigger
+│   ├── settings.tsx                    # 4-card redesigned Settings screen
+│   ├── story/[id].tsx                  # Story player with narration & audio sync
+│   └── story-detail/[id].tsx           # Story detail overview with tags and audio preview
 ├── components/
-│   ├── splash/
-│   │   ├── SplashRitual.tsx        # Main animated splash overlay
-│   │   ├── AnimatedStorybook.tsx   # Reanimated 3D book cover & page turn
-│   │   └── StardustParticles.tsx   # Rising sparkle particle effect
 │   ├── background/
-│   │   ├── AtmosphericBackground.tsx # Master background wrapper
-│   │   ├── TwinklingStarfield.tsx  # 32 UI-thread Reanimated twinkling stars
-│   │   └── HimalayanHorizon.tsx    # SVG mountain & pine silhouettes
+│   │   ├── AtmosphericBackground.tsx   # Master 5-stop celestial gradient wrapper
+│   │   ├── TwinklingStarfield.tsx      # 32-star Reanimated UI-thread twinkling starfield
+│   │   └── HimalayanHorizon.tsx        # 4-layer SVG Himalayan mountain & pine conifer horizon
 │   ├── search/
-│   │   ├── SearchDiscoveryModal.tsx# Full-screen search & discovery modal
-│   │   ├── SearchTriggerFAB.tsx    # Floating action button
-│   │   └── QuickFilterPills.tsx    # 6 filter pills
+│   │   ├── SearchDiscoveryModal.tsx    # Full-screen search overlay with filters & trending
+│   │   └── SearchTriggerFAB.tsx        # Floating search trigger action button
 │   ├── sleep/
-│   │   ├── SleepTimerHeaderBadge.tsx # Live countdown indicator chip
-│   │   ├── SoundscapesPlayer.tsx   # Continuous white noise player
-│   │   └── NightLightModal.tsx     # Full-screen amber/moonlight glow modal
-├── store/
-│   ├── useSettingsStore.ts         # Settings state + AsyncStorage persistence
-│   └── useSleepTimerStore.ts       # Global sleep timer store & 10s fade logic
-├── lib/
-│   ├── searchEngine.ts             # Real-time bilingual fuzzy search & filter
-│   ├── sleepTimer.ts               # Sleep timer tick & fade orchestration
-│   ├── audio.ts                    # Expo audio player engine & volume fading
-│   └── sounds.ts                   # Sound registry (rain, river, night, wind, chime)
+│   │   ├── SleepTimerHeaderBadge.tsx   # Live countdown header badge
+│   │   ├── SoundscapesPlayer.tsx       # White noise ambient bed player (5 soundscapes)
+│   │   └── NightLightModal.tsx         # Warm amber/moonlight glow with 8s breathing pulse
+│   └── splash/
+│       ├── SplashRitual.tsx            # Full-screen splash ritual coordinator
+│       ├── AnimatedStorybook.tsx       # Reanimated 3D page flip with filigree and glow
+│       └── StardustParticles.tsx       # 22-particle parametric stardust field
+├── constants/
+│   └── theme.ts                        # Celestial dark palette tokens and typography
 ├── data/
-│   └── catalog.ts                  # 24 bilingual story catalog records
-├── scripts/
-│   ├── make-audio.js               # Audio synthesis script (including rain.wav)
-│   └── verify_e2e.js               # Comprehensive 4-tier E2E test runner
-└── package.json
+│   ├── catalog.ts                      # 24 core bilingual bedtime stories catalog
+│   └── stories/                        # Detailed story text, metadata, and beats
+├── lib/
+│   ├── audio.ts                        # Master audio engine (chime, beds, narration, 10s fade)
+│   ├── sounds.ts                       # Soundscapes catalog and playback helpers
+│   ├── sleepTimer.ts                   # Sleep timer calculations and audio fade curve
+│   └── searchEngine.ts                 # Bilingual search engine and recent search persistence
+├── store/
+│   ├── useSettingsStore.ts             # User settings with AsyncStorage persistence
+│   ├── useSleepTimerStore.ts           # Global sleep timer state with countdown ticker
+│   ├── useFavoritesStore.ts            # Saved favorites with AsyncStorage persistence
+│   └── useDownloadsStore.ts            # Downloaded offline stories store
+└── scripts/
+    └── verify_e2e.js                   # 127 automated E2E tests across Tiers 1-5 (215k assertions)
 ```

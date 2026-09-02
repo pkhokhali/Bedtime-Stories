@@ -1,8 +1,8 @@
 # Original User Request
 
-## 2026-09-02T06:01:36Z
+## 2026-09-02T10:48:47Z
 
-Comprehensive UI/UX, Graphic Design, and Feature Overhaul for Saanjh Bedtime Stories (Mobile App). Elevate the mobile application into a world-class, enchanting bedtime experience. Implement an animated magical storybook splash ritual, an atmospheric night background with animated twinkling stars and mountain pine silhouettes, a floating search button that opens a full-screen search modal with trending stories, and a suite of bedtime sleep features including an audio sleep timer, a continuous sleep soundscapes white noise player, and a soft room night light mode.
+Comprehensive UI/UX, Graphic Design, and Feature Overhaul for Saanjh Bedtime Stories (Mobile App). Elevate the mobile application into a world-class, enchanting bedtime experience. Implement an animated magical storybook splash ritual, an atmospheric night background with animated twinkling stars and mountain pine silhouettes, a floating search button that opens a full-screen search modal with trending stories, and a suite of bedtime sleep features including an audio sleep timer, a continuous sleep soundscapes white noise player, and a soft room night light mode. Ensure the app runs cleanly in Expo Dev mode (`npx expo start`) for live development testing.
 
 Working directory: d:\Antigravity Projects\Bedtime Stories
 Integrity mode: development
@@ -40,6 +40,12 @@ Transform the app into the ultimate nighttime bedtime companion:
 - **Bedtime Night Light Mode**: A soothing, full-screen warm amber/moonlight glow mode with adjustable soft brightness for parents placing the phone on a bedside nightstand.
 - **Revamped Settings Screen**: Redesign `app/settings.tsx` to group controls into clean visual cards: Audio & Voices, Sleep Timer & Ambiance, Language & Age Group, Display & Night Light.
 
+### R5. Expo Dev Server Compatibility
+Ensure the completed app runs cleanly via `npx expo start`:
+- All new components must be compatible with the Expo managed workflow.
+- The Expo dev server must launch without errors or unresolved module warnings.
+- The app must render correctly in Expo Go on a physical Android device or Android emulator.
+
 ## Acceptance Criteria
 
 ### Splash Screen
@@ -65,7 +71,8 @@ Transform the app into the ultimate nighttime bedtime companion:
 - [ ] Night Light mode can be toggled on to display a soothing full-screen warm glow with tap-to-exit.
 - [ ] Settings screen renders the new card-based UI with persistent user preferences in AsyncStorage.
 
-### Build Verification
+### Build & Dev Verification
 - [ ] `npx tsc --noEmit` passes with 0 TypeScript errors.
-- [ ] `npm run build:apk` builds a release APK successfully.
+- [ ] `npx expo start` launches the Expo dev server without errors or unresolved module warnings.
+- [ ] The app loads and renders correctly on an Android device/emulator via Expo Go or dev client.
 - [ ] All changes committed and pushed to git.
