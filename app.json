@@ -2,7 +2,7 @@
   "expo": {
     "name": "Saanjh: Bedtime Stories | कथा",
     "slug": "saanjh-bedtime",
-    "version": "1.0.1",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "saanjh",
@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.pkhokhali.saanjh",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#1A1410",
         "foregroundImage": "./assets/images/adaptive-icon.png"
