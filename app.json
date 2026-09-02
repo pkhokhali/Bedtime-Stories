@@ -23,7 +23,10 @@
       "softwareKeyboardLayoutMode": "resize",
       "allowBackup": true,
       "label": "Saanjh",
-      "navigationBarColor": "#1A1410"
+      "navigationBarColor": "#1A1410",
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -54,10 +57,25 @@
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.24"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6923f631-1a7f-424d-9ed2-38d35b496a31"
+      }
+    },
+    "owner": "pkhokhali"
   }
 }
