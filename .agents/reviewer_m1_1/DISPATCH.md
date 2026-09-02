@@ -1,19 +1,19 @@
-## 2026-09-01T06:12:24Z
-You are Reviewer 1 for Saanjh 3.0 Milestone 1: Fix 7 Confirmed Bugs & Backend Auth.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m1_1
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-The project specification is at: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-Worker 1 handoff report is at: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md
+## 2026-09-02T06:13:46Z
+Reviewer 1 for Milestone 1 (M1: Magical Storybook Animated Splash Ritual).
+Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m1_1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+Master Project: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
+Worker Handoff: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md
 
-Your mission:
-Objectively and critically review the changes made by Worker 1 across all 7 confirmed bugs:
-1. Bug 1 & 4: `app/index.tsx` & `constants/ui.ts` - Check Devanagari text authenticity, correctness of translation mappings, removal of all `????` strings, and removal of unused imports `radii`, `spacing`, `storiesForAge`, `ageBands`.
-2. Bug 2: `store/useSettingsStore.ts` - Check `parseAgeBand` handling of `'parents'` (and `'parent'`).
-3. Bug 3: `components/SplashRitual.tsx` - Verify deletion / dead code removal.
-4. Bug 5: `admin/src/App.tsx` - Verify standard mobile age bands (`6-8`, `9-12`) in `<select>`.
-5. Bug 6: `backend/src/index.ts` & `admin/src/App.tsx` - Verify `ADMIN_SECRET` Bearer auth check and Admin Panel Authorization header.
-6. Bug 7: `components/AdBanner.tsx` - Verify placeholder unit ID validation (`ca-app-pub-xxxxxxxx`) and graceful `null` fallback.
+Mission:
+Review the implementation of Milestone 1 in:
+- `components/splash/AnimatedStorybook.tsx`
+- `components/splash/StardustParticles.tsx`
+- `components/splash/SplashRitual.tsx`
+- `app/_layout.tsx`
 
-Run static verification and checks as needed.
-Produce a structured handoff report in `d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m1_1\handoff.md` concluding with an explicit verdict: APPROVE or REQUEST_CHANGES.
-Send a message when your handoff is ready.
+Review Criteria:
+1. Correctness: SVG geometry, 3D Reanimated opening rotation, stardust particle physics, bilingual typography reveal ("Saanjh" • "साँझ").
+2. Robustness: Tap-to-skip immediately crossfades with `pointerEvents="none"`, auto-finish timer clears cleanly, `playChime()` handles errors gracefully.
+3. Interface & Layout Conformance: In-tree overlay in `app/_layout.tsx` does not block background store hydration (`useSettingsStore.hydrate()`) or cause double-mounting.
+4. Execute verification commands (`npx tsc --noEmit`, tests) and report exact results.

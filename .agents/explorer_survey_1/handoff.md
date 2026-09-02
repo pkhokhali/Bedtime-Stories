@@ -1,412 +1,194 @@
-# Handoff Report — Explorer 1 (Saanjh 3.0 Survey Phase: Pillar R1 & Infrastructure)
-
-**Author:** Explorer 1  
-**Date:** 2026-09-01  
-**Milestone:** Survey Phase — Pillar R1 (7 Confirmed Bugs) & Project Configuration / Infrastructure  
-**Target Audience:** Orchestrator & Planner Agents for Saanjh 3.0 Implementation  
-
----
+# Codebase Survey & R1 Technical Architecture Report
 
 ## 1. Observation
 
-Direct code observations from inspecting the codebase at `d:\Antigravity Projects\Bedtime Stories`:
+Direct observations from codebase inspection across configurations, entry points, navigation routes, store modules, and asset catalogs:
 
-### Bug 1: Corrupted Nepali Text in `app/index.tsx`
-- **File:** `app/index.tsx` (Lines 63–89)
-- **Verbatim Code Observed:**
-  ```tsx
-  63:           <View style={styles.heroContent}>
-  64:             <Text style={styles.heroKicker}>{language === 'ne' ? '?????? ??????' : 'Recently Added'}</Text>
-  65:             <Text style={styles.heroTitle}>
-  66:               {featuredStory?.title[language] || featuredStory?.title.en}
-  67:             </Text>
-  68:             
-  69:             <View style={styles.heroButtons}>
-  70:               <Pressable style={styles.playButton} onPress={() => router.push('/story/' + featuredStory.id)}>
-  71:                 <Ionicons name="play" size={24} color="#000" />
-  72:                 <Text style={styles.playButtonText}>{language === 'ne' ? '???? ?????????' : 'Play'}</Text>
-  73:               </Pressable>
-  74:               
-  75:               <Pressable style={styles.infoButton} onPress={() => router.push('/library')}>
-  76:                 <Ionicons name="albums-outline" size={24} color="#fff" />
-  77:                 <Text style={styles.infoButtonText}>{language === 'ne' ? '?????????' : 'Library'}</Text>
-  78:               </Pressable>
-  79:             </View>
-  80:           </View>
-  81:         </View>
-  82: 
-  83:         {/* CAROUSELS */}
-  84:         <View style={styles.carouselsContainer}>
-  85:           <StoryCarousel title={language === 'ne' ? '???? ????????? ????' : 'For Little Ones'} stories={toddlers} />
-  86:           <StoryCarousel title={language === 'ne' ? '?????????????? ????' : 'Kids & Tweens'} stories={kids} />
-  87:           <StoryCarousel title={language === 'ne' ? '????????? ???? (???????)' : 'After Hours (Parents)'} stories={parents} />
-  88:           <StoryCarousel title={language === 'ne' ? '????????? ????' : 'Young Adults'} stories={teens} />
-  89:         </View>
-  ```
-- **Context in `constants/ui.ts`:**
-  - `constants/ui.ts` contains dictionary entries satisfying `Record<string, Record<Language, string>>` with helper `t(copy, lang)`.
-  - Existing relevant entries include `ui.begin: { en: 'Begin', ne: 'सुरु गरौं' }`, `ui.moreStories: { en: 'More stories', ne: 'अरू कथाहरू' }`, `ui.storiesFor: { en: 'Stories for', ne: 'कथाहरू' }`.
-
----
-
-### Bug 2: `parseAgeBand` in `store/useSettingsStore.ts` Missing `'parents'`
-- **File:** `store/useSettingsStore.ts` (Lines 42–54, 73–101)
-- **Verbatim Code Observed:**
-  ```ts
-  42: function parseAgeBand(value: unknown): AgeBand {
-  43:   if (value === 'teen') return '13-17';
-  44:   if (value === 'adult' || value === '18+') return '18-25';
-  45:   return value === '2-4' ||
-  46:     value === '4-6' ||
-  47:     value === '6-8' ||
-  48:     value === '9-12' ||
-  49:     value === '13-17' ||
-  50:     value === '18-25' ||
-  51:     value === '25+'
-  52:     ? value
-  53:     : '4-6';
-  54: }
-  ```
-- **Type & Catalog Definition:**
-  - `types/story.ts` (Line 5): `export type AgeBand = '2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+' | 'parents';`
-  - `data/catalog.ts` (Lines 88–94):
-    ```ts
-    {
-      id: 'parents',
-      ages: { en: 'Parents', ne: 'अभिभावक' },
-      label: { en: 'After Hours', ne: 'काम पछि' },
-      hint: { en: 'Audiobooks and novels just for you.', ne: 'तपाईंको लागि अडियोबुक र उपन्यास।' },
-      icon: 'cafe-outline',
-      group: 'grown',
-    }
+### 1.1 Package & Configuration Environment
+- **`package.json`** (`d:\Antigravity Projects\Bedtime Stories\package.json:1-63`):
+  - React Native: `0.86.2`
+  - React: `19.2.3`
+  - Expo SDK: `~57.0.12`
+  - TypeScript: `~6.0.3`
+  - Core Graphics / Animations: `react-native-reanimated` (`4.5.1`), `react-native-svg` (`15.15.4`), `expo-linear-gradient` (`~57.0.1`), `react-native-gesture-handler` (`~2.32.0`)
+  - Audio Engine: `expo-audio` (`~57.0.3`), `expo-speech` (`~57.0.1`)
+  - State & Storage: `zustand` (`^5.0.15`), `@react-native-async-storage/async-storage` (`2.2.0`)
+  - Fonts: `@expo-google-fonts/nunito` (`^0.4.2`), `@expo-google-fonts/noto-sans-devanagari` (`^0.4.1`), `@expo/vector-icons` (`^15.0.2`)
+- **`app.json`** (`d:\Antigravity Projects\Bedtime Stories\app.json:1-64`):
+  - App Name: `"Saanjh: Bedtime Stories | कथा"`
+  - Package: `com.pkhokhali.saanjh`
+  - Splash screen plugin config:
+    ```json
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#1A1410"
+      }
+    ]
     ```
+  - Audio plugin config:
+    ```json
+    [
+      "expo-audio",
+      {
+        "recordAudioAndroid": false,
+        "enableBackgroundPlayback": false
+      }
+    ]
+    ```
+  - Router experiment: `"typedRoutes": true`
+- **`tsconfig.json`** (`d:\Antigravity Projects\Bedtime Stories\tsconfig.json:1-22`):
+  - Path alias: `"@/*": ["./*"]`
+  - Excludes: `node_modules`, `admin`, `backend`, `.agents`
+- **Baseline Typecheck**:
+  - `npx tsc --noEmit` executed and passed with exit code 0 (0 errors).
 
----
+### 1.2 Asset Inventory
+- **`assets/audio/`**:
+  - `assets/audio/chime.wav`: 16-bit WAV intro chime sting (already mapped in `lib/sounds.ts:11` and referenced by `playChime()` in `lib/audio.ts:170-172`).
+  - `assets/audio/night.wav`, `assets/audio/moon.wav`, `assets/audio/river.wav`, `assets/audio/courtyard.wav`, `assets/audio/wind.wav`: Ambient looping beds.
+  - `assets/audio/roar.wav`, `assets/audio/splash.wav`, `assets/audio/ripple.wav`: SFX audio assets.
+- **`assets/images/`**:
+  - `icon.png`, `adaptive-icon.png`, `splash-icon.png`, `favicon.png`.
+- **`assets/videos/`**:
+  - `sleepy_cloud_1.mp4` through `sleepy_cloud_5.mp4` for video stories.
 
-### Bug 3: Dead Code in `components/SplashRitual.tsx`
-- **File:** `components/SplashRitual.tsx` (70 lines, 1505 bytes)
-- **Search Result:** `grep_search` across entire repository for `SplashRitual` returned only the declaration itself in `components/SplashRitual.tsx` and mentions in `.agents` markdown logs.
-- **Actual Splash Screen Usage:** In `app/_layout.tsx` (Lines 14, 42), the application uses `expo-splash-screen` (`SplashScreen.hideAsync()`). `SplashRitual` is never imported, mounted, or exported in any app route.
+### 1.3 Entry Points & Navigation Tree
+- **Root Layout** (`app/_layout.tsx:1-64`):
+  - Loads Google fonts: `Nunito_500Medium`, `Nunito_600SemiBold`, `Nunito_700Bold`, `Nunito_800ExtraBold`, `NotoSansDevanagari_400Regular`, `NotoSansDevanagari_600SemiBold`, `NotoSansDevanagari_700Bold`.
+  - Hydrates settings (`hydrate()`), speech voices (`hydrateVoices()`), and remote catalog (`fetchRemoteCatalog()`).
+  - Calls `SplashScreen.hideAsync().catch(() => undefined)` immediately on mount in `useEffect`.
+  - Mounts `<GestureHandlerRootView>` wrapping an Expo Router `<Stack>` with screens:
+    - `index` (`app/index.tsx`): Home Screen featuring hero story banner, category carousels, and quick navigation.
+    - `library` (`app/library.tsx`): Library browse screen with age-band switcher and story cards.
+    - `settings` (`app/settings.tsx`): Settings screen with language and storyteller configuration.
+    - `story-detail/[id]` (`app/story-detail/[id].tsx`): Story details preview screen with cover image, badges, moral lesson, and favorite toggle.
+    - `story/[id]` (`app/story/[id].tsx`): Story player dispatcher (`MediaStoryPlayer`, `NovelReader`, `StoryPlayer`).
 
----
-
-### Bug 4: Unused Imports in `app/index.tsx`
-- **File:** `app/index.tsx` (Lines 9, 12)
-- **Verbatim Code Observed:**
-  ```tsx
-  9:  import { brand, colors, radii, spacing } from '@/constants/theme';
-  ...
-  12: import { storiesForAge, ageBands, stories as allLocalStories } from '@/data/catalog';
-  ```
-- **Symbols Checked in `app/index.tsx`:**
-  - `radii` — unused anywhere in file
-  - `spacing` — unused anywhere in file
-  - `storiesForAge` — unused anywhere in file
-  - `ageBands` — unused anywhere in file
-
----
-
-### Bug 5: Admin Panel Age Band Mismatch in `admin/src/App.tsx`
-- **File:** `admin/src/App.tsx` (Lines 189–196)
-- **Verbatim Code Observed:**
-  ```tsx
-  189:                   <div>
-  190:                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Target Audience</label>
-  191:                     <select value={story.ageBand} onChange={e => updateStory(i, 'ageBand', e.target.value)} className="w-full border rounded-lg p-2">
-  192:                       <option value="2-4">Ages 2-4 (Toddlers)</option>
-  193:                       <option value="4-6">Ages 4-6 (Kids)</option>
-  194:                       <option value="7-9">Ages 7-9 (Older Kids)</option>
-  195:                       <option value="parents">Parents (Novels / Audiobooks)</option>
-  196:                     </select>
-  197:                   </div>
-  ```
-- **Mismatch:** `option value="7-9"` does not exist in mobile `AgeBand` (`'2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+' | 'parents'`).
-
----
-
-### Bug 6: Backend Authentication in `backend/src/index.ts`
-- **File:** `backend/src/index.ts` (Lines 4–45)
-- **Verbatim Code Observed:**
+### 1.4 Audio Subsystem (`lib/audio.ts` & `lib/sounds.ts`)
+- `lib/sounds.ts` provides `soundFiles` dictionary linking `SoundId` enum keys to local audio files.
+- `lib/audio.ts` manages singleton `AudioPlayer` from `expo-audio`, volume fades via `fadeBedVolume`, sound effects via `playSfx(id)`, and already exports:
   ```ts
-  4: type Env = {
-  5:   SAANJH_DB: KVNamespace;
-  6: };
-  ...
-  34: // POST to update the catalog (Called by your Admin Panel)
-  35: app.post('/catalog', async (c) => {
-  36:   try {
-  37:     const body = await c.req.json();
-  38:     
-  39:     // Save the new JSON tree to the KV Database
-  40:     await c.env.SAANJH_DB.put('catalog', JSON.stringify(body));
-  41:     
-  42:     return c.json({ success: true, message: 'Catalog updated successfully!' });
-  43:   } catch (err) {
-  44:     return c.json({ success: false, error: 'Failed to update catalog' }, 500);
-  45:   }
-  46: });
+  export async function playChime() {
+    await playSfx('chime');
+  }
   ```
-- **File:** `admin/src/App.tsx` (Lines 60–64)
-  ```ts
-  60:       const res = await fetch(API_URL, {
-  61:         method: 'POST',
-  62:         headers: { 'Content-Type': 'application/json' },
-  63:         body: JSON.stringify(newCatalog)
-  64:       });
-  ```
-- **Status:** Unauthenticated open write endpoint. No `ADMIN_SECRET` environment binding in `Env` or header check on incoming requests.
-
----
-
-### Bug 7: AdMob Dummy Unit ID Handling in `components/AdBanner.tsx`
-- **File:** `components/AdBanner.tsx` (Lines 7–23)
-- **Verbatim Code Observed:**
-  ```tsx
-  7: const adUnitId = __DEV__ 
-  8:   ? TestIds.BANNER 
-  9:   : (Platform.OS === 'ios' ? 'ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy' : 'ca-app-pub-xxxxxxxxxxxxxxxx/zzzzzzzzzz');
-  10: 
-  11: export function AdBanner() {
-  12:   return (
-  13:     <View style={styles.container}>
-  14:       <BannerAd
-  15:         unitId={adUnitId}
-  16:         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-  17:         requestOptions={{
-  18:           requestNonPersonalizedAdsOnly: true,
-  19:         }}
-  20:       />
-  21:     </View>
-  22:   );
-  23: }
-  ```
-- **Context in `app.json` (Lines 52–57):**
-  ```json
-  [
-    "react-native-google-mobile-ads",
-    {
-      "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-      "iosAppId": "ca-app-pub-3940256099942544~1458002511"
-    }
-  ]
-  ```
-- **Issue:** In release builds (`__DEV__ === false`), dummy unit ID `'ca-app-pub-xxxxxxxxxxxxxxxx/zzzzzzzzzz'` is passed to Google Mobile Ads `BannerAd`, with zero error boundary or load failure fallback, rendering broken views or causing initialization errors.
-
----
-
-### Infrastructure & Build Configuration
-- **Root `package.json`**: Expo `~57.0.12`, React Native `0.86.2`, React `19.2.3`, TypeScript `~6.0.3`.
-- **Root `tsconfig.json`**: Extends `expo/tsconfig.base`, strict mode enabled, path alias `@/*` pointing to `./*`.
-- **Admin `admin/package.json`**: Vite 8.2, React 19.2, TailwindCSS 4.3, Lucide React 1.33. Scripts: `dev`, `build`, `lint`.
-- **Backend `backend/package.json` & `wrangler.toml`**: Hono 4.13, Wrangler 4.125, KV binding `SAANJH_DB` (id: `97f579307cd347ee8f0904b6c7230813`).
-- **Build Automation**: `build-apk.js` and `build-aab.js` automate Expo clean prebuild, inject release keystore signing configuration (`release.keystore`, alias `saanjh-key`), generate `android/local.properties`, bypass Kotlin metadata version checks, and build release APK/AAB via Gradle.
+- All audio calls use graceful catch handlers so audio playback failures do not interrupt UI flows.
 
 ---
 
 ## 2. Logic Chain
 
-1. **Bug 1 (Corrupted Strings):**
-   - *Observation:* `app/index.tsx` lines 64, 72, 77, 85, 86, 87, 88 display raw question mark literals `'?????? ??????'`, `'???? ?????????'`, etc.
-   - *Reasoning:* These were corrupted during file encoding/transcoding operations.
-   - *Resolution:* Add structured keys to `constants/ui.ts` (`recentlyAdded`, `play`, `library`, `forLittleOnes`, `kidsAndTweens`, `afterHoursParents`, `youngAdults`) with proper Devanagari Unicode characters, and call `t(ui.<key>, language)` in `app/index.tsx`.
+1. **Navigation Non-Interference**:
+   - Creating a separate route (e.g. `/splash`) that performs `router.replace('/')` can trigger navigation stack mounting glitches, route history pollution, or flash unstyled screens.
+   - Conversely, mounting an animated splash ritual overlay (`<SplashRitual onFinish={...} />`) directly within `app/_layout.tsx` over the `<Stack>` allows the underlying Home Screen (`app/index.tsx`) and catalog stores to initialize, compute categories, and render behind the overlay without user-visible lag.
+   - When the ritual finishes or the user taps to skip, the overlay animates its opacity from 1 to 0 via Reanimated `withTiming(0, { duration: 450 })` and unmounts, revealing the pre-rendered Home screen instantaneously.
 
-2. **Bug 2 (`parseAgeBand`):**
-   - *Observation:* `parseAgeBand` validates against `'2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+'` and returns `'4-6'` otherwise.
-   - *Reasoning:* When a user selects `'parents'`, it persists as `'parents'`. On app launch, `hydrate()` calls `parseAgeBand('parents')`, which fails the ternary and resets state to `'4-6'`.
-   - *Resolution:* Add `value === 'parents'` (and alias `value === 'parent'`) to `parseAgeBand` in `store/useSettingsStore.ts`.
+2. **Animation Engine Capabilities**:
+   - `react-native-reanimated` 4.5.1 and `react-native-svg` 15.15.4 are already fully operational in the app (used in `ForestStage.tsx`, `Fireflies.tsx`, `TreeLine.tsx`).
+   - SVG vector paths (`Svg`, `Path`, `G`, `Defs`, `RadialGradient`, `LinearGradient`, `Stop`) allow high-definition rendering of a glowing storybook cover, spine, filigree corner ornaments, and parchment pages.
+   - Reanimated `useSharedValue` and `useAnimatedStyle` allow 60 FPS hardware-accelerated 3D-like book page rotations (`transform: [{ perspective: 800 }, { rotateY: ... }]`), stardust particle float physics, and brand title reveals on the UI thread without JavaScript bridge bottleneck.
 
-3. **Bug 3 (`SplashRitual.tsx`):**
-   - *Observation:* `components/SplashRitual.tsx` is completely unreferenced in the codebase; app startup is orchestrated via `expo-splash-screen` in `app/_layout.tsx`.
-   - *Reasoning:* `SplashRitual.tsx` is leftover legacy code.
-   - *Resolution:* Delete `components/SplashRitual.tsx`.
+3. **Audio Synchronization**:
+   - `playChime()` in `lib/audio.ts` directly plays `assets/audio/chime.wav` using `expo-audio`.
+   - Triggering `playChime()` at ~400ms-600ms as the storybook cover swings open creates an enchanting multisensory feedback loop.
+   - Wrapping audio triggers in try/catch and respecting device silent mode ensures failure-proof execution across all devices.
 
-4. **Bug 4 (Unused Imports):**
-   - *Observation:* `radii`, `spacing` in line 9 and `storiesForAge`, `ageBands` in line 12 of `app/index.tsx` are unused in the file.
-   - *Reasoning:* Causes ESLint/TypeScript warnings and bloats module namespace.
-   - *Resolution:* Remove unused identifiers from import statements.
-
-5. **Bug 5 (Admin Age Band):**
-   - *Observation:* `admin/src/App.tsx` `<select>` offers `'7-9'`, whereas mobile age bands are `'6-8'` and `'9-12'`.
-   - *Reasoning:* Stories saved with `'7-9'` in admin will be unrecognized by mobile filtering and reset to `'4-6'`.
-   - *Resolution:* Update `<option>` elements in `admin/src/App.tsx` to match mobile `AgeBand` (`'2-4'`, `'4-6'`, `'6-8'`, `'9-12'`, `'13-17'`, `'18-25'`, `'25+'`, `'parents'`).
-
-6. **Bug 6 (Backend Auth):**
-   - *Observation:* `backend/src/index.ts` `POST /catalog` allows unauthorized writes.
-   - *Reasoning:* Anyone with the Cloudflare Worker URL can alter/delete the story catalog.
-   - *Resolution:*
-     - Add `ADMIN_SECRET?: string;` to `Env` in `backend/src/index.ts`.
-     - In `POST /catalog`, verify `Authorization: Bearer <secret>`. Return `401 Unauthorized` if mismatched.
-     - In `admin/src/App.tsx`, provide an admin secret header in `fetch(API_URL, { headers: { 'Authorization': `Bearer ${secret}` } })`.
-
-7. **Bug 7 (AdBanner Fallback):**
-   - *Observation:* In production (`!__DEV__`), `adUnitId` contains `ca-app-pub-xxxxxxxxxxxxxxxx/zzzzzzzzzz`.
-   - *Reasoning:* Initializing `BannerAd` with placeholder or invalid IDs causes AdMob errors, empty blank spaces, or potential crashes.
-   - *Resolution:* In `components/AdBanner.tsx`, validate that `adUnitId` is non-empty and does not contain `'xxxx'`. If invalid or if `onAdFailedToLoad` triggers, return `null` so the banner hides cleanly.
+4. **Bilingual Branding Consistency**:
+   - The typography system already includes loaded font families: `Nunito_800ExtraBold` for English and `NotoSansDevanagari_700Bold` for Nepali.
+   - Displaying both `"Saanjh"` and `"साँझ - Bedtime Stories & Novels"` / `"सुत्ने बेलाको कथा र उपन्यास"` aligns with the project's bilingual design standard in `constants/theme.ts` and `constants/ui.ts`.
 
 ---
 
-## 3. Caveats
+## 3. Detailed Technical Analysis & Specification for Requirement R1
 
-- **Network Mode & Remote Backend:** The live Cloudflare worker endpoint is currently `https://saanjh-api.prabinkhokhali89.workers.dev/catalog`. When updating `backend/src/index.ts`, local test mock and Wrangler configuration must be aligned before deployment.
-- **AdMob Production vs Test Unit IDs:** In testing and local dev builds, Google standard test IDs (`TestIds.BANNER` or `ca-app-pub-3940256099942544/6300978111`) should be used. When publishing to Play Store, real production unit IDs must be configured via environment or config, or fallback gracefully.
-- **Unified Home Screen Overhaul (R3):** Note that while Bug 1 & Bug 4 address `app/index.tsx`, Pillar R3 also plans a redesign of `app/index.tsx` (Hero + Carousels + Favorites + Detail navigation). Fixing Bug 1 and Bug 4 directly prepares the codebase for clean R3 development.
+### Component Architecture: `components/splash/SplashRitual.tsx`
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    RootLayout (_layout.tsx)                  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │                    Stack Navigation                    │  │
+│  │  (index, library, settings, story-detail, story)       │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │             SplashRitual (Absolute Overlay)            │  │
+│  │  - Nocturnal Gradient Backdrop & Ambient Orb Glow      │  │
+│  │  - SVG Magical Storybook (Cover swing + Page fan)      │  │
+│  │  - Stardust & Sparkle Particle Field (Upward drift)    │  │
+│  │  - Bilingual Brand Reveal ("Saanjh" / "साँझ")          │  │
+│  │  - Chime Audio Sting (assets/audio/chime.wav)          │  │
+│  │  - Tap-to-Skip Touch Handler & 450ms Crossfade         │  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Motion & Choreography Timeline
+
+| Timestamp | Phase | Visual / Audio Action | Implementation |
+|---|---|---|---|
+| **0ms** | Initialization | Native splash hidden, React Native `SplashRitual` renders full-screen nocturnal canvas (`#0A0E1A` -> `#1A1410`). | `StyleSheet.absoluteFillObject`, `LinearGradient` |
+| **200ms - 900ms** | Book Unfold | Book cover rotates open (`rotateY: 0deg -> -110deg`), inner pages glow amber (`#E8A04A`), central ambient radiance pulses outward. | Reanimated `useSharedValue`, SVG `transform`, `RadialGradient` |
+| **450ms** | Audio Sting | Ambient chime sound triggers softly. | `playChime()` from `lib/audio.ts` |
+| **600ms - 2200ms** | Stardust Radiance | 16-20 stardust sparkles and glowing particle dots burst and float upwards from the open pages with sine wave lateral float. | Dynamic particle nodes with Reanimated `translateY`, `translateX`, `opacity`, `scale` |
+| **900ms - 1800ms** | Bilingual Reveal | English "Saanjh" and Devanagari "साँझ" with subtitle fade in and rise smoothly into position. | Reanimated `opacity: 0 -> 1`, `translateY: 16 -> 0` |
+| **2600ms - 3100ms** | Auto-Crossfade | Entire splash container fades opacity `1 -> 0` over 500ms, revealing the pre-rendered Home screen. | `containerOpacity.value = withTiming(0, { duration: 500 }, () => runOnJS(onFinish)())` |
+| **Anytime** | User Tap-to-Skip | Tapping the screen instantly initiates smooth 300ms fadeout to avoid frustrating repeat users. | `Pressable` wrapping with immediate `skip()` handler |
 
 ---
 
-## 4. Conclusion & Proposed Code Changes
+## 4. Feature Inventory & Dependency Matrix (Overhaul Project)
 
-### Proposed Snippets for Implementation:
-
-#### 1. `constants/ui.ts` & `app/index.tsx` (Bug 1 & Bug 4)
-In `constants/ui.ts`, add:
-```ts
-recentlyAdded: { en: 'Recently Added', ne: 'भर्खरै थपिएका' },
-play: { en: 'Play', ne: 'कथा सुरु गरौं' },
-library: { en: 'Library', ne: 'पुस्तकालय' },
-forLittleOnes: { en: 'For Little Ones', ne: 'साना बाबुनानीका लागि' },
-kidsAndTweens: { en: 'Kids & Tweens', ne: 'बालबालिकाका लागि' },
-afterHoursParents: { en: 'After Hours (Parents)', ne: 'अभिभावकका लागि' },
-youngAdults: { en: 'Young Adults', ne: 'किशोरकिशोरीका लागि' },
-```
-In `app/index.tsx`:
-- Clean imports:
-  ```tsx
-  import { brand, colors } from '@/constants/theme';
-  import { stories as allLocalStories } from '@/data/catalog';
-  import { t, ui } from '@/constants/ui';
-  ```
-- Replace hardcoded `????` strings with `t(ui.recentlyAdded, language)`, `t(ui.play, language)`, `t(ui.library, language)`, `t(ui.forLittleOnes, language)`, `t(ui.kidsAndTweens, language)`, `t(ui.afterHoursParents, language)`, `t(ui.youngAdults, language)`.
-
-#### 2. `store/useSettingsStore.ts` (Bug 2)
-```ts
-function parseAgeBand(value: unknown): AgeBand {
-  if (value === 'teen') return '13-17';
-  if (value === 'adult' || value === '18+') return '18-25';
-  if (value === 'parent') return 'parents';
-  return value === '2-4' ||
-    value === '4-6' ||
-    value === '6-8' ||
-    value === '9-12' ||
-    value === '13-17' ||
-    value === '18-25' ||
-    value === '25+' ||
-    value === 'parents'
-    ? value
-    : '4-6';
-}
-```
-
-#### 3. Delete `components/SplashRitual.tsx` (Bug 3)
-Remove file `components/SplashRitual.tsx`.
-
-#### 4. `admin/src/App.tsx` (Bug 5 & Bug 6)
-- Update `<select>` for `ageBand`:
-  ```tsx
-  <select value={story.ageBand} onChange={e => updateStory(i, 'ageBand', e.target.value)} className="w-full border rounded-lg p-2">
-    <option value="2-4">Ages 2-4 (Toddlers)</option>
-    <option value="4-6">Ages 4-6 (Bedtime)</option>
-    <option value="6-8">Ages 6-8 (Wonder)</option>
-    <option value="9-12">Ages 9-12 (Growing)</option>
-    <option value="13-17">Ages 13-17 (Teens)</option>
-    <option value="18-25">Ages 18-25 (Young Adults)</option>
-    <option value="25+">Ages 25+ (Grown)</option>
-    <option value="parents">Parents (Novels / Audiobooks)</option>
-  </select>
-  ```
-- Add Admin Secret state & header:
-  ```tsx
-  const [adminSecret, setAdminSecret] = useState(localStorage.getItem('saanjh_admin_secret') || '');
-  // Inside saveCatalog:
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${adminSecret}`
-    },
-    body: JSON.stringify(newCatalog)
-  });
-  if (res.status === 401) throw new Error('Unauthorized: Invalid Admin Secret');
-  ```
-
-#### 5. `backend/src/index.ts` (Bug 6)
-```ts
-type Env = {
-  SAANJH_DB: KVNamespace;
-  ADMIN_SECRET?: string;
-};
-
-// POST /catalog
-app.post('/catalog', async (c) => {
-  const authHeader = c.req.header('Authorization');
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const expectedSecret = c.env.ADMIN_SECRET;
-
-  if (expectedSecret && token !== expectedSecret) {
-    return c.json({ success: false, error: 'Unauthorized' }, 401);
-  }
-
-  try {
-    const body = await c.req.json();
-    await c.env.SAANJH_DB.put('catalog', JSON.stringify(body));
-    return c.json({ success: true, message: 'Catalog updated successfully!' });
-  } catch (err) {
-    return c.json({ success: false, error: 'Failed to update catalog' }, 500);
-  }
-});
-```
-
-#### 6. `components/AdBanner.tsx` (Bug 7)
-```tsx
-import React, { useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-
-const rawUnitId = Platform.OS === 'ios'
-  ? 'ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy'
-  : 'ca-app-pub-xxxxxxxxxxxxxxxx/zzzzzzzzzz';
-
-const isValidUnitId = (id?: string) => !!id && !id.includes('xxxxxxxx') && !id.includes('zzzzzzzz');
-
-const adUnitId = __DEV__ 
-  ? TestIds.BANNER 
-  : (isValidUnitId(rawUnitId) ? rawUnitId : null);
-
-export function AdBanner() {
-  const [hasError, setHasError] = useState(false);
-
-  if (!adUnitId || hasError) {
-    return null;
-  }
-
-  return (
-    <View style={styles.container}>
-      <BannerAd
-        unitId={adUnitId}
-        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
-        }}
-        onAdFailedToLoad={() => setHasError(true)}
-      />
-    </View>
-  );
-}
-```
+| # | Feature | Scope | Prerequisites / Dependencies | Target Status |
+|---|---|---|---|---|
+| **F1** | **Magical Storybook Animated Splash Ritual (R1)** | `components/splash/SplashRitual.tsx`, `app/_layout.tsx`, `lib/audio.ts` | `react-native-reanimated`, `react-native-svg`, `assets/audio/chime.wav` | Ready for Implementation |
+| **F2** | **Atmospheric Bedtime Background & Pine Silhouettes (R2)** | `components/common/AtmosphericBackground.tsx`, `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, `app/story-detail/[id].tsx` | `react-native-reanimated`, `react-native-svg`, `expo-linear-gradient` | Surveyed |
+| **F3** | **Dedicated Full-Screen Search & Discovery Modal (R3)** | `components/search/SearchModal.tsx`, `components/search/SearchTriggerButton.tsx`, `data/catalog.ts` | `zustand`, `lucide-react-native`/`@expo/vector-icons`, `react-native-modal` or Reanimated overlay | Surveyed |
+| **F4** | **Bedtime Sleep Timer & Fadeout Controller (R4.1)** | `store/useSleepTimerStore.ts`, `lib/sleepTimer.ts`, `components/player/PlayerChrome.tsx`, `app/_layout.tsx` | `expo-audio`, `zustand`, `lib/audio.ts` | Surveyed |
+| **F5** | **Continuous Sleep Soundscapes White Noise Player (R4.2)** | `components/soundscapes/SoundscapesPlayer.tsx`, `lib/audio.ts`, `assets/audio/` (`night`, `river`, `wind`, `moon`, `courtyard`) | `expo-audio`, `zustand` | Surveyed |
+| **F6** | **Bedtime Night Light Mode (R4.3)** | `components/nightlight/NightLightModal.tsx`, `app/settings.tsx` | `expo-keep-awake`, `react-native-reanimated` | Surveyed |
+| **F7** | **Revamped Card-Based Settings Screen (R4.4)** | `app/settings.tsx`, `store/useSettingsStore.ts` | `constants/theme.ts`, `constants/ui.ts` | Surveyed |
 
 ---
 
-## 5. Verification Method
+## 5. Potential Conflicts & Missing Packages Check
 
-1. **TypeScript Static Verification:**
-   - Root project: `npx tsc --noEmit` -> verify 0 errors, no unused imports in `app/index.tsx`.
-   - Admin panel: `cd admin && npm run build` (`tsc -b && vite build`) -> verify clean compilation.
-2. **Settings Store Persistence Verification:**
-   - Set `useSettingsStore.getState().setAgeBand('parents')`.
-   - Re-run `useSettingsStore.getState().hydrate()` -> assert `useSettingsStore.getState().ageBand === 'parents'`.
-3. **Dead Code Elimination Verification:**
-   - Run `fd SplashRitual` or search filesystem -> verify `SplashRitual.tsx` does not exist.
-4. **Backend Auth Verification:**
-   - Execute `curl -X POST http://localhost:8787/catalog -H "Content-Type: application/json" -d '{"stories":[]}'` -> Expect `401 Unauthorized`.
-   - Execute `curl -X POST http://localhost:8787/catalog -H "Content-Type: application/json" -H "Authorization: Bearer <ADMIN_SECRET>" -d '{"stories":[]}'` -> Expect `200 OK`.
-5. **AdBanner Verification:**
-   - Test in release mode without valid AdMob credentials -> verify component returns `null` and renders no layout artifacts.
+- **Reanimated & React 19 Compatibility**: `react-native-reanimated` 4.5.1 is configured and fully compatible with React 19 in Expo SDK 57.
+- **Audio Playback**: `expo-audio` ~57.0.3 is configured in `app.json` plugins and working in `lib/audio.ts`. No deprecated `expo-av` conflicts.
+- **Icon Libraries**: `@expo/vector-icons` provides complete coverage for Ionicons, MaterialIcons, Feather. No additional icon packages required.
+- **SVG Support**: `react-native-svg` 15.15.4 is installed and verified.
+- **Fonts**: All Google fonts for English (`Nunito`) and Nepali (`NotoSansDevanagari`) are registered in `app/_layout.tsx`.
+- **Verdict**: Zero package conflicts, zero missing dependencies.
+
+---
+
+## 6. Caveats
+
+- **Audio Playback in Silent Mode on iOS**: `expo-audio` requires `setAudioModeAsync({ playsInSilentMode: true })`, which is already implemented in `lib/audio.ts:58-63`.
+- **First Launch Font Loading**: Fonts load asynchronously in `RootLayout`. The splash ritual should render fallback system fonts gracefully if fonts take >100ms, or render immediately once `useFonts` returns true.
+- **No Caveats on Architecture**: The in-tree overlay design in `RootLayout` cleanly isolates splash animation logic from route navigation.
+
+---
+
+## 7. Conclusion
+
+The codebase is well-structured, modern (Expo SDK 57, React Native 0.86, Reanimated 4.5), and in a healthy state (`npx tsc --noEmit` passes with 0 errors).
+Implementing **Requirement R1 (Magical Storybook Animated Splash Ritual)** as an in-tree overlay in `app/_layout.tsx` using `react-native-reanimated`, `react-native-svg`, and `assets/audio/chime.wav` satisfies all user and acceptance criteria without navigation stack blocking or double-mounting.
+
+---
+
+## 8. Verification Method
+
+1. **TypeScript Static Analysis**:
+   ```bash
+   npx tsc --noEmit
+   ```
+   Must pass with 0 errors.
+
+2. **Component Inspection**:
+   Inspect `d:\Antigravity Projects\Bedtime Stories\app\_layout.tsx` to verify `<SplashRitual>` overlay mounting and clean lifecycle dismissal.
+
+3. **Audio Verification**:
+   Inspect `d:\Antigravity Projects\Bedtime Stories\assets\audio\chime.wav` and `d:\Antigravity Projects\Bedtime Stories\lib\audio.ts` to verify `playChime()` execution.

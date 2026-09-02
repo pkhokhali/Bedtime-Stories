@@ -1,17 +1,18 @@
-# Progress Log - Worker 2 (Milestone 2)
+# Progress — Worker M2 (Atmospheric Background)
 
-Last visited: 2026-09-01T12:13:00+05:45
+**Last visited**: 2026-09-02T12:08:30+05:45
+**Status**: Milestone 2 Completed and Verified
 
-## Current Status
-- [x] Initialized DISPATCH.md, BRIEFING.md, and progress.md
-- [x] Audited existing codebase and explorer survey handoff
-- [x] Implement Step 1: `lib/narrator/types.ts`
-- [x] Implement Step 2: `lib/narrator/segmenter.ts`
-- [x] Implement Step 3: `lib/audio.ts` (Sound bed mapping, `fadeBedVolume`, `windDownFinalBeat`)
-- [x] Implement Step 4: `lib/narrator/cloudTts.ts` (Google Cloud TTS, caching, fallback)
-- [x] Implement Step 5: `lib/speech.ts` & `hooks/useStoryPlayback.ts` (Segmented pauses queue, auto-ambient bed, wind-down)
-- [x] Implement Step 6: `store/useSettingsStore.ts`, `app/settings.tsx`, `constants/ui.ts` (AI Voice toggle & translations)
-- [x] Implement Step 7: `components/reader/NovelReader.tsx` & `app/story/[id].tsx`
-- [x] Static audit and verification across all files and contracts
-- [x] Write handoff report (`handoff.md`)
-- [x] Notify parent agent
+## Milestones & Checklist
+- [x] Initial dispatch and workspace setup
+- [x] Inspect survey blueprint `explorer_survey_2/handoff.md`, `PROJECT.md`, `ORIGINAL_REQUEST.md`, existing screen code, and `scripts/verify_e2e.js`
+- [x] Implement `components/background/TwinklingStarfield.tsx` (32 Reanimated UI-thread stars, 60 FPS, warm glow palette)
+- [x] Implement `components/background/HimalayanHorizon.tsx` (multi-layered SVG mountain ridges, rolling foothills, and 14 conifer pine tree silhouettes)
+- [x] Implement `components/background/AtmosphericBackground.tsx` (full-screen LinearGradient celestial palette `#060913` -> `#0c1222` -> `#121A2F` -> `#1B1428` -> `#22151D`, intensity modes, pointerEvents="none")
+- [x] Add `celestialPalette` & translucent card tokens to `constants/theme.ts`
+- [x] Integrate into `app/index.tsx`
+- [x] Integrate into `app/library.tsx`
+- [x] Integrate into `app/settings.tsx`
+- [x] Integrate into `app/story-detail/[id].tsx`
+- [x] Verify with `npx tsc --noEmit` (0 errors) and `node scripts/verify_e2e.js` (104/104 tests passing, 433 assertions)
+- [x] Complete `handoff.md` and message parent

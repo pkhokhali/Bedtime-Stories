@@ -1,65 +1,66 @@
-# BRIEFING — 2026-09-01T06:33:00Z
+# BRIEFING — 2026-09-02T12:09:40+05:45
 
 ## Mission
-Objective and adversarial review of Milestone 2: AI-Powered Story Narrator & Novel Reader implementation.
+Conduct a rigorous quality and adversarial review of Milestone 2 (Atmospheric Bedtime Background & Visual Graphic Design), verify claims, check for integrity violations, stress-test edge cases and performance, and issue a clear verdict.
 
 ## 🔒 My Identity
-- Archetype: reviewer_and_critic
+- Archetype: reviewer, critic
 - Roles: reviewer, critic
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m2_1
-- Original parent: 65ffadb4-051d-4185-80a2-394c719211fd
-- Milestone: M2 (AI-Powered Story Narrator & Novel Reader)
+- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Milestone: M2: Atmospheric Bedtime Background & Visual Graphic Design
 - Instance: 1 of 1
 
 ## 🔒 Key Constraints
 - Review-only — do NOT modify implementation code
-- Evidence-based analysis with adversarial stress testing
-- Mandatory integrity violation check (hardcoding, bypasses, facades)
+- Check for integrity violations (hardcoded test results, facade logic, bypassed tasks)
+- Deliver self-contained handoff.md with 5 components (Observation, Logic Chain, Caveats, Conclusion, Verification Method)
 
 ## Current Parent
-- Conversation ID: 65ffadb4-051d-4185-80a2-394c719211fd
-- Updated: 2026-09-01T06:33:00Z
+- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Updated: 2026-09-02T12:09:40+05:45
 
 ## Review Scope
 - **Files to review**:
-  - `lib/narrator/segmenter.ts`
-  - `lib/narrator/types.ts`
-  - `lib/narrator/cloudTts.ts`
-  - `lib/audio.ts`
-  - `lib/speech.ts`
-  - `hooks/useStoryPlayback.ts`
-  - `store/useSettingsStore.ts`
+  - `components/background/TwinklingStarfield.tsx`
+  - `components/background/HimalayanHorizon.tsx`
+  - `components/background/AtmosphericBackground.tsx`
+  - `components/background/index.ts`
+  - `constants/theme.ts`
+  - `app/index.tsx`
+  - `app/library.tsx`
   - `app/settings.tsx`
-  - `components/reader/NovelReader.tsx`
-  - `app/story/[id].tsx`
-  - `constants/ui.ts`
-- **Interface contracts**: `.agents/ORIGINAL_REQUEST.md`, `PROJECT.md`, `.agents/worker_m2/handoff.md`
-- **Review criteria**: Pause tokenizer timings (300ms, 750ms, 1000ms, 1200ms), dialogue detection, voice profiles, ambient sound bed auto-detection, fading/wind-down, neural TTS + caching + fallback, settings store AI voice toggle, novel reader pagination/font scaling [14-28px]/read aloud auto-advance.
+  - `app/story-detail/[id].tsx`
+- **Interface contracts**: `PROJECT.md`, `ORIGINAL_REQUEST.md`, `worker_m2/handoff.md`
+- **Review criteria**:
+  - 32 deterministic star nodes, Reanimated UI-thread sine oscillations at 60 FPS, `pointerEvents="none"`
+  - Multi-layer SVG silhouettes with mountain peaks and conifer pine trees (density >= 10), `pointerEvents="none"`
+  - Fullscreen 5-stop celestial nocturnal linear gradient, intensity modes (`full`, `subtle`, `dim`), translucent card styling (`rgba(18, 26, 44, 0.72)`)
+  - Verification with TypeScript check and E2E script
 
 ## Review Checklist
 - **Items reviewed**:
-  - `lib/narrator/segmenter.ts`: Fully verified (pause timings, quote detection, voice roles, SSML stripping).
-  - `lib/audio.ts`: Fully verified (`SCENE_BED_MAP`, `STAGE_BED_MAP`, `resolveAmbientBed`, `fadeBedVolume`, `windDownFinalBeat`).
-  - `lib/narrator/cloudTts.ts`: Fully verified (Google Cloud TTS endpoint, caching in `${FileSystem.cacheDirectory}saanjh_tts/`, prefetching, 4s timeout fallback).
-  - `store/useSettingsStore.ts` & `app/settings.tsx`: Fully verified (`aiVoice` toggle and persistence).
-  - `components/reader/NovelReader.tsx` & `app/story/[id].tsx`: Fully verified (paginated novel reader, [14-28px] font scaling, read aloud, auto-advance, sleep fade).
+  - `components/background/TwinklingStarfield.tsx` (verified: 32 deterministic seeds, Reanimated UI-thread animations, pointerEvents none)
+  - `components/background/HimalayanHorizon.tsx` (verified: 14 pine trees, multi-tier SVG ridges, pointerEvents none)
+  - `components/background/AtmosphericBackground.tsx` (verified: 5-stop linear gradient, intensity modes, absoluteFill positioning)
+  - `components/background/index.ts` (verified: exports all background components)
+  - `constants/theme.ts` (verified: celestialPalette and translucent card tokens)
+  - `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, `app/story-detail/[id].tsx` (verified: wrapped in AtmosphericBackground with translucent glassmorphic surfaces)
 - **Verdict**: APPROVE
-- **Unverified claims**: None.
+- **Unverified claims**: None (all claims independently verified)
 
 ## Attack Surface
 - **Hypotheses tested**:
-  - Empty / whitespace / non-text beat inputs in segmenter -> Handled safely via null check and regex.
-  - Missing Cloud TTS API key / network disconnect / timeout -> Handled gracefully with null return and Layer 1 fallback.
-  - Extreme font scaling bounds in NovelReader -> Clamped to [14, 28].
-  - Sound bed missing / invalid -> Falls back to 'night'.
-- **Vulnerabilities found**: None.
-- **Untested angles**: Native platform TTS voice availability (depends on physical device speech synthesis engine).
+  - H1: 32 Reanimated star nodes running infinite loops could impact UI performance or bridge traffic -> Debunked: all animations run purely on native UI thread with shared values; pointerEvents="none" prevents gesture overhead.
+  - H2: SVG silhouettes could block touch gestures on bottom tab/navigation items -> Debunked: all layers have pointerEvents="none" and absolute positioning.
+  - H3: Aspect ratio variations could cause visual gaps at bottom -> Debunked: preserveAspectRatio="none" and bottom baseline seal ensure seamless edge-to-edge coverage.
+  - H4: Translucent card styling might reduce text readability -> Debunked: high contrast ratio (>10:1) with cream and amber typography.
+- **Vulnerabilities found**: 0
+- **Untested angles**: None within M2 scope.
 
 ## Key Decisions Made
-- All Milestone 2 requirements are completely implemented with high code quality, robust error handling, and no integrity violations. Issuing APPROVE verdict.
+- Confirmed full compliance with M2 requirements and issued APPROVE verdict.
 
 ## Artifact Index
-- `.agents/reviewer_m2_1/DISPATCH.md` — Initial dispatch message
-- `.agents/reviewer_m2_1/BRIEFING.md` — Active briefing
-- `.agents/reviewer_m2_1/progress.md` — Liveness and execution tracking
-- `.agents/reviewer_m2_1/handoff.md` — Final handoff review report
+- `d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m2_1\progress.md` — Liveness and progress tracker
+- `d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m2_1\handoff.md` — Final review and challenge report

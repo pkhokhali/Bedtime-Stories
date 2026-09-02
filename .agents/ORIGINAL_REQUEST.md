@@ -1,118 +1,71 @@
 # Original User Request
 
-## 2026-09-01T06:01:56Z
+## 2026-09-02T06:01:36Z
 
-Implement a production-ready upgrade ("Saanjh 3.0") to an existing Expo/React Native bilingual (English/Nepali) bedtime story app called "Saanjh." The app currently has 21 stories with procedural 2D SVG animations, TTS narration via expo-speech, a Cloudflare Workers KV API backend, and a React Vite admin panel. The codebase is at `d:\Antigravity Projects\Bedtime Stories`. This upgrade has four pillars: (1) fix 7 confirmed bugs in the existing codebase, (2) build an AI-powered Story Narrator that makes text-only stories and novels listenable with human-like voice and ambient soundscapes, (3) overhaul the mobile UI with a story detail/preview screen and unified browsing, and (4) add sample content demonstrating the new features. The result must be Play Store ready.
+Comprehensive UI/UX, Graphic Design, and Feature Overhaul for Saanjh Bedtime Stories (Mobile App). Elevate the mobile application into a world-class, enchanting bedtime experience. Implement an animated magical storybook splash ritual, an atmospheric night background with animated twinkling stars and mountain pine silhouettes, a floating search button that opens a full-screen search modal with trending stories, and a suite of bedtime sleep features including an audio sleep timer, a continuous sleep soundscapes white noise player, and a soft room night light mode.
 
 Working directory: d:\Antigravity Projects\Bedtime Stories
 Integrity mode: development
 
 ## Requirements
 
-### R1. Fix All Confirmed Bugs
+### R1. Magical Storybook Animated Splash Ritual
+Implement a soothing, high-end entrance ritual displayed when the app launches:
+- An animated glowing storybook that gently opens with Reanimated / SVG animations.
+- Floating magical stardust/sparkle particle effects radiating from the pages.
+- Elegant bilingual logo reveal ("Saanjh" / "साँझ - Bedtime Stories & Novels").
+- Soft chime / ambient chime sound sting upon opening (`assets/audio/chime.wav`).
+- Seamless, gentle crossfade into the home screen when the ritual concludes (or upon tap to skip).
 
-Fix these 7 bugs discovered by audit:
+### R2. Atmospheric Bedtime Background & Visual Graphic Design
+Replace static/solid backgrounds across the app with an enchanting nocturnal atmosphere:
+- A shared dynamic background component featuring animated twinkling stars with subtle opacity/scale sine-wave oscillations.
+- Layered silhouettes of Himalayan mountain pine trees along the bottom/horizon.
+- Deep midnight celestial palette (warm nocturnal gradient blending midnight blue, deep slate `#0c1222`, and warm amber glow `#E8A04A`).
+- Reusable across Home (`app/index.tsx`), Library (`app/library.tsx`), Settings (`app/settings.tsx`), and Story Details.
 
-1. **Corrupted Nepali text in `app/index.tsx`** — Lines 64–88 render `????` question marks instead of Devanagari script for carousel section titles. Replace with proper Nepali strings matching the bilingual pattern used throughout `constants/ui.ts`.
-2. **`parseAgeBand` in `store/useSettingsStore.ts` missing `'parents'`** — The validation function on lines 45–53 does not recognize the `'parents'` age band, causing it to reset to `'4-6'` on app reload. Add `'parents'` to the valid values.
-3. **Dead code: `components/SplashRitual.tsx`** — 70-line component that is never imported or rendered. Delete it.
-4. **Unused imports in `app/index.tsx`** — `storiesForAge`, `ageBands`, `radii`, `spacing` are imported but never used. Remove them.
-5. **Admin Panel age band mismatch in `admin/src/App.tsx`** — The `<select>` for Target Audience offers `'7-9'` which doesn't match mobile age bands (`'6-8'` and `'9-12'`). Fix the options to match the mobile app's `AgeBand` type.
-6. **No API authentication on `backend/src/index.ts`** — The `POST /catalog` endpoint has zero auth. Add a Bearer token check using a `ADMIN_SECRET` environment variable in the Cloudflare Worker, and update the Admin Panel to send the token.
-7. **AdMob dummy unit IDs in `components/AdBanner.tsx`** — Production builds use placeholder strings `ca-app-pub-xxxxxxxx`. Either use real IDs from the existing `app.json` config or make the component gracefully hide itself when no valid ID is configured.
+### R3. Dedicated Full-Screen Search & Discovery Modal
+Provide an intuitive, fast search experience:
+- A stylish floating search action button (or header search icon) accessible from Home and Library.
+- Clicking opens a dedicated, full-screen search modal with a smooth blur/dim backdrop.
+- Real-time bilingual search input supporting English and Nepali Devanagari text matching story titles, subtitles, tags, and story IDs.
+- Quick filter pills: "Toddlers (2-4)", "Kids (6-8)", "Novels & Parents", "Folk Tales", "Animal Stories", "Audio Only".
+- Displays "Trending Stories" and "Recent Searches" when the search query is empty.
+- Immediate navigation to the Story Detail preview screen upon selecting any result.
 
-### R2. AI-Powered Story Narrator & Novel Reader
-
-Build a narrator system that converts any text-only story or novel into a rich, listenable audio experience. The system must have two layers:
-
-**Layer 1 — Enhanced On-Device Narration (Primary, Free):**
-Upgrade the existing `expo-speech` TTS system (`lib/speech.ts`) to produce dramatically better output:
-- Add strategic pauses between sentences and paragraphs (not machine-gun delivery)
-- Add SSml-style emphasis markers for dialogue vs. narration where the platform supports it
-- Implement character voice differentiation beyond simple pitch shifts (vary rate, pitch, and volume per voice role)
-- Auto-detect and insert ambient background sound beds that match the story's `sceneId` or `stageKind` during narration
-- Layer a soft background music bed under all narration that fades in/out between beats
-- Add a gentle wind-down/fadeout in the final beat of every story
-
-**Layer 2 — Cloud AI Voice (Optional Upgrade, Google Cloud TTS Free Tier):**
-Add an optional higher-quality voice path using Google Cloud Text-to-Speech API:
-- Use the free tier (4 million characters/month, supports both English and Nepali neural voices)
-- Implement as a toggle in Settings: "AI Voice (Beta)" on/off, defaulting to off
-- When enabled, pre-fetch and cache audio for the current story's beats before playback begins
-- Cache generated audio files locally so the same beat text is never re-requested
-- Fall back gracefully to Layer 1 (enhanced expo-speech) if the API is unreachable or quota is exceeded
-
-**Novel Reader Mode:**
-For longer text-only content (novels, audiobooks added via the Admin Panel that have body text but no media URL):
-- Implement a paginated text reader view with adjustable font size
-- Add a "Read Aloud" button that narrates the current page using the narrator system above
-- Auto-advance pages as narration progresses
-- Show a progress bar for the overall novel
-
-### R3. UI Overhaul & Story Detail Screen
-
-Improve the mobile app's user experience:
-
-1. **Story Detail / Preview Screen** — Create a new screen (`app/story-detail/[id].tsx`) that appears when tapping any story card. It should display: cover image (or a generated gradient placeholder), bilingual title, description/subtitle, age badge, runtime, a moral/lesson summary if available, and a prominent "Play" / "Listen" button. Users should preview before committing to playback.
-
-2. **Unified Home Screen** — The current `app/index.tsx` has corrupted text and a disconnected design from the Library. Redesign it as a single cohesive browsing experience with:
-   - A hero section featuring a recommended story
-   - Horizontally scrolling carousels per category
-   - Proper bilingual section titles (English and Nepali)
-   - Smooth transitions and loading states
-
-3. **Favorites System** — Add a heart/bookmark toggle on story cards and the detail screen. Store favorites in AsyncStorage. Show a "My Favorites" carousel on the home screen when the user has saved stories.
-
-4. **Loading & Error States** — Add skeleton placeholders while the API catalog loads, and a friendly retry screen if the fetch fails.
-
-### R4. Sample Content & Assets
-
-Demonstrate the new features with real content:
-
-1. **Write 3 new bilingual stories** (English + Nepali) in the existing `data/stories/` beat format, each with 8-12 beats:
-   - One for ages 2-4 (simple, comforting, nature theme)
-   - One for ages 6-8 (adventure, Nepali folklore)
-   - One for the Parents category (a short literary piece suitable for the Novel Reader)
-
-2. **Add ambient sound integration metadata** to at least 5 existing stories — set appropriate `sceneId`/`stageKind` and ambient sound mappings so the AI narrator auto-layers the correct background sounds.
-
-3. **Generate or source appropriate cover image URLs** for at least 10 stories that currently have no `coverImage` field, using freely available Creative Commons or public domain images relevant to each story's theme.
+### R4. Essential Bedtime Sleep Features & Settings Revamp
+Transform the app into the ultimate nighttime bedtime companion:
+- **Bedtime Sleep Timer**: Configurable sleep timer (15 min, 30 min, 45 min, 60 min, or "End of Current Story"). When the timer expires, audio and screen brightness gently fade out to silence.
+- **Continuous Sleep Soundscapes (White Noise Player)**: A dedicated sleep ambiance player accessible from home/settings where users can play soothing continuous sounds (`rain`, `river`, `night crickets`, `gentle wind`, `temple chime`) to help children or adults fall asleep without needing a story running.
+- **Bedtime Night Light Mode**: A soothing, full-screen warm amber/moonlight glow mode with adjustable soft brightness for parents placing the phone on a bedside nightstand.
+- **Revamped Settings Screen**: Redesign `app/settings.tsx` to group controls into clean visual cards: Audio & Voices, Sleep Timer & Ambiance, Language & Age Group, Display & Night Light.
 
 ## Acceptance Criteria
 
-### Bug Fixes
-- [ ] `app/index.tsx` renders correct Nepali Devanagari text for all carousel section titles (no `?` characters)
-- [ ] Selecting "Parents" age band, closing and reopening the app, correctly restores "Parents" selection
-- [ ] `components/SplashRitual.tsx` no longer exists in the project
-- [ ] `npx tsc --noEmit` produces zero errors related to unused imports in `app/index.tsx`
-- [ ] Admin Panel age band selector shows `6-8` and `9-12` (not `7-9`)
-- [ ] `POST /catalog` without a valid Bearer token returns 401 Unauthorized
-- [ ] `POST /catalog` with the correct Bearer token succeeds (200)
-- [ ] AdBanner component does not crash in production mode
+### Splash Screen
+- [ ] On app launch, the magical storybook opening animation plays smoothly with floating stardust particles and bilingual logo text.
+- [ ] The intro chime audio plays gently during the animation.
+- [ ] Tapping the screen allows immediate skip directly to the home screen without lag.
+- [ ] Splash does not block or cause double-mounting of the navigation stack.
 
-### AI Narrator
-- [ ] Opening any text-only story (one with beats but no mediaUrl) triggers the enhanced TTS narration with audible pauses between sentences
-- [ ] Background ambient sound plays during narration and matches the story's scene type
-- [ ] A "AI Voice (Beta)" toggle exists in the Settings screen
-- [ ] When AI Voice is enabled and a valid Google Cloud TTS API key is configured, narration uses the cloud neural voice instead of device TTS
-- [ ] When AI Voice is enabled but the API is unreachable, narration falls back to enhanced device TTS without crashing
-- [ ] Audio files generated by Cloud TTS are cached locally and reused on subsequent plays
+### Background Atmosphere
+- [ ] The app renders animated twinkling stars and subtle mountain silhouettes behind the home and library content.
+- [ ] Star animations run at 60 FPS on the native thread without causing scroll stutter on story carousels.
 
-### UI & Navigation
-- [ ] Tapping a story card anywhere in the app navigates to a Story Detail screen (not directly to the player)
-- [ ] The Story Detail screen displays the story's title, description, age badge, and a Play button
-- [ ] A heart/favorite toggle is visible on the Story Detail screen and persists across app restarts
-- [ ] The home screen shows a "My Favorites" section when the user has favorited at least one story
-- [ ] The home screen shows skeleton loading placeholders while fetching the remote catalog
-- [ ] If the catalog fetch fails, a retry button is shown
+### Search & Discovery
+- [ ] Tapping the search icon opens the full-screen search modal with focused input.
+- [ ] Typing in English (e.g., "rabbit", "pine", "scandal") or Nepali (e.g., "खरायो", "बादल") instantly filters the 24+ stories.
+- [ ] Selecting a quick filter tag (e.g., "Novels & Parents") filters the catalog to matching stories.
+- [ ] Tapping any search result navigates directly to that story's preview screen.
 
-### Content
-- [ ] At least 3 new story files exist in `data/stories/` with 8+ beats each, containing both English and Nepali text
-- [ ] The new stories are registered in `data/catalog.ts` and appear in the mobile app
-- [ ] At least 10 stories in the catalog have a non-empty `coverImage` field
-- [ ] At least 5 stories have scene/sound metadata that triggers automatic ambient sound during narration
+### Sleep Features & Settings
+- [ ] Starting a 15-minute Sleep Timer shows an active countdown indicator in the app header.
+- [ ] When the sleep timer reaches zero during story or soundscape playback, volume fades down over 10 seconds and stops playback.
+- [ ] The Sleep Soundscapes white noise player can be started/stopped independently and continues looping smoothly.
+- [ ] Night Light mode can be toggled on to display a soothing full-screen warm glow with tap-to-exit.
+- [ ] Settings screen renders the new card-based UI with persistent user preferences in AsyncStorage.
 
-### Build & Ship
-- [ ] `npx tsc --noEmit` completes with zero errors
-- [ ] `npm run build:apk` produces a signed APK that installs and launches without crash on Android
-- [ ] All changes are committed to git with descriptive commit messages
+### Build Verification
+- [ ] `npx tsc --noEmit` passes with 0 TypeScript errors.
+- [ ] `npm run build:apk` builds a release APK successfully.
+- [ ] All changes committed and pushed to git.

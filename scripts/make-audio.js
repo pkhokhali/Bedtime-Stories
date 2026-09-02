@@ -145,6 +145,23 @@ function wind() {
   return out;
 }
 
+function rain() {
+  const n = SR * 8;
+  const out = new Float32Array(n);
+  let lp = 0;
+  let hp = 0;
+  for (let i = 0; i < n; i++) {
+    lp = lp * 0.91 + noise() * 0.09;
+    hp = hp * 0.72 + (noise() - 0.5 * (out[Math.max(0, i - 1)] || 0)) * 0.04;
+    out[i] = lp * 0.18 + hp * 0.12;
+    if (i % 1200 < 30 && Math.sin(i * 0.01) > 0.3) {
+      const drop = Math.sin((i / SR) * 1400 * Math.PI * 2) * 0.035 * env(i % 1200, 30, 0.1, 0.7);
+      out[i] += drop;
+    }
+  }
+  return out;
+}
+
 write('night.wav', night());
 write('river.wav', river());
 write('moon.wav', drone(8, 110, 165, 0.09));
@@ -154,4 +171,6 @@ write('splash.wav', splash());
 write('ripple.wav', ripple());
 write('chime.wav', chime());
 write('wind.wav', wind());
+write('rain.wav', rain());
 console.log('audio written', fs.readdirSync(DIR).join(', '));
+

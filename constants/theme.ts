@@ -28,6 +28,20 @@ export const colors = {
   text: '#F4E6C8',
   textMuted: '#C4B59A',
   textSubtle: '#8A7A64',
+  cardTranslucent: 'rgba(18, 26, 44, 0.72)',
+  cardBorder: 'rgba(232, 160, 74, 0.12)',
+  celestialDark: '#060913',
+  celestialSlate: '#0c1222',
+  celestialBlue: '#121A2F',
+};
+
+export const celestialPalette = {
+  skyTop: '#060913',
+  skyMid: '#0c1222',
+  skyBottom: '#121A2F',
+  amberGlow: '#E8A04A',
+  cardBg: 'rgba(18, 26, 44, 0.72)',
+  cardBorder: 'rgba(232, 160, 74, 0.12)',
 };
 
 export const spacing = {

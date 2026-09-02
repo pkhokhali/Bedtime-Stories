@@ -1,21 +1,27 @@
-## 2026-09-01T06:28:27Z
+## 2026-09-02T06:23:11Z
 
-<USER_REQUEST>
-You are Reviewer for Saanjh 3.0 Milestone 2: AI-Powered Story Narrator & Novel Reader.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m2_1
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-The project specification is at: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-Worker 2 handoff report is at: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m2\handoff.md
+You are Reviewer 1 for Milestone 2 (M2: Atmospheric Bedtime Background & Visual Graphic Design).
+Your Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m2_1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+Master Project: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
+Worker Handoff: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m2\handoff.md
 
-Your mission:
-Objectively and critically review the changes made by Worker 2 for Milestone 2:
-1. `lib/narrator/segmenter.ts`: Verify pause tokenizer timings (300ms clause, 750ms sentence, 1000ms ellipsis, 1200ms paragraph), dialogue detection, SSML cleaner, and voice profiles.
-2. `lib/audio.ts`: Verify `resolveAmbientBed`, `fadeBedVolume`, `windDownFinalBeat`, and sound bed maps.
-3. `lib/narrator/cloudTts.ts`: Verify Google Cloud TTS neural voice integration, local file caching (`${FileSystem.cacheDirectory}saanjh_tts/`), prefetching, multi-stage fallback.
-4. `store/useSettingsStore.ts` & `app/settings.tsx`: Verify `aiVoice` toggle and persistence.
-5. `components/reader/NovelReader.tsx` & `app/story/[id].tsx`: Verify paginated novel reader, font scaling [14-28px], "Read Aloud" narration, and auto-advance.
-6. Run `npx tsc --noEmit` and `node scripts/verify_e2e.js`.
+Mission:
+Review the implementation of Milestone 2 across:
+- `components/background/TwinklingStarfield.tsx`
+- `components/background/HimalayanHorizon.tsx`
+- `components/background/AtmosphericBackground.tsx`
+- `components/background/index.ts`
+- `constants/theme.ts`
+- Screen integrations in `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, and `app/story-detail/[id].tsx`
 
-Produce a structured handoff report in `d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m2_1\handoff.md` concluding with an explicit verdict: APPROVE or REQUEST_CHANGES.
-Send a message when ready.
-</USER_REQUEST>
+Review Criteria:
+1. Starfield: 32 deterministic star nodes, Reanimated UI-thread sine oscillations at 60 FPS, `pointerEvents="none"`.
+2. Horizon: Multi-layer SVG silhouettes with mountain peaks and conifer pine trees (density >= 10), `pointerEvents="none"`.
+3. Atmosphere: Fullscreen 5-stop celestial nocturnal linear gradient, intensity modes (`full`, `subtle`, `dim`), translucent card styling (`rgba(18, 26, 44, 0.72)`).
+4. Run `npx tsc --noEmit` and `node scripts/verify_e2e.js`.
+
+Output Requirements:
+- Write `progress.md` with timestamps.
+- Write `handoff.md` with explicit verdict: `APPROVE` or `REQUEST_CHANGES`.
+- Send message back to parent.

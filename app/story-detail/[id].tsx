@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radii, spacing } from '@/constants/theme';
 import { t, ui } from '@/constants/ui';
 import { getStory, ageBands } from '@/data/catalog';
+import { AtmosphericBackground } from '@/components/background/AtmosphericBackground';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
@@ -41,19 +42,21 @@ export default function StoryDetailScreen() {
 
   if (!story || !story.id) {
     return (
-      <SafeAreaView style={styles.root}>
-        <View style={styles.errorBox}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.amber} style={{ marginBottom: 16 }} />
-          <Text style={[styles.errorText, isNe && styles.neBold]}>
-            {t(ui.storyNotFound, language)}
-          </Text>
-          <Pressable onPress={() => router.back()} style={styles.backErrorBtn}>
-            <Text style={[styles.backErrorBtnText, isNe && styles.neBold]}>
-              {t(ui.goBack, language)}
+      <AtmosphericBackground style={styles.root}>
+        <SafeAreaView style={styles.errorSafe}>
+          <View style={styles.errorBox}>
+            <Ionicons name="alert-circle-outline" size={48} color={colors.amber} style={{ marginBottom: 16 }} />
+            <Text style={[styles.errorText, isNe && styles.neBold]}>
+              {t(ui.storyNotFound, language)}
             </Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+            <Pressable onPress={() => router.back()} style={styles.backErrorBtn}>
+              <Text style={[styles.backErrorBtnText, isNe && styles.neBold]}>
+                {t(ui.goBack, language)}
+              </Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </AtmosphericBackground>
     );
   }
 
@@ -62,14 +65,14 @@ export default function StoryDetailScreen() {
   const secondaryTitle = story.title?.[secondaryLang];
 
   return (
-    <View style={styles.root}>
+    <AtmosphericBackground style={styles.root}>
       <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
         {/* Cover / Gradient Hero */}
         <View style={styles.heroWrapper}>
           {story.coverImage ? (
             <ImageBackground source={{ uri: story.coverImage }} style={styles.coverImage}>
               <LinearGradient
-                colors={['rgba(26,20,16,0.4)', 'transparent', colors.background]}
+                colors={['rgba(6,9,19,0.3)', 'transparent', '#060913']}
                 style={StyleSheet.absoluteFill}
               />
             </ImageBackground>
@@ -77,7 +80,7 @@ export default function StoryDetailScreen() {
             <View style={[styles.gradientPlaceholder, { backgroundColor: story.accent || colors.surface }]}>
               <Ionicons name="moon-outline" size={64} color="rgba(255,255,255,0.25)" />
               <LinearGradient
-                colors={['transparent', 'rgba(26,20,16,0.6)', colors.background]}
+                colors={['transparent', 'rgba(6,9,19,0.6)', '#060913']}
                 style={StyleSheet.absoluteFill}
               />
             </View>
@@ -181,14 +184,17 @@ export default function StoryDetailScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </AtmosphericBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
+  },
+  errorSafe: {
+    flex: 1,
   },
   scrollContent: {
     paddingBottom: 60,
@@ -223,7 +229,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -286,7 +294,9 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.12)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radii.chip,
@@ -298,8 +308,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   moralCard: {
-    backgroundColor: 'rgba(217, 119, 6, 0.12)',
-    borderColor: 'rgba(217, 119, 6, 0.3)',
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderColor: 'rgba(232, 160, 74, 0.25)',
     borderWidth: 1,
     borderRadius: radii.card,
     padding: spacing.md,
@@ -355,7 +365,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backErrorBtn: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.2)',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: radii.pill,

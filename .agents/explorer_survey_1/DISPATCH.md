@@ -1,19 +1,26 @@
-## 2026-09-01T06:02:47Z
-You are Explorer 1 for Saanjh 3.0 Survey Phase.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+## 2026-09-02T06:02:30Z
 
-Your mission:
-Investigate and map the full codebase structure with deep focus on Pillar R1 (7 confirmed bugs) and project configuration/infrastructure:
-1. Bug 1: Corrupted Nepali text in `app/index.tsx` (Devanagari strings vs ????) and how `constants/ui.ts` handles bilingual strings.
-2. Bug 2: `parseAgeBand` in `store/useSettingsStore.ts` - validation logic and `'parents'` age band support.
-3. Bug 3: `components/SplashRitual.tsx` - confirm dead code status, imports, references.
-4. Bug 4: Unused imports in `app/index.tsx` (`storiesForAge`, `ageBands`, `radii`, `spacing`).
-5. Bug 5: Admin Panel age band mismatch in `admin/src/App.tsx` (`7-9` vs `6-8` and `9-12`).
-6. Bug 6: Backend authentication in `backend/src/index.ts` - `POST /catalog` endpoint, `ADMIN_SECRET` environment variable, Cloudflare Worker setup, and how admin panel calls it.
-7. Bug 7: `components/AdBanner.tsx` - AdMob dummy unit ID handling and graceful fallback/hiding.
-8. Build & TypeScript setup: examine root `package.json`, `tsconfig.json`, `admin/package.json`, `backend/package.json`, verify existing scripts and build commands.
+<USER_REQUEST>
+You are Explorer 1 on the Saanjh Bedtime Stories overhaul project.
+Your Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
 
-Write your comprehensive findings to `d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\handoff.md`.
-Update `progress.md` in your working directory with timestamps.
-Send a message when your handoff is ready.
+Mission:
+Survey the codebase architecture, navigation, splash screen setup, dependencies, animation libraries, and assets for Requirement R1 (Magical Storybook Animated Splash Ritual) and overall app structure.
+
+Investigation Targets:
+1. Review package.json, app.json, tsconfig.json to understand Expo / React Native version, installed libraries (e.g. react-native-reanimated, react-native-svg, expo-av, lucide-react-native, expo-router or react-navigation, etc.).
+2. Examine the root layout and entry points (e.g. `app/_layout.tsx`, `app/index.tsx`, `app/splash.tsx` if any, etc.).
+3. Inspect `assets/` directory (audio files like `assets/audio/chime.wav`, images, svgs, fonts).
+4. Analyze how the splash screen is currently handled and how a Reanimated / SVG animated glowing storybook with stardust particles, bilingual logo reveal ("Saanjh" / "साँझ - Bedtime Stories & Novels"), chime sound, and skip/crossfade can be integrated cleanly into the navigation flow without blocking or double-mounting.
+5. Identify any potential conflicts or missing packages.
+
+Output Requirements:
+- Maintain `progress.md` in your working directory with heartbeat timestamps.
+- Write a comprehensive, structured report to `d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\handoff.md` with:
+  - Architecture overview & navigation flow
+  - Dependencies & asset inventory
+  - Detailed technical analysis and recommendation for R1 implementation
+  - Feature enumeration with prerequisites/dependencies
+- When done, send a message back with a concise summary and path to your handoff.md.
+</USER_REQUEST>

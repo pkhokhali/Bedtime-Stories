@@ -1,31 +1,17 @@
-# Progress — Worker 3 (Milestone 3)
+# Progress — Worker M3 (Search & Discovery Modal)
 
-Last visited: 2026-09-01T12:20:00+05:45
+Last visited: 2026-09-02T12:18:00+05:45
 
-## Phase 1: Investigation & Requirements Analysis
-- [x] Read DISPATCH.md and initialize tracking
-- [x] Inspect ORIGINAL_REQUEST.md, PROJECT.md, and explorer_survey_3/handoff.md
-- [x] Inspect existing codebase: `app/`, `store/`, `components/`, `scripts/verify_e2e.js`, `types/`
+## Current Status: Milestone 3 Completed and Verified
 
-## Phase 2: Favorites Store
-- [x] Implement `store/useFavoritesStore.ts` with AsyncStorage persistence under key `'saanjh.favorites.v1'`
-
-## Phase 3: Story Card Skeleton Component
-- [x] Implement `components/StoryCardSkeleton.tsx` with animated pulsing shimmer
-
-## Phase 4: Story Detail Screen
-- [x] Implement `app/story-detail/[id].tsx` with Hero cover, back button, animated heart toggle, category badge, bilingual title, metadata badges, lesson/moral card, and Play/Listen CTA
-- [x] Register in `app/_layout.tsx`
-
-## Phase 5: Home Screen Overhaul & Navigation Updates
-- [x] Overhaul `app/index.tsx` (Hero banner with Play & Details CTAs, Favorites carousel, Devanagari categories, skeletons, retry banner)
-- [x] Update story card tap in `components/StoryCarousel.tsx` to navigate to `/story-detail/${story.id}`
-- [x] Update story card tap in `app/library.tsx` to navigate to `/story-detail/${story.id}`
-- [x] Update `constants/ui.ts` with bilingual strings for favorites, details, lesson/meaning, retry, etc.
-- [x] Update `store/useDownloadsStore.ts` and `lib/catalogFetcher.ts` to manage `isLoadingCatalog` and `catalogError`
-
-## Phase 6: Verification & Self-Critique
-- [x] Verified static analysis, imports, types, exports across all modified and newly created files
-- [x] Verified all E2E assertions for F01, F04, F18, F19, F20, F21, C01, C04, S05
-- [x] Created `handoff.md`
-- [x] Send handoff message to caller
+- [x] Initialized DISPATCH.md and BRIEFING.md
+- [x] Inspect survey blueprint, ORIGINAL_REQUEST.md, PROJECT.md, and existing codebase
+- [x] Implement `lib/searchEngine.ts` (bilingual search engine, 6 filter pills, trending recommendations, recent searches persistence)
+- [x] Implement `components/search/SearchTriggerFAB.tsx` (glowing warm amber FAB with celestial shadow)
+- [x] Implement `components/search/SearchDiscoveryModal.tsx` (full-screen modal with blur/dim backdrop, auto-focused search bar, recent searches, trending stories, category grid, result cards, and direct navigation)
+- [x] Export components via `components/search/index.ts`
+- [x] Integrate into `app/index.tsx` (Home screen header search button + FAB + Discovery Modal)
+- [x] Integrate into `app/library.tsx` (Library screen header search button + FAB + Discovery Modal)
+- [x] Verify TypeScript (`npx tsc --noEmit` exited with 0 errors)
+- [x] Verify E2E suite (`node scripts/verify_e2e.js` 111/111 tests passed with 39,716 assertions)
+- [x] Write `handoff.md` and report completion

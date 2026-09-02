@@ -1,28 +1,8 @@
-## 2026-09-01T06:02:47Z
-You are Explorer 2 for Saanjh 3.0 Survey Phase.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_2
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+## 2026-09-02T06:02:30Z
+Mission: Survey the stories catalog/data structures, the search & discovery requirements (R3), and the visual styling & background architecture (R2) across the application.
 
-Your mission:
-Investigate and map the audio and narration architecture with deep focus on Pillar R2 (AI-Powered Story Narrator & Novel Reader):
-1. Analyze existing TTS and audio system: `lib/speech.ts`, audio playback hooks/components (`components/audio/`, `app/story/[id].tsx`, `app/novel/[id].tsx` if any, `expo-speech`, `expo-av`).
-2. Layer 1 (Enhanced On-Device Narration):
-   - Sentence/paragraph strategic pauses mechanism.
-   - Dialogue vs narration emphasis / SSML markers where supported.
-   - Character voice differentiation (rate, pitch, volume per voice role).
-   - Auto-detection and insertion of ambient background sound beds matching `sceneId` or `stageKind`.
-   - Soft background music bed with fade in/out between beats and gentle wind-down/fadeout on final beat.
-3. Layer 2 (Cloud AI Voice):
-   - Google Cloud TTS API integration (free tier, neural voices for en & ne).
-   - Settings toggle: "AI Voice (Beta)" in `useSettingsStore` and Settings screen.
-   - Local audio caching strategy (e.g. `expo-file-system` caching of fetched mp3/wav audio files by hash/beat key).
-   - Pre-fetching mechanism for story beats.
-   - Graceful fallback to Layer 1 if API key missing, network unreachable, or quota exceeded.
-4. Novel Reader Mode:
-   - Paginated text reader view with adjustable font size.
-   - "Read Aloud" button narrating current page using narrator system.
-   - Auto-advancing pages during narration and overall novel progress bar.
-
-Write your comprehensive findings to `d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_2\handoff.md`.
-Update `progress.md` in your working directory with timestamps.
-Send a message when your handoff is ready.
+Investigation Targets:
+1. Examine story data files (e.g. `data/stories.ts`, `data/types.ts`, or wherever stories are stored). Verify story count (is it 24+ stories?), fields (bilingual titles in English and Nepali Devanagari, subtitles, tags, IDs, age groups, audio availability).
+2. Examine Home (`app/index.tsx`), Library (`app/library.tsx`), Story Details (`app/story/[id].tsx` or similar), and other screens to see how backgrounds, themes, colors, and layout are currently styled.
+3. Investigate how to build the shared dynamic Atmospheric Bedtime Background (R2) with animated twinkling stars (opacity/scale oscillations at 60 FPS on native thread without scroll stutter) and Himalayan mountain pine silhouettes with celestial palette (`#0c1222`, `#E8A04A`, deep midnight blue).
+4. Investigate how to build the Dedicated Full-Screen Search & Discovery Modal (R3): floating search trigger, full-screen blur/dim modal, real-time bilingual English & Nepali search, quick filter pills ("Toddlers (2-4)", "Kids (6-8)", "Novels & Parents", "Folk Tales", "Animal Stories", "Audio Only"), Trending Stories, Recent Searches, and navigation to story preview.

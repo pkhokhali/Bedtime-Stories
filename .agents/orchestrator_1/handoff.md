@@ -1,41 +1,58 @@
-# Orchestrator Handoff Report (Generation 1 → Generation 2)
+# Handoff Report — Orchestrator Generation 1 to Generation 2
 
-## 1. Milestone State
-| Milestone | Description | Status | Verification & Evidence |
-|---|---|---|---|
-| **Phase 0: Survey** | Full codebase & requirement survey | **DONE** | Explorers 1, 2, 3 reports in `.agents/explorer_survey_*` |
-| **Dual Track: E2E Test Suite** | 4-tier automated test harness (`scripts/verify_e2e.js`) | **DONE** | `TEST_INFRA.md`, `TEST_READY.md` published at root |
-| **M1: Bug Fixes & Backend Auth** | 7 confirmed bugs (Devanagari text, parseAgeBand, SplashRitual deleted, unused imports, Admin age bands, backend Bearer auth, AdBanner fallback) | **DONE** | Gate PASSED unanimously (Reviewers 1-2, Challengers 1-2, Auditor 1) |
-| **M2: AI Narrator & Novel Reader** | Enhanced TTS with pauses & voice profiles, auto-ambient bed fader & sleep wind-down, Google Cloud TTS with local caching & fallback, settings toggle, paginated Novel Reader | **DONE** | Gate PASSED unanimously (Reviewer 2, Challenger 2, Auditor 2) |
-| **M3: UI Overhaul & Story Detail & Favorites** | `app/story-detail/[id].tsx`, `useFavoritesStore` with AsyncStorage, Home Screen redesign, skeleton loaders & retry state | **IMPLEMENTED** | Worker 3 delivered handoff in `.agents/worker_m3/handoff.md`. Ready for gate review/audit. |
-| **M4: Sample Content & Assets** | 3 new bilingual stories in `data/stories/`, register in `data/catalog.ts`, ambient metadata for 5+ stories, cover images for 10+ stories | **PLANNED** | Specs established in survey 3 handoff (`little-pine-sleep.ts`, `langtang-waterfall.ts`, `midnight-chiya.ts`). |
-| **M5: E2E Verification & Final Audit** | Full project verification, `node scripts/verify_e2e.js` 100% pass, `npx tsc --noEmit` 0 errors, forensic audit | **PLANNED** | Final release milestone. |
+## 1. Observation & Completed Work
+- **Survey Phase**: Complete (3 Explorers mapped architecture, catalog with 24 stories, theme, audio, and build system).
+- **Master Project Plan**: `PROJECT.md` created at project root with 25 inventoried features across 5 milestones and interface contracts.
+- **E2E Testing Track**: Complete (`TEST_INFRA.md`, `TEST_READY.md`, `scripts/verify_e2e.js` with 104+ tests, 433 assertions, 100% pass rate).
+- **Milestone 1 (M1: Magical Storybook Animated Splash Ritual)**:
+  - Implemented: `components/splash/AnimatedStorybook.tsx`, `components/splash/StardustParticles.tsx`, `components/splash/SplashRitual.tsx`, `app/_layout.tsx`.
+  - Gate Verified: Reviewer 1 (APPROVE), Reviewer 2 (APPROVE), Challenger 1 (APPROVE), Challenger 2 (APPROVE), Forensic Auditor (CLEAN).
+  - Status: **DONE**.
+- **Milestone 2 (M2: Atmospheric Bedtime Background & Visual Graphic Design)**:
+  - Implemented: `components/background/TwinklingStarfield.tsx` (32 Reanimated stars), `components/background/HimalayanHorizon.tsx` (14 SVG pine conifers & ridges), `components/background/AtmosphericBackground.tsx` (5-stop celestial nocturnal gradient & intensity modes), `constants/theme.ts` tokens, and screen integrations in `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, and `app/story-detail/[id].tsx`.
+  - Gate Verified: Reviewer 1 (APPROVE), Reviewer 2 (APPROVE), Challenger 1 (APPROVE), Challenger 2 (APPROVE), Forensic Auditor (CLEAN).
+  - Status: **DONE**.
 
-## 2. Active Subagents
-All 16 subagents spawned in Generation 1 have completed their tasks. There are 0 pending subagents.
+## 2. Logic Chain & Decisions
+- Splash is mounted as an in-tree overlay over `<Stack>` in `app/_layout.tsx` so font loading and store hydrations occur concurrently without route re-mounting.
+- Background animations run 100% on the Reanimated UI thread with `pointerEvents="none"` to ensure 60 FPS performance without scroll stutter.
+- All 19 subagents have delivered their handoff reports and completed cleanly.
 
-## 3. Pending Decisions & Immediate Next Steps for Successor
-1. **Gate Milestone 3**:
-   - Dispatch Reviewer, Challenger, and Forensic Auditor for Milestone 3 (`.agents/worker_m3/handoff.md`).
-   - Evaluate gate criteria and update `GATE_STATUS.md` and `PROJECT.md` to mark M3 as `DONE`.
-2. **Execute Milestone 4 (Sample Content & Assets)**:
-   - Dispatch Worker M4 to create:
-     - `data/stories/little-pine-sleep.ts` (Ages 2-4, 9 beats, nature/comfort theme)
-     - `data/stories/langtang-waterfall.ts` (Ages 6-8, 10 beats, Nepali folklore/adventure)
-     - `data/stories/midnight-chiya.ts` (Parents novel, 11 beats, Patan courtyard literary piece)
-     - Update `data/catalog.ts` to register the 3 new stories, map ambient sound beds & SFX metadata across 5+ existing stories, and add curated high-resolution cover image URLs for 10+ stories.
-   - Gate Milestone 4 with Reviewer, Challenger, and Forensic Auditor.
-3. **Execute Milestone 5 (Final Project Verification & Release Audit)**:
-   - Run full E2E test suite across all 4 tiers: `node scripts/verify_e2e.js` (or `npm test`).
-   - Run full TypeScript check: `npx tsc --noEmit` and ensure 0 errors.
-   - Run final Forensic Integrity Audit across entire project.
-   - Verify git commit hygiene and prepare final completion report.
+## 3. Milestone State
+| Milestone | Description | Status |
+|---|---|---|
+| **M1** | Magical Storybook Splash Ritual | **DONE** |
+| **M2** | Atmospheric Bedtime Background | **DONE** |
+| **M3** | Full-Screen Search & Discovery Modal | **PLANNED** (Next up) |
+| **M4** | Sleep Features & Settings Revamp | **PLANNED** |
+| **M5** | Final E2E Suite & Release APK Build | **PLANNED** |
 
-## 4. Key Artifacts
-- `d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md` — Authoritative requirements
-- `d:\Antigravity Projects\Bedtime Stories\PROJECT.md` — Global architecture and living status document
-- `d:\Antigravity Projects\Bedtime Stories\TEST_INFRA.md` — E2E Test specification
-- `d:\Antigravity Projects\Bedtime Stories\TEST_READY.md` — E2E Test ready notice and command guide
-- `d:\Antigravity Projects\Bedtime Stories\scripts\verify_e2e.js` — Automated E2E test runner
-- `d:\Antigravity Projects\Bedtime Stories\.agents\orchestrator_1\GATE_STATUS.md` — Milestone gate logs
-- `d:\Antigravity Projects\Bedtime Stories\.agents\orchestrator_1\progress.md` — Milestone progress log
+## 4. Remaining Work & Next Steps for Successor
+1. **Execute Milestone 3 (M3: Full-Screen Search & Discovery Modal)**:
+   - Components to build:
+     * `lib/searchEngine.ts`: Real-time bilingual search (English & Nepali Devanagari) across 24+ stories, title, subtitle, tags, IDs, and 6 quick filter pills ("Toddlers (2-4)", "Kids (6-8)", "Novels & Parents", "Folk Tales", "Animal Stories", "Audio Only").
+     * `components/search/SearchTriggerFAB.tsx` & header search icons.
+     * `components/search/SearchDiscoveryModal.tsx`: Fullscreen blur/dim modal, trending stories, AsyncStorage-persisted recent searches (`saanjh.recent_searches.v1`), and instant navigation to story preview.
+   - Screen integrations in `app/index.tsx` and `app/library.tsx`.
+   - Run Iteration Loop: Worker -> Reviewers (2) -> Challengers (2) -> Auditor -> Gate check.
+2. **Execute Milestone 4 (M4: Bedtime Sleep Features & Settings Revamp)**:
+   - Components to build:
+     * `scripts/make-audio.js`: Synthesize `rain.wav` and register in `types/story.ts` & `lib/sounds.ts`.
+     * `store/useSleepTimerStore.ts` & `lib/sleepTimer.ts`: 15m, 30m, 45m, 60m, End of Story, live header countdown badge (`⏰ MM:SS`), 10s volume fade out to silence.
+     * `components/sleep/SoundscapesPlayer.tsx`: Continuous looping ambient white noise player with 5 soundscapes (`rain`, `river`, `night`, `wind`, `chime`) and background playback.
+     * `components/sleep/NightLightModal.tsx`: Fullscreen warm amber / moonlight glow, soft brightness slider, keep-awake, tap-to-exit.
+     * `app/settings.tsx` & `store/useSettingsStore.ts`: 4 visual cards (Audio & Voices, Sleep Timer & Ambiance, Language & Age Group, Display & Night Light) with AsyncStorage persistence under `saanjh.settings.v1`.
+   - Run Iteration Loop: Worker -> Reviewers (2) -> Challengers (2) -> Auditor -> Gate check.
+3. **Execute Milestone 5 (M5: Final Verification & Release APK Build)**:
+   - Run full E2E test suite: `node scripts/verify_e2e.js` (100% pass).
+   - Run TypeScript typecheck: `npx tsc --noEmit` (0 errors).
+   - Build Release APK: `npm run build:apk`.
+   - Git commit and push all changes.
+   - Report final completion to Sentinel parent `f52fb96a-fea7-4a10-831b-a475feda8834`.
+
+## 5. Key Artifacts
+- Master Project Plan: `d:\Antigravity Projects\Bedtime Stories\PROJECT.md`
+- Original Request: `d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md`
+- E2E Test Suite Status: `d:\Antigravity Projects\Bedtime Stories\TEST_READY.md`
+- E2E Test Runner: `d:\Antigravity Projects\Bedtime Stories\scripts\verify_e2e.js`
+- Orchestrator 1 State: `d:\Antigravity Projects\Bedtime Stories\.agents\orchestrator_1\BRIEFING.md`

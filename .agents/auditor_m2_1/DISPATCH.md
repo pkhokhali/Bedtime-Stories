@@ -1,18 +1,17 @@
-## 2026-09-01T06:28:27Z
+## 2026-09-02T06:23:12Z
+You are the Forensic Integrity Auditor for Milestone 2 (M2: Atmospheric Bedtime Background & Visual Graphic Design).
+Your Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m2_1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+Master Project: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
+Worker Handoff: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m2\handoff.md
 
-<USER_REQUEST>
-You are the Forensic Integrity Auditor for Saanjh 3.0 Milestone 2: AI-Powered Story Narrator & Novel Reader.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m2_1
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-The project specification is at: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-Worker 2 handoff report is at: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m2\handoff.md
+Mission:
+Conduct systematic forensic integrity verification on Milestone 2:
+1. Inspect `components/background/TwinklingStarfield.tsx`, `components/background/HimalayanHorizon.tsx`, `components/background/AtmosphericBackground.tsx`, `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, and `app/story-detail/[id].tsx`.
+2. Check for cheating: dummy facades, mock returns, simulated stars, fake backgrounds.
+3. Validate genuine 32 Reanimated stars, genuine SVG vectors for mountain pines, genuine 5-stop nocturnal palette, genuine screen integrations.
+4. Run `npx tsc --noEmit` and `node scripts/verify_e2e.js`.
 
-Your mission:
-Perform a strict forensic integrity audit on all changes made for Milestone 2:
-1. Inspect `lib/narrator/segmenter.ts`, `lib/narrator/cloudTts.ts`, `lib/narrator/types.ts`, `lib/speech.ts`, `lib/audio.ts`, `hooks/useStoryPlayback.ts`, `components/reader/NovelReader.tsx`, `app/settings.tsx`, `store/useSettingsStore.ts`, and `app/story/[id].tsx`.
-2. Verify that all implementations are genuine (natural pause segmenter, voice profile modulation, auto-bed resolver, Cloud TTS client, local caching, novel reader pagination) and not dummy facades, hardcoded test strings, or shortcuts.
-3. Verify no hidden malicious code or unhandled crashes.
-4. Record your forensic evidence and render an unambiguous verdict: CLEAN or INTEGRITY VIOLATION.
-5. Save your report to `d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m2_1\handoff.md`.
-6. Send a message when ready.
-</USER_REQUEST>
+Output Requirements:
+- Write `progress.md` and `handoff.md` with explicit audit evidence and verdict: `CLEAN` or `INTEGRITY VIOLATION`.
+- Send message back to parent with verdict.

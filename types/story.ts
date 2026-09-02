@@ -46,7 +46,8 @@ export type SoundId =
   | 'splash'
   | 'ripple'
   | 'chime'
-  | 'wind';
+  | 'wind'
+  | 'rain';
 
 export type Localized<T = string> = Record<Language, T>;
 

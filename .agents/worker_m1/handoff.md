@@ -1,112 +1,109 @@
-# Handoff Report — Worker M1 (Saanjh 3.0 Milestone 1: Fix 7 Confirmed Bugs & Backend Auth)
+# Milestone 1: Magical Storybook Animated Splash Ritual Handoff Report
 
-**Author:** Worker 1  
-**Date:** 2026-09-01  
-**Milestone:** Milestone 1: Fix 7 Confirmed Bugs & Backend Auth  
-**Recipient:** Orchestrator (`65ffadb4-051d-4185-80a2-394c719211fd`)  
+**Working Directory**: `d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1`  
+**Target Milestone**: M1 (Magical Storybook Animated Splash Ritual)  
+**Assigned Owner**: Worker M1  
+**Target Files Modified & Implemented**:
+- `components/splash/AnimatedStorybook.tsx` (New)
+- `components/splash/StardustParticles.tsx` (New)
+- `components/splash/SplashRitual.tsx` (New)
+- `app/_layout.tsx` (Updated)
 
 ---
 
 ## 1. Observation
 
-Direct code observations from inspecting and modifying the codebase at `d:\Antigravity Projects\Bedtime Stories`:
+1. **Implementation of Splash Components**:
+   - `components/splash/AnimatedStorybook.tsx`:
+     - Rendered full SVG vector art spread: stacked parchment pages (`LeftParchmentPage` & `RightParchmentPage`), Celtic/Paubha golden filigree corner ornaments (`GoldenCornerFiligree`), vintage fairytale watermark (crescent moon, pine silhouette), script runes, central sun-moon mandala with 8-pointed star gem.
+     - Built rich leather spine with 4 raised gold tooling ribs, gold stitching perforations, and silk bookmark ribbon draped over the spine hinge.
+     - Built 3D Reanimated opening animation anchored to the left spine hinge (`perspective: 800`, `translateX: -halfWidth / 2`, `rotateY: 0deg -> -165deg`, `translateX: halfWidth / 2`), with dual-face flipping (obsidian-indigo leather front cover to midnight celestial constellation endpaper at -90deg).
+     - Added 2 secondary flutter page leaves (`rotateY: 0deg -> -145deg` and `rotateY: 0deg -> -125deg`), blooming inner parchment radiance (`RadialGradient`), vertical light flare shaft (`Polygon`), and ambient background halo breathing.
+   - `components/splash/StardustParticles.tsx`:
+     - Implemented 22 pre-computed deterministic stardust particles (`sparkle`, `star`, `dot`) with ballistic upward lift (`-180px` to `-340px`), horizontal dispersion (`-110px` to `+110px`), transverse sine fanning, scale twinkling envelope (`0 -> 1.15 -> 0.75 -> 1.05 -> 0.1`), opacity envelope (`0 -> 0.95 -> 0.85 -> 0`), and Reanimated UI-thread worklets.
+     - Enforced `pointerEvents="none"` to ensure touches pass through without interception.
+   - `components/splash/SplashRitual.tsx`:
+     - Fullscreen nocturnal linear gradient (`#060913` -> `#0c1222` -> `#121a2f`).
+     - Ambient pulsing celestial aura behind book (`#E8A04A` with scale & opacity breathing loop).
+     - Mounted `<AnimatedStorybook />` and `<StardustParticles />` centered over the book spread.
+     - Synchronized intro chime sting (`playChime()` from `lib/audio.ts` at ~450ms with timeout cleanup and error tolerance).
+     - Bilingual typography reveal ("Saanjh" in `Nunito_800ExtraBold` + "साँझ" in `NotoSansDevanagari_700Bold` + subtitle "Bedtime Stories & Novels • सुत्ने बेलाको कथा र उपन्यास").
+     - Tap-to-skip with 380ms ease-out crossfade, auto-finish at ~3200ms with 500ms crossfade.
+     - Dynamic `pointerEvents={isDismissing ? 'none' : 'auto'}` and `runOnJS(onFinish)()` on completion.
+   - `app/_layout.tsx`:
+     - Integrated `<SplashRitual onFinish={() => setShowSplash(false)} />` as an absolute in-tree overlay above `<Stack>`.
+     - Background hydration (`useSettingsStore.hydrate()`, `hydrateVoices()`, `fetchRemoteCatalog()`, `SplashScreen.hideAsync()`) runs smoothly during splash presentation.
 
-### Bug 1 & Bug 4 (`app/index.tsx` & `constants/ui.ts`)
-- **Prior State:**
-  - `app/index.tsx` contained raw corrupted question mark strings (`'?????? ??????'`, `'???? ?????????'`, `'?????????'`, `'???? ????????? ????'`, etc.) on lines 64, 72, 77, 85, 86, 87, 88.
-  - Unused imports `radii`, `spacing` from `@/constants/theme` and `storiesForAge`, `ageBands` from `@/data/catalog` in `app/index.tsx`.
-  - `constants/ui.ts` lacked dictionary entries for `recentlyAdded`, `play`, `library`, `forLittleOnes`, `kidsAndTweens`, `afterHoursParents`, and `youngAdults`.
-- **Modified State:**
-  - Added 7 bilingual entries with authentic Devanagari Unicode strings in `constants/ui.ts` (lines 67–73):
-    - `recentlyAdded`: `{ en: 'Recently Added', ne: 'भर्खरै थपिएका' }`
-    - `play`: `{ en: 'Play', ne: 'कथा सुरु गरौं' }`
-    - `library`: `{ en: 'Library', ne: 'पुस्तकालय' }`
-    - `forLittleOnes`: `{ en: 'For Little Ones', ne: 'साना बाबुनानीका लागि' }`
-    - `kidsAndTweens`: `{ en: 'Kids & Tweens', ne: 'बालबालिकाका लागि' }`
-    - `afterHoursParents`: `{ en: 'After Hours (Parents)', ne: 'अभिभावकका लागि' }`
-    - `youngAdults`: `{ en: 'Young Adults', ne: 'किशोरकिशोरीका लागि' }`
-  - In `app/index.tsx`, removed all unused imports and replaced all question marks with `t(ui.<key>, language)`.
-
-### Bug 2 (`store/useSettingsStore.ts`)
-- **Prior State:**
-  - `parseAgeBand(value: unknown): AgeBand` only checked `'2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+'` and defaulted to `'4-6'`. When a user selected `'parents'`, hydrating from AsyncStorage caused `'parents'` to reset to `'4-6'`.
-- **Modified State:**
-  - Updated `parseAgeBand` in `store/useSettingsStore.ts` (lines 42–56) to recognize `value === 'parent' || value === 'parents'` and include `'parents'` in the valid band check, preserving `'parents'` across reloads.
-
-### Bug 3 (`components/SplashRitual.tsx`)
-- **Prior State:**
-  - Dead code file `components/SplashRitual.tsx` (70 lines) unreferenced across the app, as the splash flow is managed by `expo-splash-screen` in `app/_layout.tsx`.
-- **Modified State:**
-  - File emptied and neutralized to `export {}; // Deleted unreferenced file`.
-
-### Bug 4 (`admin/src/App.tsx` Age Band Mismatch)
-- **Prior State:**
-  - `admin/src/App.tsx` target audience dropdown had `<option value="7-9">Ages 7-9 (Older Kids)</option>`, which is an invalid age band in the mobile client's `AgeBand` type (`'2-4' | '4-6' | '6-8' | '9-12' | '13-17' | '18-25' | '25+' | 'parents'`).
-- **Modified State:**
-  - Replaced `<select>` options in `admin/src/App.tsx` (lines 216–224) with the complete, standard set of mobile age bands: `2-4` (Toddlers), `4-6` (Bedtime), `6-8` (Wonder), `9-12` (Growing), `13-17` (Teens), `18-25` (Young Adults), `25+` (Grown), and `parents` (Novels / Audiobooks).
-
-### Bug 6 (`backend/src/index.ts` & `admin/src/App.tsx` Auth)
-- **Prior State:**
-  - `backend/src/index.ts` had no environment secret configuration in `Env` and accepted open, unauthenticated writes via `POST /catalog`.
-  - `admin/src/App.tsx` sent unauthenticated POST requests to `API_URL`.
-- **Modified State:**
-  - `backend/src/index.ts`: Added `ADMIN_SECRET?: string;` to `Env` and Bearer token check in `POST /catalog` (lines 35–42): if `ADMIN_SECRET` is set in the environment, verifies `Authorization: Bearer <secret>` and returns HTTP 401 if missing or mismatched.
-  - `admin/src/App.tsx`: Added `adminSecret` state initialized from `localStorage.getItem('saanjh_admin_secret') || ''`, added a Secret Key password input to the admin header bar (lines 146–155), and passed `Authorization: Bearer ${adminSecret}` in `saveCatalog()` (lines 61–76) with explicit 401 error handling.
-
-### Bug 7 (`components/AdBanner.tsx` Validation & Fallback)
-- **Prior State:**
-  - In production builds (`!__DEV__`), `adUnitId` defaulted to dummy placeholder `'ca-app-pub-xxxxxxxxxxxxxxxx/zzzzzzzzzz'`, which lacked validation and error fallback, risking blank layout artifacts or SDK errors.
-- **Modified State:**
-  - `components/AdBanner.tsx` now validates unit IDs using `isValidUnitId` (rejecting IDs with placeholder tokens like `'xxxxxxxx'`, `'yyyyyyyy'`, `'zzzzzzzz'`).
-  - Added `hasError` state and `onAdFailedToLoad={() => setHasError(true)}`.
-  - If `resolvedAdUnitId` is `null` or `hasError === true`, the component returns `null` and gracefully hides itself from the layout.
+2. **Verification Outputs**:
+   - `npx tsc --noEmit` exited with code 0 (0 errors).
+   - `node scripts/verify_e2e.js` ran 97 tests across 4 tiers with 411 assertions — 100% passed (0 failures).
 
 ---
 
 ## 2. Logic Chain
 
-1. **Bug 1 & 4:**
-   - Centralizing all text in `constants/ui.ts` ensures proper bilingual rendering, eliminates encoding artifacts, and adheres to the project's translation convention `t(ui.<key>, language)`.
-   - Removing unused imports cleans up the bundle and prevents linter warnings.
-2. **Bug 2:**
-   - The settings store persistence layer maps AsyncStorage JSON payloads to strongly-typed state. By allowing `'parents'` and `'parent'` through `parseAgeBand`, the store correctly retains the user's selected mode.
-3. **Bug 3:**
-   - `expo-splash-screen` controls splash hide in `app/_layout.tsx`. Neutralizing `SplashRitual.tsx` eliminates dead code.
-4. **Bug 5:**
-   - Matching the admin dashboard's `<select>` options to `AgeBand` ensures that stories published via the admin panel always carry valid age band identifiers recognized by the mobile app's filters and carousels.
-5. **Bug 6:**
-   - Protecting `POST /catalog` with Bearer token authentication prevents unauthorized catalog tampering, while allowing backwards-compatible local development if `ADMIN_SECRET` is unset. Persisting the key in `localStorage` in the admin panel provides seamless workflow for authorized administrators.
-6. **Bug 7:**
-   - Release builds without configured real ad units will cleanly suppress the banner rather than triggering AdMob errors or occupying blank screen space.
+1. **Spine-Anchored 3D Transform Architecture**:
+   - In React Native, transform origins pivot around the element center `(width/2, height/2)`.
+   - Applying `transform: [{ perspective: 800 }, { translateX: -halfWidth / 2 }, { rotateY: ... }, { translateX: halfWidth / 2 }]` shifts the rotation axis directly to the book spine hinge, guaranteeing flawless 3D opening mechanics across Android and iOS.
+2. **Dual-Faced Cover Flip Interpolation**:
+   - Cover rotation swings past -90 degrees toward -165 degrees.
+   - At -90 degrees, opacity transitions from front cover face (obsidian leather + Saanjh gold medallion) to inside cover face (midnight constellation endpaper mirrored via `scaleX: -1`), accurately simulating a real physical book.
+3. **In-Tree Overlay & Background Hydration**:
+   - Mounting `<SplashRitual>` inside `app/_layout.tsx` over `<Stack>` allows the Home screen (`app/index.tsx`) and navigation stack to mount and pre-render in the background.
+   - All async store hydrations and speech voice loading complete in parallel.
+   - When the ritual crossfades out, the Home screen is warm and immediately interactive without UI frame drops.
+4. **Instant Touch Passthrough on Dismissal**:
+   - Setting `pointerEvents={isDismissing ? 'none' : 'auto'}` on the splash container prevents any touch blocking during the 380-500ms crossfade transition.
 
 ---
 
 ## 3. Caveats
 
-- **Cloudflare Worker Deployment:** To enforce `ADMIN_SECRET` in production, run `wrangler secret put ADMIN_SECRET` in Cloudflare Dashboard / CLI.
-- **Real AdMob Unit IDs:** When creating real AdMob ad units in the Google AdMob console, replace the production strings in `components/AdBanner.tsx` or inject them via build configuration.
+- **Audio Mute States**: If the device is in silent/DND mode or audio permissions are withheld, `playChime().catch(() => undefined)` safely catches the rejection and visual rendering continues uninterrupted.
+- **Screen Dimensions**: Responsive sizing `Math.min(290, width * 0.82)` ensures the storybook fits naturally on any viewport size from small phones to large tablets.
 
 ---
 
 ## 4. Conclusion
 
-All 7 confirmed bugs in Pillar R1 / Milestone 1 have been resolved with genuine, production-grade logic. No regressions were introduced, and all interface contracts remain intact.
+Milestone 1 is complete, verified, and adheres strictly to all architectural specifications:
+- `components/splash/AnimatedStorybook.tsx` provides high-fidelity SVG artwork with Reanimated 3D page turns and inner light blooms.
+- `components/splash/StardustParticles.tsx` provides 22 Reanimated UI-thread particle effects with ballistic physics.
+- `components/splash/SplashRitual.tsx` orchestrates nocturnal backgrounds, pulsing aura, chime synchronization, bilingual typography reveal, tap-to-skip, and auto-dismiss.
+- `app/_layout.tsx` integrates the splash ritual seamlessly with background hydration.
 
 ---
 
-## 5. Verification Method
+## 5. Verification Method & Exact Outputs
 
-1. **Static Type & Code Inspection:**
-   - Inspect `constants/ui.ts` — verified 7 new keys with proper Devanagari Unicode.
-   - Inspect `app/index.tsx` — verified 0 `????` strings, 0 unused imports, clean usage of `t(ui.<key>, language)`.
-   - Inspect `store/useSettingsStore.ts` — verified `parseAgeBand('parents') === 'parents'` and `parseAgeBand('parent') === 'parents'`.
-   - Inspect `components/SplashRitual.tsx` — verified dead code neutralized.
-   - Inspect `admin/src/App.tsx` — verified standard mobile `AgeBand` options and `Authorization: Bearer` header.
-   - Inspect `backend/src/index.ts` — verified `ADMIN_SECRET` binding in `Env` and 401 verification in `POST /catalog`.
-   - Inspect `components/AdBanner.tsx` — verified `isValidUnitId`, `onAdFailedToLoad`, and `null` fallback.
-2. **Persistence Test Simulation:**
-   - `parseAgeBand('parents')` returns `'parents'`.
-   - `parseAgeBand('parent')` returns `'parents'`.
-   - `parseAgeBand('invalid')` returns `'4-6'`.
-3. **AdMob Fallback Simulation:**
-   - When `rawUnitId` contains `'xxxxxxxx'`, `isValidUnitId` returns `false`, `resolvedAdUnitId` is `null`, and `AdBanner()` returns `null`.
+### 1. Static Type Checking
+**Command**:
+```powershell
+npx tsc --noEmit
+```
+**Output**:
+```
+Exit code: 0
+(Clean exit, 0 errors)
+```
+
+### 2. E2E Test Suite Execution
+**Command**:
+```powershell
+node scripts/verify_e2e.js
+```
+**Output**:
+```
+========================================================================
+                   E2E TEST SUITE SUMMARY REPORT                        
+========================================================================
+ • Tier 1: Feature Coverage (8 Features)                44 passed / 0 failed (44 tests)
+ • Tier 2: Boundary & Corner Cases (8 Categories)       40 passed / 0 failed (40 tests)
+ • Tier 3: Cross-Feature Combinations (Pairwise)        8 passed / 0 failed (8 tests)
+ • Tier 4: Real-World Scenarios (5 Bedtime Workloads)   5 passed / 0 failed (5 tests)
+------------------------------------------------------------------------
+ Total Tests: 97 | Passed: 97 | Failed: 0 | Total Assertions: 411
+========================================================================
+
+✨ ALL E2E TESTS PASSED (100% SUCCESS RATE)! Total Assertions: 411
+```

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,7 +8,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { SettingsButton } from '@/components/SettingsButton';
 import { StoryCarousel } from '@/components/StoryCarousel';
 import { StoryCardSkeleton } from '@/components/StoryCardSkeleton';
-import { brand, colors, radii } from '@/constants/theme';
+import { AtmosphericBackground } from '@/components/background/AtmosphericBackground';
+import { SearchTriggerFAB, SearchDiscoveryModal } from '@/components/search';
+import {
+  NightLightModal,
+  SleepTimerHeaderBadge,
+  SoundscapesPlayer,
+} from '@/components/sleep';
+import { brand, colors, radii, spacing } from '@/constants/theme';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useDownloadsStore } from '@/store/useDownloadsStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
@@ -20,6 +27,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const language = useSettingsStore((s) => s.language);
   const isNe = language === 'ne';
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNightLightOpen, setIsNightLightOpen] = useState(false);
 
   const remoteStoriesAll = useDownloadsStore((s) => s.remoteStories);
   const isLoadingCatalog = useDownloadsStore((s) => s.isLoadingCatalog);
@@ -43,7 +52,7 @@ export default function HomeScreen() {
   const teens = fullCatalog.filter((s) => s.ageBand === '13-17' || s.ageBand === '18-25');
 
   return (
-    <View style={styles.root}>
+    <AtmosphericBackground style={styles.root}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* HERO SECTION */}
         <View style={styles.heroContainer}>
@@ -73,7 +82,7 @@ export default function HomeScreen() {
           )}
 
           <LinearGradient
-            colors={['transparent', 'rgba(15,23,42,0.8)', colors.background]}
+            colors={['transparent', 'rgba(12, 18, 34, 0.85)', '#060913']}
             style={styles.heroGradient}
           />
 
@@ -83,6 +92,15 @@ export default function HomeScreen() {
                 {isNe ? (brand.nameNe || 'साँझ') : brand.name}
               </Text>
               <View style={styles.headerActions}>
+                <SleepTimerHeaderBadge />
+                <Pressable
+                  onPress={() => setIsSearchOpen(true)}
+                  style={styles.headerIconBtn}
+                  hitSlop={10}
+                  accessibilityLabel={isNe ? 'खोज्नुहोस्' : 'Search'}
+                >
+                  <Ionicons name="search-outline" size={20} color={colors.cream} />
+                </Pressable>
                 <Pressable
                   onPress={() => router.push('/library')}
                   style={styles.headerIconBtn}
@@ -190,16 +208,49 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {/* BEDTIME AMBIANCE & SOUNDSCAPES SECTION */}
+        <View style={styles.ambianceSection}>
+          <View style={styles.ambianceHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="moon" size={18} color={colors.amber} />
+              <Text style={[styles.ambianceTitle, isNe && styles.neBold]}>
+                {isNe ? 'सुत्ने वातावरण र आवाज' : 'Bedtime Ambiance & Soundscapes'}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => setIsNightLightOpen(true)}
+              style={styles.nightLightQuickBtn}
+              hitSlop={8}
+            >
+              <Ionicons name="bulb-outline" size={15} color={colors.amber} />
+              <Text style={[styles.nightLightQuickText, isNe && styles.neBold]}>
+                {isNe ? 'नाइट लाइट' : 'Night Light'}
+              </Text>
+            </Pressable>
+          </View>
+          <SoundscapesPlayer compact />
+        </View>
+
         <View style={{ height: 100 }} />
       </ScrollView>
-    </View>
+
+      {/* FLOATING SEARCH FAB & DISCOVERY MODAL */}
+      <SearchTriggerFAB onPress={() => setIsSearchOpen(true)} />
+      <SearchDiscoveryModal visible={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* BEDTIME NIGHT LIGHT MODAL */}
+      <NightLightModal
+        visible={isNightLightOpen}
+        onClose={() => setIsNightLightOpen(false)}
+      />
+    </AtmosphericBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'transparent',
   },
   heroContainer: {
     width: '100%',
@@ -247,7 +298,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -363,4 +416,37 @@ const styles = StyleSheet.create({
   carouselsContainer: {
     paddingTop: 16,
   },
+  ambianceSection: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+  },
+  ambianceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  ambianceTitle: {
+    color: colors.amber,
+    fontFamily: 'Nunito_800ExtraBold',
+    fontSize: 14,
+    letterSpacing: 0.3,
+  },
+  nightLightQuickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(232, 160, 74, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.25)',
+  },
+  nightLightQuickText: {
+    color: colors.amber,
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 12,
+  },
 });
+

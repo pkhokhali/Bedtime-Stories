@@ -1,65 +1,63 @@
-# BRIEFING — 2026-09-01T12:20:00+05:45
+# BRIEFING — 2026-09-02T12:18:00+05:45
 
 ## Mission
-Implement Saanjh 3.0 Milestone 3: UI Overhaul, Story Detail Screen & Favorites.
+Implement the Dedicated Full-Screen Search & Discovery Modal for Saanjh Bedtime Stories (Milestone 3).
 
 ## 🔒 My Identity
 - Archetype: worker
 - Roles: implementer, qa, specialist
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m3
-- Original parent: 65ffadb4-051d-4185-80a2-394c719211fd
-- Milestone: Milestone 3 (UI Overhaul, Story Detail Screen & Favorites)
+- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Milestone: M3 (Dedicated Full-Screen Search & Discovery Modal)
 
 ## 🔒 Key Constraints
-- Standalone Zustand store `store/useFavoritesStore.ts` with `persist` and `createJSONStorage(() => AsyncStorage)` under name `'saanjh.favorites.v1'`.
-- Story Detail Screen `app/story-detail/[id].tsx` registered in `app/_layout.tsx`.
-- Unified Home Screen `app/index.tsx` with hero banner, Favorites carousel, category carousels with Devanagari titles, skeleton loaders (`components/StoryCardSkeleton.tsx`), retry banner on `catalogError`.
-- Story card tap navigations updated in `components/StoryCarousel.tsx` and `app/library.tsx` to route to `/story-detail/${story.id}`.
-- 0 TypeScript errors.
-- All e2e tests passing (`node scripts/verify_e2e.js`).
-- DO NOT CHEAT: Genuine implementation, no hardcoding of verification test strings.
+- Real-time bilingual search matching English and Nepali Devanagari text across title, subtitle, theme, tags, and IDs across 24+ stories.
+- 6 Quick filter pills: Toddlers (2-4), Kids (6-8), Novels & Parents, Folk Tales, Animal Stories, Audio Only.
+- Trending stories recommendation helper (4 curated stories).
+- Recent searches AsyncStorage helper (key: saanjh.recent_searches.v1).
+- Glowing warm amber FAB (#E8A04A) on Home and Library.
+- Fullscreen modal with nocturnal gradient backdrop, search bar, clear/dismiss, filter chips, recent searches, trending stories, story cards, tap navigation.
+- 0 TypeScript errors (`npx tsc --noEmit`).
+- Verify E2E suite passes (`node scripts/verify_e2e.js`).
+- Never put code/tests into .agents/ directory.
 
 ## Current Parent
-- Conversation ID: 65ffadb4-051d-4185-80a2-394c719211fd
-- Updated: 2026-09-01T12:20:00+05:45
+- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Updated: 2026-09-02T12:18:00+05:45
 
 ## Task Summary
-- **What to build**: Favorites store, Story Detail Screen, Home screen overhaul with Hero & skeleton & retry banner, StoryCardSkeleton component, navigation update.
-- **Success criteria**: Full type safety, e2e tests passing, clean UI adhering to theme and design guidelines.
-- **Interface contracts**: PROJECT.md, ORIGINAL_REQUEST.md, explorer_survey_3/handoff.md.
-- **Code layout**: `store/`, `app/`, `components/`.
-
-## Key Decisions Made
-- Implemented `useFavoritesStore` with Zustand `persist` middleware and AsyncStorage under key `'saanjh.favorites.v1'`.
-- Created `app/story-detail/[id].tsx` with comprehensive cover hero, animated heart toggle button, bilingual typography, category tags, metadata badges, lesson/moral card, and Play/Listen CTA.
-- Registered `story-detail/[id]` in `app/_layout.tsx` Stack.
-- Overhauled `app/index.tsx` with hero Play & Details CTAs, library header button, offline retry card with `fetchRemoteCatalog()`, `StoryCardSkeleton` loaders, and "My Favorites" carousel.
-- Updated `components/StoryCarousel.tsx` and `app/library.tsx` to route to `/story-detail/${story.id}`.
-- Extended `constants/ui.ts` with bilingual translations for favorites, details, lesson/meaning, retry, etc.
-- Added `isLoadingCatalog` and `catalogError` state handling to `store/useDownloadsStore.ts` and `lib/catalogFetcher.ts`.
-
-## Artifact Index
-- `.agents/worker_m3/DISPATCH.md` — Assignment instructions
-- `.agents/worker_m3/BRIEFING.md` — Agent memory
-- `.agents/worker_m3/progress.md` — Progress tracker
-- `.agents/worker_m3/handoff.md` — Handoff report
+- **What to build**: Dedicated bilingual search engine, search FAB trigger, and full-screen discovery modal integrated into Home and Library screens.
+- **Success criteria**: Full search & discovery workflow, 6 quick filter pills, trending stories, recent searches persist/clear, FAB and header search triggers, TypeScript clean, E2E tests pass.
 
 ## Change Tracker
 - **Files modified**:
-  - `store/useFavoritesStore.ts` (created): Zustand store for favorites persistence
-  - `components/StoryCardSkeleton.tsx` (created): Animated card skeleton component
-  - `app/story-detail/[id].tsx` (created): Story preview/detail screen
-  - `app/_layout.tsx` (modified): Registered `story-detail/[id]` route
-  - `app/index.tsx` (modified): Redesigned home screen with hero CTAs, favorites carousel, retry banner, skeletons
-  - `components/StoryCarousel.tsx` (modified): Updated card navigation to `/story-detail/${story.id}`
-  - `app/library.tsx` (modified): Updated card navigation to `/story-detail/${story.id}`
-  - `constants/ui.ts` (modified): Added bilingual UI copy strings
-  - `store/useDownloadsStore.ts` (modified): Added catalog loading and error fields
-  - `lib/catalogFetcher.ts` (modified): Wired catalog loading and error tracking
-- **Build status**: Ready & Type checked
+  - `lib/searchEngine.ts`: Real-time bilingual search matching, 6 filter pills, trending stories, recent searches AsyncStorage helpers.
+  - `components/search/SearchTriggerFAB.tsx`: Glowing warm amber FAB (#E8A04A) with celestial shadow and search icon.
+  - `components/search/SearchDiscoveryModal.tsx`: Full-screen nocturnal modal with search bar, clear/dismiss, filter chips, recent searches, trending recommendations, category grid, result cards, and direct navigation to story details.
+  - `components/search/index.ts`: Barrel export for search components.
+  - `app/index.tsx`: Header search button + SearchTriggerFAB + SearchDiscoveryModal integration.
+  - `app/library.tsx`: Header search button + SearchTriggerFAB + SearchDiscoveryModal integration.
+- **Build status**: `npx tsc --noEmit` passed with 0 errors; `node scripts/verify_e2e.js` passed with 111/111 tests (39,716 assertions).
 - **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: Passing
+- **Build/test result**: Pass (0 TS errors, 100% E2E tests passed)
 - **Lint status**: Clean
-- **Tests added/modified**: Covered by E2E test suite (F01, F04, F18-F21, C01, C04, S05)
+- **Tests added/modified**: `scripts/test_milestone3_empirical.js`
+
+## Loaded Skills
+- None requested
+
+## Key Decisions Made
+- Search engine integrates both local 24 stories and remote stories via full catalog union.
+- Recent searches use AsyncStorage under `saanjh.recent_searches.v1` with case-insensitive deduplication and maximum 8 recent items.
+- Full screen modal uses fade animation with nocturnal gradient `#060913` -> `#0c1222` -> `#121A2F` and respects safe area insets on mobile devices.
+
+## Artifact Index
+- `lib/searchEngine.ts`
+- `components/search/SearchTriggerFAB.tsx`
+- `components/search/SearchDiscoveryModal.tsx`
+- `components/search/index.ts`
+- `app/index.tsx`
+- `app/library.tsx`
+- `.agents/worker_m3/handoff.md`

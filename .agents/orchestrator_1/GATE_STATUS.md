@@ -1,24 +1,13 @@
-## Gate — Milestone 1 (Fix 7 Confirmed Bugs & Backend Auth)
-| Agent | Role | Verdict | Source |
-|-------|------|---------|--------|
-| worker_m1 | teamwork_preview_worker | DONE (Changes completed) | handoff.md |
-| worker_m1_fix | teamwork_preview_worker | DONE (SplashRitual physically deleted, verified F03) | handoff.md |
-| reviewer_m1_1 | teamwork_preview_reviewer | APPROVE | handoff.md |
-| reviewer_m1_2 | teamwork_preview_reviewer | APPROVE (Remediation confirmed) | handoff.md |
-| challenger_m1_1 | teamwork_preview_challenger | APPROVE | handoff.md |
-| challenger_m1_2 | teamwork_preview_challenger | APPROVE | handoff.md |
-| auditor_m1_1 | teamwork_preview_auditor | CLEAN | handoff.md |
+# Gate Status — Milestone 4: Essential Bedtime Sleep Features & Settings Revamp
 
-Gate Result: **PASS**
-
----
-
-## Gate — Milestone 2 (AI-Powered Story Narrator & Novel Reader)
-| Agent | Role | Verdict | Source |
-|-------|------|---------|--------|
-| worker_m2 | teamwork_preview_worker | DONE (Layer 1 pauses, Layer 2 Cloud TTS, Novel Reader) | handoff.md |
-| reviewer_m2_1 | teamwork_preview_reviewer | APPROVE | handoff.md |
-| challenger_m2_1 | teamwork_preview_challenger | APPROVE | handoff.md |
-| auditor_m2_1 | teamwork_preview_auditor | CLEAN | handoff.md |
+## Gate — Iteration 1
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_m4 | teamwork_preview_worker | DONE | handoff.md | TSC 0 errors, 111/111 E2E pass (39,717 assertions) |
+| reviewer_m4_1 | teamwork_preview_reviewer | APPROVE | handoff.md | rain.wav, sleep timer, 5 soundscapes, night light, 4 settings cards verified |
+| reviewer_m4_2 | teamwork_preview_reviewer | APPROVE | handoff.md | Audio fade safety, ticker singleton lifecycle, storage resilience verified |
+| challenger_m4_1 | teamwork_preview_challenger | APPROVE | handoff.md | 5k timer cancel cycles, 10s monotonic decay, 10k soundscape volume jitter verified |
+| challenger_m4_2 | teamwork_preview_challenger | APPROVE | handoff.md | 20k fuzz slider bounds, 10k settings mutations, 5k storage cycles verified |
+| auditor_m4_1 | teamwork_preview_auditor | CLEAN | handoff.md | 0 integrity violations, genuine rain WAV, soundscapes engine, fadeAudioToSleep |
 
 Gate Result: **PASS**

@@ -1,18 +1,17 @@
-## 2026-09-01T06:12:24Z
+## 2026-09-02T06:13:46Z
+You are the Forensic Integrity Auditor for Milestone 1 (M1: Magical Storybook Animated Splash Ritual).
+Your Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m1_1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+Master Project: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
+Worker Handoff: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md
 
-<USER_REQUEST>
-You are the Forensic Integrity Auditor for Saanjh 3.0 Milestone 1: Fix 7 Confirmed Bugs & Backend Auth.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m1_1
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-The project specification is at: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-Worker 1 handoff report is at: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md
+Mission:
+Conduct systematic forensic integrity verification on Milestone 1 code:
+1. Inspect `components/splash/AnimatedStorybook.tsx`, `components/splash/StardustParticles.tsx`, `components/splash/SplashRitual.tsx`, and `app/_layout.tsx`.
+2. Check for cheating: dummy facades, hardcoded test strings, fake returns, simulated animations that don't do real rendering.
+3. Validate genuine SVG geometry, genuine Reanimated interpolation, genuine audio trigger, genuine layout integration.
+4. Execute `npx tsc --noEmit`.
 
-Your mission:
-Perform a strict, independent forensic integrity audit on all changes made for Milestone 1:
-1. Verify that all 7 bug fixes are genuine implementations and not hardcoded mock returns, fake passes, dummy facades, or shortcuts.
-2. Inspect `app/index.tsx`, `constants/ui.ts`, `store/useSettingsStore.ts`, `components/SplashRitual.tsx`, `admin/src/App.tsx`, `backend/src/index.ts`, and `components/AdBanner.tsx`.
-3. Verify no hidden malicious code, no bypass of authentication, and no fabrication of test artifacts.
-4. Record your detailed forensic evidence and render an unambiguous verdict: CLEAN or INTEGRITY VIOLATION.
-5. Save your report to `d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m1_1\handoff.md`.
-6. Send a message when your audit is complete.
-</USER_REQUEST>
+Output Requirements:
+- Write `progress.md` and `handoff.md` with explicit audit evidence and verdict: `CLEAN` or `INTEGRITY VIOLATION`.
+- Send message back to parent with verdict.

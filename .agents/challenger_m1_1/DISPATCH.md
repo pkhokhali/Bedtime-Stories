@@ -1,17 +1,17 @@
-## 2026-09-01T06:12:24Z
-You are Challenger 1 for Saanjh 3.0 Milestone 1: Fix 7 Confirmed Bugs & Backend Auth.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\challenger_m1_1
-Authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-The project specification is at: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-Worker 1 handoff report is at: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md
+## 2026-09-02T06:13:46Z
+You are Challenger 1 for Milestone 1 (M1: Magical Storybook Animated Splash Ritual).
+Your Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\challenger_m1_1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+Master Project: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
+Worker Handoff: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md
 
-Your mission:
-Empirically challenge and stress-test the Milestone 1 bug fixes:
-1. Write a test verification script or execute empirical checks for:
-   - `parseAgeBand` with all valid values (`'2-4'`, `'4-6'`, `'6-8'`, `'9-12'`, `'13-17'`, `'18-25'`, `'25+'`, `'parents'`, `'parent'`) and invalid values (`'7-9'`, `'unknown'`, `null`, `undefined`, `123`).
-   - `backend/src/index.ts` auth logic: verify 401 on missing Bearer header, 401 on incorrect token, 200 on matching token.
-   - `AdBanner` unit ID validation logic: test valid real IDs, test dummy `'xxxxxxxx'` IDs, test undefined/null.
-   - Absence of `????` characters in `app/index.tsx`.
-   - Absence of `SplashRitual` in active imports.
-2. Report empirical pass/fail counts and findings in `d:\Antigravity Projects\Bedtime Stories\.agents\challenger_m1_1\handoff.md` with explicit verdict: APPROVE or REQUEST_CHANGES.
-3. Send a message when ready.
+Mission:
+Empirically stress-test the Milestone 1 implementation:
+- Test rapid tap-to-skip at $t=0\text{ms}$, $t=200\text{ms}$, $t=450\text{ms}$, and multiple fast clicks.
+- Test unmounting lifecycle and verify that no state updates happen after unmount.
+- Validate that `pointerEvents="none"` engages immediately upon dismissal.
+- Run typecheck and test verification.
+
+Output Requirements:
+- Write `progress.md` and `handoff.md` with exact empirical findings and verdict: `APPROVE` or `REQUEST_CHANGES`.
+- Send message back to parent.

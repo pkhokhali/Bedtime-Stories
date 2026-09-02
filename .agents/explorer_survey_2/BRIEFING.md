@@ -1,47 +1,38 @@
-# BRIEFING — 2026-09-01T11:52:30+05:45
+# BRIEFING — 2026-09-02T06:06:00Z
 
 ## Mission
-Investigate and map the audio and narration architecture for Saanjh 3.0 (Pillar R2: AI-Powered Story Narrator & Novel Reader), covering existing TTS/audio, Layer 1 on-device narration enhancements, Layer 2 Cloud AI Voice (Google Cloud TTS + caching/fallback), and Novel Reader Mode.
+Survey the stories catalog/data structures, search & discovery requirements (R3), and visual styling & background architecture (R2) for Saanjh Bedtime Stories overhaul.
 
 ## 🔒 My Identity
-- Archetype: Teamwork explorer
-- Roles: Audio & Narration Architecture Investigator
+- Archetype: explorer
+- Roles: survey data structures, UI/Theme architecture, R2 Atmospheric Background, R3 Search & Discovery Modal
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_2
-- Original parent: 65ffadb4-051d-4185-80a2-394c719211fd
-- Milestone: Saanjh 3.0 Survey Phase (Pillar R2)
+- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Milestone: Survey and Investigation Completed
 
 ## 🔒 Key Constraints
-- Read-only investigation — do NOT implement project source code
-- Produce comprehensive 5-component handoff report
-- Investigate Layer 1, Layer 2, Novel Reader Mode, expo-speech, expo-audio, sound beds, caching, pre-fetching, fallback
+- Read-only investigation — do NOT implement
+- All agent metadata in .agents/explorer_survey_2
+- 5-component handoff report
 
 ## Current Parent
-- Conversation ID: 65ffadb4-051d-4185-80a2-394c719211fd
-- Updated: 2026-09-01T11:52:30+05:45
+- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Updated: 2026-09-02T06:06:00Z
 
 ## Investigation State
-- **Explored paths**:
-  - `lib/speech.ts` (current on-device TTS using `expo-speech`, pitch/rate rules)
-  - `lib/audio.ts` & `lib/sounds.ts` (audio playback using modern `expo-audio`, sound assets)
-  - `hooks/useStoryPlayback.ts` (state machine for beat narration, bed/sfx playback)
-  - `components/player/` (`StoryPlayer.tsx`, `MediaStoryPlayer.tsx`, `SeekBar.tsx`, `PlayerChrome.tsx`, `SleepFade.tsx`, `SubtitleBar.tsx`)
-  - `components/scenes/` (`ForestStage.tsx`, `NightStage.tsx`)
-  - `data/catalog.ts`, `data/stories/` (beats, novels, voice roles, scene/stage metadata)
-  - `store/useSettingsStore.ts` & `app/settings.tsx` (voice pace, voice gender, night sounds, keep awake)
-  - `admin/src/App.tsx`, `backend/src/index.ts`, `lib/catalogFetcher.ts`, `lib/downloadManager.ts`
+- **Explored paths**: `data/catalog.ts`, `data/stories/*.ts`, `types/story.ts`, `app/index.tsx`, `app/library.tsx`, `app/story-detail/[id].tsx`, `app/story/[id].tsx`, `app/settings.tsx`, `constants/theme.ts`, `constants/ui.ts`, `components/scenes/NightStage.tsx`, `components/rigs/Fireflies.tsx`, `components/StoryCarousel.tsx`.
 - **Key findings**:
-  - `expo-speech` currently fires single-shot strings per beat with no sentence pauses, dialogue modulation, or SSML handling.
-  - `expo-audio` (~57.0.3) is used for audio beds/SFX; needs volume fading engine, cross-fading, and final-beat sleep wind-down.
-  - Ambient sound bed auto-detection can map `beat.scene` and `story.stage` to sound files (`night`, `moon`, `river`, `courtyard`, `wind`).
-  - Layer 2 Cloud AI Voice can use Google Cloud TTS free tier (`en-IN-Neural2-A`/`en-US-Neural2-F` and `ne-NP-Standard-A`), cached to `${FileSystem.cacheDirectory}tts_cache/` with SHA hash keys and pre-fetching queue.
-  - Novel Reader Mode requires paginated reader view, font scaling controls, "Read Aloud" integration with unified narrator, auto-advance, and novel progress bar.
-- **Unexplored areas**: None for Pillar R2 scope.
+  - Full catalog of 24 stories is intact with complete bilingual metadata (EN/NE titles, descriptions, runtime, accent colors, age bands, and playback beats).
+  - R2 Atmospheric Background architecture planned with Reanimated native UI-thread twinkling starfield (60 FPS), SVG Himalayan mountain pine silhouette horizon, and celestial midnight palette (`#0c1222`, `#E8A04A`, deep slate).
+  - R3 Search & Discovery Modal architecture designed with FAB and header triggers, real-time bilingual fuzzy search across titles, subtitles, tags, and IDs, 6 quick filter pills, trending stories, and persistent recent searches.
+- **Unexplored areas**: None for survey scope.
 
 ## Key Decisions Made
-- Fully analyzed all 4 core subsections of Pillar R2 and prepared end-to-end architecture specification for `handoff.md`.
+- Fully documented the 5-component handoff report in `handoff.md`.
+- Sent final survey summary to orchestrator.
 
 ## Artifact Index
-- DISPATCH.md — Received mission prompts
-- progress.md — Liveness and step tracking
+- DISPATCH.md — Dispatch instructions
 - BRIEFING.md — Situational awareness
-- handoff.md — Comprehensive findings report (target)
+- progress.md — Liveness heartbeat
+- handoff.md — Final survey report

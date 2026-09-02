@@ -1,52 +1,35 @@
-# BRIEFING — 2026-09-01T11:51:30+05:45
+# BRIEFING — 2026-09-02T06:06:00Z
 
 ## Mission
-Investigate and map the full codebase structure with deep focus on Pillar R1 (7 confirmed bugs) and project configuration/infrastructure for Saanjh 3.0.
+Survey codebase architecture, navigation flow, dependencies, assets, and design the technical blueprint for Requirement R1 (Magical Storybook Animated Splash Ritual).
 
 ## 🔒 My Identity
 - Archetype: explorer
-- Roles: codebase investigation, bug analysis, configuration verification, reporting
+- Roles: codebase investigation, architecture survey, dependency & asset inventory, R1 splash ritual specification
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1
-- Original parent: 65ffadb4-051d-4185-80a2-394c719211fd
-- Milestone: Saanjh 3.0 Survey Phase - Pillar R1 & Infrastructure
+- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Milestone: Saanjh Bedtime Stories Overhaul - Explorer Phase
 
 ## 🔒 Key Constraints
-- Read-only investigation — do NOT implement changes to source code
-- Self-contained handoff report at handoff.md with 5 components (Observation, Logic Chain, Caveats, Conclusion, Verification Method)
-- Communicate with caller agent via send_message
+- Read-only investigation — do NOT implement source changes
+- Output structured 5-component handoff report to `.agents\explorer_survey_1\handoff.md`
+- Maintain heartbeat in `progress.md`
 
 ## Current Parent
-- Conversation ID: 65ffadb4-051d-4185-80a2-394c719211fd
-- Updated: 2026-09-01T11:51:30+05:45
+- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Updated: 2026-09-02T06:06:00Z
 
 ## Investigation State
-- **Explored paths**:
-  - `app/index.tsx`, `app/library.tsx`, `app/settings.tsx`, `app/_layout.tsx`, `app/story/[id].tsx`
-  - `components/AdBanner.tsx`, `components/SplashRitual.tsx`, `components/player/StoryPlayer.tsx`
-  - `constants/theme.ts`, `constants/ui.ts`
-  - `data/catalog.ts`, `data/stories/*`
-  - `lib/speech.ts`, `lib/audio.ts`, `lib/sounds.ts`, `lib/catalogFetcher.ts`, `lib/downloadManager.ts`
-  - `store/useSettingsStore.ts`, `store/useDownloadsStore.ts`
-  - `types/story.ts`
-  - `admin/package.json`, `admin/src/App.tsx`, `admin/src/main.tsx`
-  - `backend/package.json`, `backend/src/index.ts`, `backend/wrangler.toml`
-  - `package.json`, `tsconfig.json`, `app.json`, `build-apk.js`, `build-aab.js`
-- **Key findings**:
-  - Bug 1: Confirmed `app/index.tsx` lines 64, 72, 77, 85, 86, 87, 88 have literal `????` question mark strings. Correlated with `constants/ui.ts` bilingual translations.
-  - Bug 2: Confirmed `store/useSettingsStore.ts` `parseAgeBand` missing `'parents'`, causing fallback to `'4-6'` on rehydrate.
-  - Bug 3: Confirmed `components/SplashRitual.tsx` has 0 imports/references across the entire codebase. Expo splash in `_layout.tsx` is used instead.
-  - Bug 4: Confirmed `app/index.tsx` imports unused symbols `radii, spacing` from `@/constants/theme` and `storiesForAge, ageBands` from `@/data/catalog`.
-  - Bug 5: Confirmed `admin/src/App.tsx` has invalid `'7-9'` option instead of `'6-8'` and `'9-12'`.
-  - Bug 6: Confirmed `backend/src/index.ts` `POST /catalog` has no auth header verification. Needs `ADMIN_SECRET` Bearer token check and admin UI integration.
-  - Bug 7: Confirmed `components/AdBanner.tsx` uses dummy unit IDs in production without validation or fallback/error boundary.
-  - Infrastructure: Root Expo 57 / RN 0.86 / React 19.2, Vite React admin, Hono Cloudflare Worker backend.
-- **Unexplored areas**: None for R1 and Infrastructure survey scope.
+- **Explored paths**: package.json, app.json, tsconfig.json, app/_layout.tsx, app/index.tsx, app/library.tsx, app/settings.tsx, app/story/[id].tsx, app/story-detail/[id].tsx, lib/audio.ts, lib/sounds.ts, store/useSettingsStore.ts, assets/audio/chime.wav, components/rigs/Fireflies.tsx, components/scenes/ForestStage.tsx.
+- **Key findings**: Expo 57, React 19, Reanimated 4.5.1, SVG 15.15.4, expo-audio with existing chime audio sting. Full R1 technical architecture designed as an in-tree Reanimated overlay in RootLayout. Baseline `npx tsc --noEmit` verified clean with 0 errors.
+- **Unexplored areas**: None for R1 survey scope.
 
 ## Key Decisions Made
-- Documented exact file paths, line numbers, and proposed code replacements for all 7 bugs in handoff.md.
+- Recommended in-tree overlay in `app/_layout.tsx` for R1 to prevent navigation stack double-mounting and allow instantaneous crossfade into pre-rendered Home screen.
+- Enumerated 7 feature tracks for the overall overhaul.
 
 ## Artifact Index
-- d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\DISPATCH.md — Dispatch log
-- d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\progress.md — Progress log
-- d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\BRIEFING.md — Briefing document
-- d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\handoff.md — Final handoff report
+- `.agents/explorer_survey_1/DISPATCH.md` — Dispatch log
+- `.agents/explorer_survey_1/BRIEFING.md` — Working memory
+- `.agents/explorer_survey_1/progress.md` — Liveness & task progress
+- `.agents/explorer_survey_1/handoff.md` — Comprehensive 5-component report

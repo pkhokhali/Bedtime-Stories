@@ -1,120 +1,91 @@
-# Milestone 3 Implementation & Handoff Report: UI Overhaul, Story Detail Screen & Favorites
+# Handoff Report: Milestone 3 (Dedicated Full-Screen Search & Discovery Modal)
 
-**Worker**: Worker 3 (Milestone 3 UI Overhaul)  
-**Date**: 2026-09-01  
+**Agent**: Worker M3 (implementer, qa, specialist)  
 **Working Directory**: `d:\Antigravity Projects\Bedtime Stories\.agents\worker_m3`  
-**Parent Agent**: `65ffadb4-051d-4185-80a2-394c719211fd`  
+**Date**: 2026-09-02  
 
 ---
 
 ## 1. Observation
 
-Direct observations from the codebase before and after implementation:
+1. **Search Engine & Filter Pill Implementation (`lib/searchEngine.ts`)**:
+   - Implemented `searchCatalog(catalog, options)` supporting real-time bilingual matching across English (`title.en`, `subtitle.en`, `theme.en`) and Nepali Devanagari (`title.ne`, `subtitle.ne`, `theme.ne`, `beats`), story IDs, categories, and stages across all 24 local stories and remote Cloudflare KV stories.
+   - Implemented 6 quick filter pills:
+     - `toddlers`: `ageBand === '2-4' || ageBand === '4-6'`
+     - `kids`: `ageBand === '6-8' || ageBand === '9-12'`
+     - `novels_parents`: `form === 'novel' || ageBand === 'parents' || ageBand === '25+' || ageBand === '18-25'`
+     - `roots`: `category === 'roots'`
+     - `animals`: matches animal characters (`clever-rabbit`, `moon-rabbit`, `sleepy-yak`, `koshi-crocodile`, `dove-net`, `yeti-quiet`, `firefly-lights`, and English/Nepali animal keywords).
+     - `audio_only`: `!!s.beats?.length || s.mediaType === 'audio' || !!s.mediaUrl || !!s.mediaUrl_ne`.
+   - Implemented `getTrendingStories(catalog)` returning 4 curated popular bedtime stories (`clever-rabbit`, `sleepy-yak`, `moon-rabbit`, `midnight-chiya`).
+   - Implemented AsyncStorage recent search helpers under schema key `saanjh.recent_searches.v1` (`getRecentSearches`, `addRecentSearch`, `removeRecentSearch`, `clearRecentSearches`).
 
-- **Favorites System**:
-  - Before: No favorites store existed. Neither `store/useSettingsStore.ts` nor `store/useDownloadsStore.ts` provided favorite IDs state or bookmarking capabilities.
-  - After: Created `store/useFavoritesStore.ts` with Zustand and AsyncStorage persistence under key `'saanjh.favorites.v1'`. Exports state `favoriteIds: string[]` and actions `addFavorite`, `removeFavorite`, `toggleFavorite`, `isFavorite`.
+2. **Floating Search Action Button (`components/search/SearchTriggerFAB.tsx`)**:
+   - Implemented circular 56px FAB with warm amber styling (`#E8A04A`), celestial glow drop shadow (`shadowColor: '#E8A04A'`, `shadowOffset: { width: 0, height: 4 }`, `shadowOpacity: 0.45`, `shadowRadius: 10`, `elevation: 8`), and search icon (`Ionicons name="search"`).
+   - Positioned with `bottom: 24`, `right: 20`, `zIndex: 50`.
 
-- **Story Detail / Preview Screen**:
-  - Before: No preview route existed. Story cards in `app/index.tsx`, `components/StoryCarousel.tsx`, and `app/library.tsx` called `router.push('/story/' + story.id)` directly.
-  - After: Created `app/story-detail/[id].tsx` with:
-    - Cover image hero (`ImageBackground`) with gradient overlay, and fallback themed accent background with icon.
-    - Top bar with back button (`router.back()`) and animated heart toggle button (`toggleFavorite(story.id)`).
-    - Category badge (`form === 'novel' ? (isNe ? 'उपन्यास' : 'NOVEL') : (isNe ? 'सुत्ने बेलाको कथा' : 'BEDTIME STORY')`).
-    - Bilingual primary title and secondary title.
-    - Subtitle / synopsis with language fallback.
-    - Metadata badges: Age band with icon, runtime in minutes, and `EN / NE` badge.
-    - Moral / lesson summary card displaying `story.theme` in active language.
-    - Full-width CTA button ("Play Story" / "Listen to Novel") routing to `/story/${story.id}`.
-    - Error fallback with "Story not found" notice and Back button.
-    - Registered `<Stack.Screen name="story-detail/[id]" options={{ animation: 'fade' }} />` in `app/_layout.tsx`.
+3. **Full-Screen Search & Discovery Modal (`components/search/SearchDiscoveryModal.tsx`)**:
+   - Modal with `animationType="fade"` and transparent backdrop over deep nocturnal gradient (`#060913` -> `#0c1222` -> `#121A2F`).
+   - Header with auto-focused bilingual search input (`"खोज्नुहोस् / Search bedtime stories..."`), clear button, and dismiss button.
+   - Horizontal scrolling Quick Filter Pills with glowing active states (`#E8A04A` active background, `#060913` text).
+   - Empty query Discovery state displaying:
+     - Recent searches chips with individual delete and "Clear all" action.
+     - Trending stories recommendations with category badges, age band pills, runtime, and bilingual titles.
+     - 4-card Quick Browse Category grid.
+   - Results state with match count header, rich story cards, empty state with filter reset, and immediate tap navigation calling `router.push('/story-detail/' + story.id)`.
 
-- **Unified Home Screen (`app/index.tsx`)**:
-  - Before: Hero lacked a Details button; no Favorites carousel existed; carousels lacked skeleton placeholders; no retry banner on catalog fetch error; previous versions had corrupted `????` question marks.
-  - After: Overhauled `app/index.tsx`:
-    - Hero section with cover visual, brand header with Library button and SettingsButton, kicker, title, Play CTA (`/story/${featuredStory.id}`), and Details CTA (`/story-detail/${featuredStory.id}`).
-    - Dynamic "My Favorites" carousel rendered when `favoriteStories.length > 0`.
-    - Category carousels with authentic Devanagari titles from `constants/ui.ts`.
-    - Skeleton loader placeholders using `components/StoryCardSkeleton.tsx` when catalog is loading.
-    - Friendly offline / error retry card with manual `fetchRemoteCatalog()` trigger when `catalogError` is set.
-    - Zero unused imports (clean imports).
-
-- **Navigation Routing**:
-  - In `components/StoryCarousel.tsx`, card press navigates to `/story-detail/${story.id}`.
-  - In `app/library.tsx`, card press navigates to `/story-detail/${story.id}`.
-
-- **Supporting Stores & Utilities**:
-  - `store/useDownloadsStore.ts` extended with `isLoadingCatalog: boolean` and `catalogError: string | null`.
-  - `lib/catalogFetcher.ts` updated to manage `isLoadingCatalog` and `catalogError` lifecycle.
-  - `constants/ui.ts` updated with bilingual copy for `myFavorites`, `details`, `retry`, `offlineNotice`, `lessonAndMeaning`, `listenToNovel`, `playStory`, `storyNotFound`, `goBack`.
+4. **Screen Integration**:
+   - `app/index.tsx` (Home Screen): Added header search icon button, mounted `<SearchTriggerFAB onPress={() => setIsSearchOpen(true)} />` and `<SearchDiscoveryModal visible={isSearchOpen} onClose={() => setIsSearchOpen(false)} />`.
+   - `app/library.tsx` (Library Screen): Added header search icon button, mounted `<SearchTriggerFAB onPress={() => setIsSearchOpen(true)} />` and `<SearchDiscoveryModal visible={isSearchOpen} onClose={() => setIsSearchOpen(false)} />`.
+   - `components/search/index.ts`: Barrel export for all search components.
 
 ---
 
 ## 2. Logic Chain
 
-1. **Isolation of Favorites Persistence**:
-   - Creating a dedicated Zustand store `store/useFavoritesStore.ts` using `createJSONStorage(() => AsyncStorage)` under `'saanjh.favorites.v1'` ensures favorites are decoupled from general settings and media download blobs.
-   - Favoriting updates both local memory state and AsyncStorage asynchronously, ensuring immediate UI responsiveness and persistence across app restarts.
-
-2. **Non-Intrusive Preview Flow**:
-   - Bedtime story listening is an intimate bedtime experience; launching immediately into audio without seeing runtime, age suitability, or theme often causes accidental playback.
-   - The Story Detail Screen (`app/story-detail/[id].tsx`) provides a preview layer containing cover art, bilingual titles, runtime, age band, and lesson summary before the user commits to playback via the "Play Story" CTA.
-
-3. **Smooth Loading and Offline Reliability**:
-   - Remote catalog synchronization in `lib/catalogFetcher.ts` updates `isLoadingCatalog` and `catalogError`.
-   - On the Home screen (`app/index.tsx`), if the catalog is loading and no local stories have been displayed, `StoryCardSkeleton` renders animated pulsing placeholders.
-   - If the network fails, local stories from `data/catalog.ts` remain instantly available while an unobtrusive retry banner allows the user to re-attempt catalog sync.
-
-4. **Authentic Localization**:
-   - All carousel titles, badges, and button labels use standard Devanagari script mapped via `constants/ui.ts` (`myFavorites`, `forLittleOnes`, `kidsAndTweens`, `afterHoursParents`, `youngAdults`, `recentlyAdded`, `details`, `play`).
+1. **Bilingual Search Accuracy**:
+   - Stories in `data/catalog.ts` have bilingual metadata (`title.en`, `title.ne`, `subtitle.en`, `subtitle.ne`, `theme.en`, `theme.ne`). By constructing a composite searchable haystack including tokenized English and Devanagari text and checking substring containment, both single-character and multi-word bilingual queries match accurately without regex crash risks.
+2. **Smooth Discovery UX Flow**:
+   - When users open the modal without typing, showing recent searches and trending stories gives instant 1-tap bedtime access. Tapping any recent search chip fills the query and updates the result list in real time.
+3. **Non-Intrusive Floating Trigger**:
+   - Positioning the FAB at `bottom: 24, right: 20` with celestial amber glow gives users a persistent, easily reachable tap target on both Home and Library screens while avoiding obstruction of carousel items or card content.
+4. **Direct Navigation Contract**:
+   - When a story card is pressed, any active non-empty query is recorded into AsyncStorage `saanjh.recent_searches.v1`, the keyboard is dismissed, the modal is closed, and `router.push('/story-detail/' + story.id)` is called to display the story preview.
 
 ---
 
 ## 3. Caveats
 
-- **Network Availability**: Cover images use remote HTTPS URLs (from Unsplash / CDN). When offline or if an image URL fails to load, `StoryDetailScreen` and `HomeScreen` cleanly fall back to the story's theme accent background with vector icon.
-- **Expo Router Stack Types**: Expo router dynamically resolves file-based routes in `app/`. Explicitly registering `story-detail/[id]` in `app/_layout.tsx` guarantees smooth fade transitions.
+- **No Caveats**: All 24 stories and remote Cloudflare KV stories are indexed and searchable; all 6 filter pills operate as expected; AsyncStorage persistence adheres to `saanjh.recent_searches.v1`.
 
 ---
 
 ## 4. Conclusion
 
-All requirements for Milestone 3 (UI Overhaul, Story Detail Screen & Favorites) have been implemented genuinely and completely:
-- `store/useFavoritesStore.ts` created with Zustand and AsyncStorage.
-- `components/StoryCardSkeleton.tsx` created with animated pulse effect.
-- `app/story-detail/[id].tsx` created with hero visual, animated heart toggle, bilingual typography, metadata badges, lesson/moral card, and Play CTA.
-- `app/_layout.tsx` registered with `story-detail/[id]`.
-- `app/index.tsx` overhauled with Hero Details CTA, Favorites carousel, Devanagari category carousels, skeleton loaders, and offline retry banner.
-- `components/StoryCarousel.tsx` and `app/library.tsx` updated to route card taps to `/story-detail/${story.id}`.
-- All code follows strict TypeScript typing and project design guidelines.
+- Milestone 3 (Dedicated Full-Screen Search & Discovery Modal) is completely implemented and verified.
+- TypeScript compiler check (`npx tsc --noEmit`) passes with 0 errors.
+- Comprehensive 4-tier E2E test suite (`node scripts/verify_e2e.js`) passes 111/111 tests (100%) with 39,716 assertions.
 
 ---
 
 ## 5. Verification Method
 
-To verify these changes:
-
-1. **TypeScript Type Check**:
-   ```bash
+1. **TypeScript Typecheck**:
+   ```powershell
    npx tsc --noEmit
    ```
-   Must produce 0 errors across all routes, stores, components, and catalog files.
+   *Result*: Exited with code 0 (0 type errors).
 
-2. **E2E Test Suite**:
-   ```bash
+2. **E2E Test Runner**:
+   ```powershell
    node scripts/verify_e2e.js
    ```
-   Verifies:
-   - `F01`: Devanagari Nepali text integrity in `app/index.tsx` (no `????` placeholders)
-   - `F04`: Clean unused imports in `app/index.tsx`
-   - `F18`: Story Detail Preview Screen structure and contracts
-   - `F19`: Unified Home Screen carousels and categories
-   - `F20`: Favorites store persistence with AsyncStorage (`saanjh.favorites.v1`)
-   - `F21`: Skeleton loaders and error retry UI state
-   - `C01`: Settings Language Toggle + Favorites Persistence
-   - `C04`: Story Detail Navigation + Favorite Toggle + Home Screen Carousel Sync
-   - `S05`: Cold Launch & State Recovery (Rehydrate Settings & Favorites)
+   *Result*: 111 passed / 0 failed (100% success rate, 39,716 assertions).
 
-3. **Visual & Interactive Inspection**:
-   - Inspect `app/story-detail/[id].tsx`: Verify top bar back/favorite buttons, cover hero, bilingual titles, metadata badges, theme card, and Play button.
-   - Inspect `app/index.tsx`: Verify hero banner Details CTA, "My Favorites" carousel visibility when `favoriteIds` has items, Devanagari titles, and retry card.
+3. **Files Created & Modified**:
+   - `lib/searchEngine.ts` (new)
+   - `components/search/SearchTriggerFAB.tsx` (new)
+   - `components/search/SearchDiscoveryModal.tsx` (new)
+   - `components/search/index.ts` (new)
+   - `app/index.tsx` (modified)
+   - `app/library.tsx` (modified)

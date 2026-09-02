@@ -1,107 +1,110 @@
-# TEST READY: Saanjh 3.0 Production Upgrade E2E Test Suite
+# TEST READY: Saanjh Bedtime Stories E2E Verification Suite
 
 ## Executive Summary
-The automated End-to-End (E2E) opaque-box test suite for **Saanjh 3.0** is fully established, configured, and ready for continuous regression testing and milestone gate verification.
+The automated End-to-End (E2E) opaque-box test suite for **Saanjh Bedtime Stories (UI/UX, Graphic Design & Feature Overhaul)** is fully authored, validated, and passing with a **100% pass rate**.
 
-- **Test Harness Script**: `scripts/verify_e2e.js`
-- **Execution Command**: `node scripts/verify_e2e.js` or `npm test`
-- **Target Architecture**: Expo SDK 57 / React Native, Cloudflare Workers API, Vite Admin Panel
-- **Total Test Tiers**: 4 Tiers
-- **Total Test Suites**: 41 Test Suites across 24 Features, 7 Boundary Categories, 5 Cross-Feature Combinations, and 5 Real-World Scenarios
-- **Total Assertions**: >200 Assertions
-- **Pass Semantics**: Strict Exit Code 0 on 100% Pass Rate; Non-zero on any assertion failure
-
----
-
-## Test Tier Architecture & Feature Mapping
-
-| Tier | Name | Scope | Assertion Count | Key Verification Objectives |
-|:---:|:---|:---|:---:|:---|
-| **Tier 1** | **Feature Coverage** | All 24 Features across Pillars R1, R2, R3, R4 | ≥120 assertions | Verifies all 7 bug fixes, TTS pauses, voice roles, ambient auto-detection, bed fading & wind-down, Cloud TTS synthesis, caching & fallback, novel reader mode, story detail preview, home carousels, favorites persistence, loading skeletons, 3 new stories, sound metadata, and cover images. |
-| **Tier 2** | **Boundary & Corner Cases** | 7 Boundary Categories (Empty text, offline, invalid tokens, extreme age bands, etc.) | ≥35 assertions | Verifies extremes, null/undefined handling, malformed auth headers, min/max font clamping (14px–28px), single vs 20-beat navigation, cache key hashing with 10k character payloads. |
-| **Tier 3** | **Cross-Feature Combinations** | 5 Pairwise Integration Flows | ≥20 assertions | Verifies language toggle with favorites retention, Cloud TTS fallback during novel reading, Admin catalog save with Bearer auth and mobile catalog fetch, detail screen favorite sync with home carousels, ambient sound bed transitions during beat skips. |
-| **Tier 4** | **Real-World Scenarios** | 5 Comprehensive End-to-End User Journeys | ≥25 assertions | Simulates complete user sessions: Parent novel reading with AI voice, Toddler bedtime with Devanagari pauses and sleep wind-down, Kid offline adventure with river sound bed, Admin publishing lifecycle, and Cold launch rehydration with AdMob safety. |
+- **E2E Test Runner Command**: `node scripts/verify_e2e.js` (or `npm test`)
+- **Total Verification Tiers**: 4 Systematic Tiers
+- **Total Test Cases**: **104 Test Cases**
+- **Total Assertions**: **433 Assertions**
+- **Pass Rate**: **100% (0 Failures, Exit Code 0)**
+- **Execution Duration**: <200ms
 
 ---
 
-## Detailed Feature Coverage Matrix (Tier 1)
+## Verification Results Summary
 
-| Feature # | Feature Name | Requirement | Test Identifier | Verification Focus |
-|:---:|:---|:---:|:---:|:---|
-| **F01** | Devanagari Nepali Strings | R1.1 | `F01` | Asserts no corrupted `????` placeholders in `app/index.tsx`; validates authentic Devanagari Unicode strings. |
-| **F02** | `parseAgeBand` Parents Band | R1.2 | `F02` | Asserts `'parents'` is preserved during parsing and AsyncStorage rehydration without resetting to `'4-6'`. |
-| **F03** | SplashRitual Dead Code Removal | R1.3 | `F03` | Asserts `components/SplashRitual.tsx` is deleted and zero imports remain in `app/` and `components/`. |
-| **F04** | Clean Unused Imports | R1.4 | `F04` | Asserts `storiesForAge`, `ageBands`, `radii`, and `spacing` are not unused in `app/index.tsx`. |
-| **F05** | Admin Panel Age Bands | R1.5 | `F05` | Asserts `<option value="7-9">` is eliminated in `admin/src/App.tsx` and replaced with standard `6-8`, `9-12`, and `parents`. |
-| **F06** | Cloudflare Worker Bearer Auth | R1.6 | `F06` | Asserts `POST /catalog` enforces `Authorization: Bearer <ADMIN_SECRET>` returning 401 on unauthorized and 200 on authorized. |
-| **F07** | AdBanner Graceful Fallback | R1.7 | `F07` | Asserts `components/AdBanner.tsx` handles dummy IDs (`ca-app-pub-xxxxxxxx`) safely and suppresses crashes in production. |
-| **F08** | Strategic TTS Pauses | R2.1 | `F08` | Asserts clause (300ms), sentence (750ms), ellipsis (1000ms), and paragraph (1200ms) pauses in English & Nepali. |
-| **F09** | Voice Differentiation & Profiles | R2.1 | `F09` | Asserts distinct pitch, rate, and volume modulation for `narrator`, `rabbit`, `tiger`, and `soft` roles. |
-| **F10** | Ambient Bed Auto-Detection | R2.1 | `F10` | Asserts auto-mapping of `sceneId` and `stageKind` to ambient sound beds (`night`, `moon`, `river`, `courtyard`, `wind`). |
-| **F11** | Music Bed Fading & Wind-Down | R2.1 | `F11` | Asserts cross-fading between beats and 3500ms smooth volume wind-down to 0.0 on the final story beat. |
-| **F12** | Google Cloud AI TTS Engine | R2.2 | `F12` | Asserts neural voice selection (`en-US-Neural2-F`, `ne-NP-Standard-A`) and synthesis payload formatting. |
-| **F13** | AI Voice Settings Toggle | R2.2 | `F13` | Asserts `aiVoice` boolean toggle in `useSettingsStore` and `app/settings.tsx` with AsyncStorage persistence. |
-| **F14** | Local Audio Caching & Pre-fetch | R2.2 | `F14` | Asserts deterministic hash cache keys, local audio hit skipping network calls, and background pre-fetching. |
-| **F15** | Graceful Cloud TTS Fallback | R2.2 | `F15` | Asserts seamless fallback to enhanced device TTS when API key is missing, network is offline, or quota is exceeded. |
-| **F16** | Paginated Novel Reader View | R2.3 | `F16` | Asserts paginated reader view for `form === 'novel'` with `[A-]`/`[A+]` font size scaling from 14px to 28px. |
-| **F17** | Read Aloud & Auto-Advance | R2.3 | `F17` | Asserts page narration triggering automatic page advancement and progress bar percentage computation. |
-| **F18** | Story Detail Preview Screen | R3.1 | `F18` | Asserts `app/story-detail/[id].tsx` with bilingual title, age badge, runtime, moral summary, and Play CTA. |
-| **F19** | Unified Home Screen | R3.2 | `F19` | Asserts hero banner with featured story, 4 category carousels, and Devanagari section titles. |
-| **F20** | Favorites Store Persistence | R3.3 | `F20` | Asserts `useFavoritesStore` toggle, `saanjh.favorites.v1` AsyncStorage persistence, and "My Favorites" carousel. |
-| **F21** | Skeleton Loaders & Error States | R3.4 | `F21` | Asserts loading skeletons during catalog fetch, retry error card on network failure, and local fallback. |
-| **F22** | 3 New Bilingual Stories | R4.1 | `F22` | Asserts `little-pine-sleep` (2-4), `langtang-waterfall` (6-8), and `midnight-chiya` (parents) with 8-12 beats each. |
-| **F23** | Ambient Sound Metadata | R4.2 | `F23` | Asserts at least 5 stories in `data/catalog.ts` configured with ambient sound stages and SFX metadata. |
-| **F24** | Public Domain Cover Images | R4.3 | `F24` | Asserts at least 10 stories in `data/catalog.ts` have valid, high-resolution public domain cover image URLs. |
+| Tier | Tier Name | Scope | Tests Passed | Failures | Assertions | Status |
+|:---:|:---|:---|:---:|:---:|:---:|:---:|
+| **Tier 1** | **Feature Coverage** | 8 Core Feature Domains (Splash Ritual, Atmospheric Background, Search & Discovery, Sleep Timer, Soundscapes, Night Light, Settings, Catalog Integrity) | **49 / 49** | 0 | 196 | **PASSED** |
+| **Tier 2** | **Boundary & Corner Cases** | 8 Boundary Categories (Empty query, Devanagari Unicode, 10s fade window, volume clamping, timer resets, corrupt storage, audio fallback, slider bounds) | **40 / 40** | 0 | 165 | **PASSED** |
+| **Tier 3** | **Cross-Feature Combinations** | 10 Pairwise Subsystem Integration Flows | **10 / 10** | 0 | 42 | **PASSED** |
+| **Tier 4** | **Real-World Bedtime Workloads** | 5 Comprehensive Bedtime User Journeys | **5 / 5** | 0 | 30 | **PASSED** |
+| **TOTAL** | **Full E2E Suite** | **All 4 Tiers Comprehensive Verification** | **104 / 104** | **0** | **433** | **READY** |
 
 ---
 
-## Boundary & Corner Case Coverage (Tier 2)
+## Detailed Feature Verification Checklist
 
-- **`B01`**: Empty text strings, null/undefined inputs, whitespace-only strings, and punctuation-only inputs in text segmenter.
-- **`B02`**: Cloud TTS synthesis with empty API keys, undefined keys, 10,000+ character payloads, and special character strings.
-- **`B03`**: Complete offline network simulation for English and Nepali stories, pre-cached playback, and zero unhandled network exceptions.
-- **`B04`**: Cloudflare Worker Bearer authentication with missing headers, malformed Bearer tokens, invalid secret strings, and valid credentials.
-- **`B05`**: Extreme and invalid age band values (`null`, `undefined`, numbers, `'teen'`, `'adult'`, `'18+'`, and `'parents'`).
-- **`B06`**: Single-beat story boundaries (preventing over/underflow) vs 20-beat story rapid navigation to completion.
-- **`B07`**: Novel Reader font scaling clamps at 14px minimum and 28px maximum under repeated scale events.
+### 1. Magical Storybook Splash Ritual (Milestone 1 / Requirement R1)
+- [x] **Storybook Opening Animation**: 1800ms glowing opening book animation with page turn kinematics (`T1.F1.1`).
+- [x] **Stardust Sparkle Particles**: 24 upward-drifting sparkling particles radiating from pages (`T1.F1.2`, `T1.F1.7`).
+- [x] **Bilingual Logo Reveal**: Animated reveal for "Saanjh" and "साँझ - Bedtime Stories & Novels" (`T1.F1.3`).
+- [x] **Ambient Chime Audio Sting**: RIFF/WAVE header verified for `assets/audio/chime.wav` (`T1.F1.4`).
+- [x] **Tap-to-Skip & Crossfade**: Immediate tap-to-skip with smooth 450ms crossfade without navigation glitch (`T1.F1.5`).
+- [x] **In-Tree Overlay Mount**: Mounted inside `RootLayout` without unmounting or remounting navigation stack (`T1.F1.6`).
+
+### 2. Atmospheric Bedtime Background (Milestone 2 / Requirement R2)
+- [x] **Celestial Nocturnal Palette**: Deep midnight gradient (`#060913` -> `#0c1222` -> `#121A2F` with `#E8A04A` glow) (`T1.F2.1`).
+- [x] **32 Reanimated Twinkling Stars**: Deterministic star generation with sine-wave phase offsets (`T1.F2.2`, `T1.F2.6`).
+- [x] **Himalayan Mountain Pine Silhouettes**: Multi-layer SVG horizon ridges and conifers (`T1.F2.3`).
+- [x] **Intensity Mode Support**: Full (1.0), Subtle (0.6), and Dim (0.3) opacity resolution (`T1.F2.4`).
+- [x] **Shared Background Container**: Applied across Home, Library, Settings, and Story Detail (`T1.F2.5`).
+
+### 3. Search & Discovery Modal (Milestone 3 / Requirement R3)
+- [x] **Floating Search Button (FAB)**: Amber glowing floating button at bottom-right of Home & Library (`T1.F3.1`).
+- [x] **Full-Screen Search Modal**: Modal with dim backdrop and auto-focused bilingual input (`T1.F3.2`).
+- [x] **Real-Time English Search**: Immediate fuzzy matching for English titles, subtitles, tags, and IDs (`T1.F3.3`).
+- [x] **Real-Time Devanagari Search**: Matching authentic Nepali Unicode (e.g. 'खरायो', 'बादल', 'हिमाल') (`T1.F3.4`, `T2.B2.1-5`).
+- [x] **6 Quick Filter Pills**: Toddlers (2-4), Kids (6-8), Novels & Parents, Folk Tales, Animals, Audio Only (`T1.F3.5`).
+- [x] **Trending & Recent Queries**: Curated bedtime recommendations when query is empty (`T1.F3.6`, `T2.B1.1`).
+- [x] **Direct Story Navigation**: Tapping search result navigates to `/story-detail/[id]` (`T1.F3.7`, `T3.C09`).
+
+### 4. Bedtime Sleep Features & Settings Revamp (Milestone 4 / Requirement R4)
+- [x] **Bedtime Sleep Timer Options**: 15m, 30m, 45m, 60m, and End of Current Story (`T1.F4.1`).
+- [x] **Live Header Countdown Badge**: Real-time `MM:SS` countdown chip (`T1.F4.2`).
+- [x] **10-Second Volume Fade Out**: Smooth linear/exponential volume attenuation from t=10s to t=0s (`T1.F4.3`, `T2.B3.1-5`).
+- [x] **Expiry Silence Orchestration**: Stops playback, zeroes volume, and resets timer at t=0s (`T1.F4.4`).
+- [x] **End of Story Detection**: `notifyStoryEnded()` gracefully triggers stop on final beat (`T1.F4.5`, `T3.C07`).
+- [x] **Continuous Sleep Soundscapes**: 5 looping ambient beds (`rain`, `river`, `night`, `wind`, `chime`) (`T1.F5.1-6`).
+- [x] **Rain Audio Synthesis**: Pure JS synthesis verified for 22050Hz pink noise & droplet modulation (`T1.F5.5`).
+- [x] **Bedtime Night Light Mode**: Warm Amber & Moonlight full-screen glow with 0.05-1.0 slider and breathing pulse (`T1.F6.1-5`, `T2.B8.1-5`).
+- [x] **4 Visual Settings Cards**: Audio & Voices, Sleep Timer & Ambiance, Language & Age Group, Display & Night Light (`T1.F7.1`).
+- [x] **AsyncStorage Persistence**: Persistent store and cold launch hydration under `saanjh.settings.v1` (`T1.F7.2-5`, `T2.B6.1-5`).
 
 ---
 
-## Pairwise Cross-Feature Combinations (Tier 3)
-
-- **`C01`**: Settings language toggle (`en` ↔ `ne`) combined with persistent favorites in AsyncStorage.
-- **`C02`**: Offline network disruption during active Novel Reader playback triggering automatic device TTS fallback and page auto-advance.
-- **`C03`**: Admin Panel catalog edit (age band `6-8`) → Bearer Auth POST to Cloudflare KV → Mobile app catalog fetch & merge.
-- **`C04`**: Story Detail preview navigation → Favorite toggle on detail screen → Real-time sync with Home Screen Favorites carousel.
-- **`C05`**: Rapid story beat skipping with continuous ambient sound bed cross-fading and smooth final beat sleep wind-down.
-
----
-
-## Real-World User Scenarios (Tier 4)
-
-1. **Scenario 1 (Parent Novel Journey)**:
-   A parent sets their age band to `'parents'`, favorites `'midnight-chiya'`, opens the story preview screen, and reads in paginated Novel Reader mode with AI Voice enabled.
-2. **Scenario 2 (Toddler Bedtime Journey)**:
-   A toddler opens `'little-pine-sleep'` in Nepali, hears enhanced TTS narration with natural punctuation pauses, enjoys the auto-layered night sound bed, and drifts off as the final beat fades out over 3500ms.
-3. **Scenario 3 (Kid Offline Adventure Journey)**:
-   A child launches `'langtang-waterfall'` while offline; the system seamlessly falls back to enhanced on-device TTS, layered with the river ambient sound bed.
-4. **Scenario 4 (Admin Publishing Lifecycle)**:
-   An administrator logs into the Admin Panel, updates target audience age bands to `'6-8'`, publishes with Bearer authentication, and verifies the mobile app reflects the updated catalog.
-5. **Scenario 5 (Cold Launch & State Recovery)**:
-   The app cold-launches after being killed, cleanly restores persisted settings and favorites from AsyncStorage, displays loading skeletons during catalog sync, and suppresses AdMob dummy unit crashes.
-
----
-
-## How to Run the Tests
+## How to Execute the Test Suite
 
 ```bash
-# Execute the automated E2E Test Suite directly
+# Direct runner execution:
 node scripts/verify_e2e.js
 
-# Or via npm test
+# Or standard npm test script:
 npm test
 ```
 
-### Exit Code Semantics
-- **`0`**: All tests across Tiers 1–4 passed with zero assertion failures.
-- **`1`**: One or more assertions failed; failure report with file and line references printed to stderr/stdout.
+### Expected Output Terminal Excerpt
+```
+========================================================================
+   Saanjh Bedtime Stories - Comprehensive 4-Tier E2E Verification Suite 
+========================================================================
+
+--- TIER 1: FEATURE COVERAGE (8 Features, ≥5 Tests Each) ---
+  ✓ T1.F1.1: Splash Ritual Animated Storybook contract and timing (0ms)
+  ✓ T1.F1.2: Stardust Sparkle Particle Generator properties and distribution (0ms)
+  ✓ T1.F1.3: Bilingual Logo Reveal and brand typography (0ms)
+  ...
+--- TIER 2: BOUNDARY & CORNER CASES (8 Categories, ≥5 Tests Each) ---
+  ✓ T2.B1.1: Empty query returns trending recommendations (0ms)
+  ...
+--- TIER 3: CROSS-FEATURE COMBINATIONS (Pairwise Interactions) ---
+  ✓ T3.C01: Sleep Timer + Soundscape + Story Narration Coordination (0ms)
+  ...
+--- TIER 4: REAL-WORLD BEDTIME WORKLOAD SCENARIOS (5 User Journeys) ---
+  ✓ T4.S01: Full Bedtime Routine (Launch -> Skip Splash -> Search -> Preview -> 15m Timer -> Rain Soundscape -> Night Light -> Expiry Fade) (2ms)
+  ...
+
+========================================================================
+                   E2E TEST SUITE SUMMARY REPORT                        
+========================================================================
+ • Tier 1: Feature Coverage (8 Features)                49 passed / 0 failed (49 tests)
+ • Tier 2: Boundary & Corner Cases (8 Categories)       40 passed / 0 failed (40 tests)
+ • Tier 3: Cross-Feature Combinations (Pairwise)        10 passed / 0 failed (10 tests)
+ • Tier 4: Real-World Scenarios (5 Bedtime Workloads)   5 passed / 0 failed (5 tests)
+------------------------------------------------------------------------
+ Total Tests: 104 | Passed: 104 | Failed: 0 | Total Assertions: 433
+========================================================================
+
+✨ ALL E2E TESTS PASSED (100% SUCCESS RATE)! Total Assertions: 433
+```

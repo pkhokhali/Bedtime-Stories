@@ -13,18 +13,22 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { hydrateVoices } from '@/lib/speech';
 import { colors } from '@/constants/theme';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { fetchRemoteCatalog } from '@/lib/catalogFetcher';
+import { SplashRitual } from '@/components/splash/SplashRitual';
+import { startGlobalSleepTimerTicker, stopGlobalSleepTimerTicker } from '@/lib/sleepTimer';
 
 export { ErrorBoundary } from 'expo-router';
 
 export default function RootLayout() {
   const hydrate = useSettingsStore((s) => s.hydrate);
+  const [showSplash, setShowSplash] = useState(true);
+
   useFonts({
     Nunito_500Medium,
     Nunito_600SemiBold,
@@ -40,6 +44,10 @@ export default function RootLayout() {
     hydrateVoices().catch(() => undefined);
     fetchRemoteCatalog();
     SplashScreen.hideAsync().catch(() => undefined);
+    startGlobalSleepTimerTicker();
+    return () => {
+      stopGlobalSleepTimerTicker();
+    };
   }, [hydrate]);
 
   return (
@@ -58,6 +66,11 @@ export default function RootLayout() {
         <Stack.Screen name="story-detail/[id]" options={{ animation: 'fade' }} />
         <Stack.Screen name="story/[id]" options={{ animation: 'fade' }} />
       </Stack>
+
+      {/* Magical Storybook Animated Splash Ritual Overlay */}
+      {showSplash && (
+        <SplashRitual onFinish={() => setShowSplash(false)} />
+      )}
     </GestureHandlerRootView>
   );
 }

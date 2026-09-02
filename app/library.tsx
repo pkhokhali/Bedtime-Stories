@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -6,6 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AgeCategoryRow } from '@/components/AgeCategoryRow';
 import { SettingsButton } from '@/components/SettingsButton';
 import { AdBanner } from '@/components/AdBanner';
+import { AtmosphericBackground } from '@/components/background/AtmosphericBackground';
+import { SearchTriggerFAB, SearchDiscoveryModal } from '@/components/search';
+import { SleepTimerHeaderBadge } from '@/components/sleep';
 import { t, ui } from '@/constants/ui';
 import { colors, radii, spacing } from '@/constants/theme';
 import { ageBands, categoryLabel, storiesForAge } from '@/data/catalog';
@@ -19,6 +23,7 @@ export default function LibraryScreen() {
   const language = useSettingsStore((s) => s.language);
   const ageBand = useSettingsStore((s) => s.ageBand);
   const band = ageBands.find((item) => item.id === ageBand) ?? ageBands[1];
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   const localStories = storiesForAge(ageBand);
   const remoteStoriesAll = useDownloadsStore((s) => s.remoteStories);
@@ -44,13 +49,23 @@ export default function LibraryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <AtmosphericBackground style={styles.root}>
+      <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={styles.side}>
           <Ionicons name="chevron-back" size={24} color={colors.cream} />
         </Pressable>
         <Text style={[styles.title, language === 'ne' && styles.neBold]}>{t(ui.moreStories, language)}</Text>
-        <View style={styles.side}>
+        <View style={styles.headerActions}>
+          <SleepTimerHeaderBadge />
+          <Pressable
+            onPress={() => setIsSearchOpen(true)}
+            style={styles.headerIconBtn}
+            hitSlop={10}
+            accessibilityLabel={language === 'ne' ? 'खोज्नुहोस्' : 'Search'}
+          >
+            <Ionicons name="search-outline" size={20} color={colors.cream} />
+          </Pressable>
           <SettingsButton />
         </View>
       </View>
@@ -112,12 +127,18 @@ export default function LibraryScreen() {
         })}
       </ScrollView>
       <AdBanner />
-    </SafeAreaView>
+      </SafeAreaView>
+
+      {/* FLOATING SEARCH FAB & DISCOVERY MODAL */}
+      <SearchTriggerFAB onPress={() => setIsSearchOpen(true)} />
+      <SearchDiscoveryModal visible={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+    </AtmosphericBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  root: { flex: 1 },
+  safe: { flex: 1, backgroundColor: 'transparent' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -126,6 +147,21 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   side: { width: 44, alignItems: 'center' },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   title: {
     color: colors.cream,
     fontFamily: 'Nunito_700Bold',
@@ -148,7 +184,9 @@ const styles = StyleSheet.create({
   },
   neBold: { fontFamily: 'NotoSansDevanagari_700Bold' },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(18, 26, 44, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 160, 74, 0.12)',
     borderRadius: radii.card,
     padding: spacing.lg,
     flexDirection: 'row',

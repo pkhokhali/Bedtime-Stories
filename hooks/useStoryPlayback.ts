@@ -4,6 +4,7 @@ import { fadeBedVolume, playBed, playSfx, resolveAmbientBed, stopAllAudio, windD
 import { prefetchUpcomingBeats } from '@/lib/narrator/cloudTts';
 import { speakBeat, stopSpeech, wait } from '@/lib/speech';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useSleepTimerStore } from '@/store/useSleepTimerStore';
 import { Beat, Language, StageKind } from '@/types/story';
 
 type Status = 'idle' | 'playing' | 'paused' | 'done';
@@ -30,6 +31,7 @@ export function useStoryPlayback(beats: Beat[], language: Language, stage?: Stag
     if (!beat) {
       setStatus('done');
       windDownFinalBeat().catch(() => stopAllAudio().catch(() => undefined));
+      useSleepTimerStore.getState().notifyStoryEnded();
       return;
     }
 
@@ -68,6 +70,7 @@ export function useStoryPlayback(beats: Beat[], language: Language, stage?: Stag
         if (next >= beatsRef.current.length) {
           setStatus('done');
           windDownFinalBeat().catch(() => stopAllAudio().catch(() => undefined));
+          useSleepTimerStore.getState().notifyStoryEnded();
           return;
         }
         wait(560).then(() => {

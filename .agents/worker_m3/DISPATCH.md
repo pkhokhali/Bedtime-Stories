@@ -1,40 +1,44 @@
-## 2026-09-01T06:31:15Z
+## 2026-09-02T12:13:19+05:45
 
-You are Worker 3 for Saanjh 3.0 Milestone 3: UI Overhaul, Story Detail Screen & Favorites.
-Your working directory is: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m3
-The authoritative requirements are at: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-The project specification is at: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-The UI & content survey report is at: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_3\handoff.md
+Mission:
+Implement the complete Dedicated Full-Screen Search & Discovery Modal across:
+1. `lib/searchEngine.ts`:
+   - Real-time bilingual search matching English and Nepali Devanagari text across `title.en`, `title.ne`, `subtitle.en`, `subtitle.ne`, `theme.en`, `theme.ne`, tags, and story IDs across all 24+ local and remote stories.
+   - 6 Quick filter pills:
+     * Toddlers (2-4): `ageBand === '2-4' || ageBand === '4-6'`
+     * Kids (6-8): `ageBand === '6-8' || ageBand === '9-12'`
+     * Novels & Parents: `form === 'novel' || ageBand === 'parents' || ageBand === '25+' || ageBand === '18-25'`
+     * Folk Tales: `category === 'roots'`
+     * Animal Stories: Stories with animal characters (`clever-rabbit`, `moon-rabbit`, `sleepy-yak`, `koshi-crocodile`, `dove-net`, `yeti-quiet`, `firefly-lights`, etc.)
+     * Audio Only: Stories with audio narration / beats
+   - `getTrendingStories(catalog)`: Returns 4 curated popular bedtime stories.
+   - Recent Searches AsyncStorage helper: Key `saanjh.recent_searches.v1`.
+2. `components/search/SearchTriggerFAB.tsx`:
+   - Floating action button (FAB) with glowing warm amber styling (`#E8A04A`), celestial shadow, search icon, positioned at bottom-right of Home & Library.
+3. `components/search/SearchDiscoveryModal.tsx`:
+   - Fullscreen modal (`animationType="fade"`, `transparent={true}`) with deep celestial blur / nocturnal gradient backdrop (`#060913` -> `#0c1222`).
+   - Header: Auto-focused bilingual SearchBar (`"खोज्नुहोस् / Search bedtime stories..."`), clear button, dismiss button.
+   - Quick filter chips row with glowing active states.
+   - Discovery state (when query is empty):
+     * Recent Searches chips with "Clear" action.
+     * Trending Stories recommendations with badges.
+   - Results state: Clean story cards with cover image / icon, bilingual title, category badge, age band pill, and runtime indicator.
+   - On result tap: Closes modal immediately and calls `router.push('/story-detail/' + story.id)`.
+4. Integration in `app/index.tsx` & `app/library.tsx`:
+   - Add header search icon and `<SearchTriggerFAB onPress={() => setIsSearchOpen(true)} />`.
+   - Mount `<SearchDiscoveryModal visible={isSearchOpen} onClose={() => setIsSearchOpen(false)} />`.
 
-MANDATORY INTEGRITY WARNING:
-DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
+Write Ownership:
+- `lib/searchEngine.ts`
+- `components/search/SearchTriggerFAB.tsx`
+- `components/search/SearchDiscoveryModal.tsx`
+- `components/search/index.ts`
+- `app/index.tsx`
+- `app/library.tsx`
 
-Your mission:
-Implement the complete mobile UI overhaul:
-1. **Favorites Store (`store/useFavoritesStore.ts`)**:
-   - Standalone Zustand store with `persist` and `createJSONStorage(() => AsyncStorage)` under name `'saanjh.favorites.v1'`.
-   - State: `favoriteIds: string[]`, `addFavorite: (id: string) => void`, `removeFavorite: (id: string) => void`, `toggleFavorite: (id: string) => void`, `isFavorite: (id: string) => boolean`.
-2. **Story Detail / Preview Screen (`app/story-detail/[id].tsx`)**:
-   - Create screen displaying:
-     - Hero with cover image (ImageBackground) or gradient placeholder (`story.accent` / theme background).
-     - Top bar with back button (`router.back()`) and animated heart favorite toggle (`toggleFavorite(story.id)`).
-     - Category badge (`form === 'novel' ? 'उपन्यास' : 'सुत्ने बेलाको कथा'`).
-     - Bilingual title and subtitle.
-     - Metadata badges (Age badge with icon, runtime in minutes, language EN/NE).
-     - Moral / lesson card displaying `story.theme` (English and Nepali).
-     - Prominent "Play Story" / "Listen to Novel" CTA button navigating to `/story/${story.id}`.
-   - Register `<Stack.Screen name="story-detail/[id]" />` in `app/_layout.tsx`.
-3. **Unified Home Screen (`app/index.tsx`)**:
-   - Hero banner featuring recommended / featured story with cover visual, title, Play CTA, and Details CTA (`/story-detail/${featuredStory.id}`).
-   - "My Favorites" carousel when `favoriteIds.length > 0`.
-   - Category carousels with authentic Devanagari titles.
-   - Skeleton loaders (`components/StoryCardSkeleton.tsx`) during catalog fetch.
-   - Friendly retry banner if remote catalog fetch fails (`catalogError`).
-4. **Navigation Routing**:
-   - In `components/StoryCarousel.tsx` and `app/library.tsx`, update story card tap action to navigate to `/story-detail/${story.id}` instead of directly to `/story/${story.id}`.
-
-Verification requirement:
-- Run `npx tsc --noEmit` across root and ensure 0 TypeScript errors.
-- Run `node scripts/verify_e2e.js` to verify passing assertions for Milestone 3 features (F18-F21, C01, C04, S05, etc.).
-- Document all changes and verification in `d:\Antigravity Projects\Bedtime Stories\.agents\worker_m3\handoff.md`.
-- Send a message when ready.
+Verification Requirements:
+1. Run `npx tsc --noEmit` (must pass with 0 errors).
+2. Run `node scripts/verify_e2e.js` (must pass 100% tests).
+3. Maintain `progress.md` with timestamps.
+4. Write `handoff.md` with implementation details and verification results.
+5. Send completion message back.

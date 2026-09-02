@@ -1,31 +1,41 @@
-## 2026-09-01T06:08:11Z
+## 2026-09-02T06:10:16Z
+You are the Worker for Milestone 1 (M1: Magical Storybook Animated Splash Ritual).
+Your Working Directory: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1
+Original Request: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
+Master Project: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
 
-Worker 1 for Saanjh 3.0 Milestone 1: Fix 7 Confirmed Bugs & Backend Auth.
-Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1
-Authoritative requirements: d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md
-Project specification: d:\Antigravity Projects\Bedtime Stories\PROJECT.md
-Bug survey report: d:\Antigravity Projects\Bedtime Stories\.agents\explorer_survey_1\handoff.md
+MANDATORY INTEGRITY WARNING:
+DO NOT CHEAT. All implementations must be genuine. DO NOT hardcode test results, create dummy/facade implementations, or circumvent the intended task. A auditor will independently verify your work. Integrity violations WILL be detected and your work WILL be rejected.
 
-Tasks:
-1. Bug 1 & 4 (`app/index.tsx` & `constants/ui.ts`):
-   - Add proper bilingual dictionary entries with authentic Devanagari text in `constants/ui.ts` for section titles, play button, library button, and carousels (`recentlyAdded`, `play`, `library`, `forLittleOnes`, `kidsAndTweens`, `afterHoursParents`, `youngAdults`).
-   - In `app/index.tsx`, replace all `????` question mark strings with `t(ui.<key>, language)`.
-   - Remove unused imports `radii`, `spacing`, `storiesForAge`, `ageBands`.
-2. Bug 2 (`store/useSettingsStore.ts`):
-   - Update `parseAgeBand` to recognize and preserve `'parents'` (and `'parent'`) so selecting "Parents" persists across app reloads.
-3. Bug 3 (`components/SplashRitual.tsx`):
-   - Delete dead unreferenced file `components/SplashRitual.tsx`.
-4. Bug 5 (`admin/src/App.tsx`):
-   - Replace mismatched `'7-9'` option with standard mobile age bands (`6-8`, `9-12`) matching `AgeBand` type.
-5. Bug 6 (`backend/src/index.ts` & `admin/src/App.tsx`):
-   - In `backend/src/index.ts`, add `ADMIN_SECRET?: string` to `Env`.
-   - Protect `POST /catalog` with a Bearer token verification check: if `ADMIN_SECRET` is set, verify `Authorization: Bearer <ADMIN_SECRET>` header, returning 401 if missing/mismatched.
-   - In `admin/src/App.tsx`, add an Admin Secret input / local storage state and send `Authorization: Bearer ${adminSecret}` in `POST /catalog`.
-6. Bug 7 (`components/AdBanner.tsx`):
-   - Make AdBanner validate that `adUnitId` is a valid unit ID (not containing dummy placeholder strings like `'xxxxxxxx'` or `'zzzzzzzz'`).
-   - Add `hasError` state and `onAdFailedToLoad={() => setHasError(true)}` to return `null` and hide cleanly when dummy/invalid or load fails.
+Mission:
+Implement the complete, high-fidelity Magical Storybook Animated Splash Ritual according to the Explorer blueprints:
+1. `components/splash/AnimatedStorybook.tsx`:
+   - Detailed SVG vector rendering: leather spine, golden Paubha/filigree corner ornaments, stacked parchment pages with vintage illustration watermark, inner parchment radiance with RadialGradient, vertical light flare.
+   - Reanimated 3D perspective opening animation (`perspective: 800`, `rotateY: 0deg -> -165deg`, multi-leaf fluttering, breathing glow).
+   - Reference blueprint: `d:\Antigravity Projects\Bedtime Stories\.agents\explorer_m1_1\blueprint_AnimatedStorybook.tsx` & `handoff.md`.
+2. `components/splash/StardustParticles.tsx`:
+   - 20-24 floating stardust / sparkle particles (✦, ★, glowing dots) radiating upward from the open pages with ballistic lift, horizontal sine fanning, scale twinkling, and Reanimated UI-thread worklets.
+   - Reference blueprint: `d:\Antigravity Projects\Bedtime Stories\.agents\explorer_m1_2\handoff.md`.
+3. `components/splash/SplashRitual.tsx`:
+   - Complete splash orchestration: Nocturnal gradient canvas (`#060913` -> `#0c1222` -> `#121a2f`), pulsing celestial aura behind book, mounting `<AnimatedStorybook>` & `<StardustParticles>`, synchronized chime sound sting (`playChime()` from `lib/audio.ts` at ~450ms with timeout cleanup), bilingual typography reveal ("Saanjh" • "साँझ" and subtitle), tap-to-skip with 380ms crossfade, and auto-finish with 500ms crossfade.
+   - Sets `pointerEvents="none"` during dismissal to prevent touch lag.
+   - Reference blueprint: `d:\Antigravity Projects\Bedtime Stories\.agents\explorer_m1_3\handoff.md`.
+4. `app/_layout.tsx`:
+   - Integrate `<SplashRitual onFinish={() => setShowSplash(false)} />` as an absolute in-tree overlay above `<Stack>`.
+   - Ensure font loading, store hydration (`useSettingsStore.hydrate()`), speech voice hydration, and remote catalog fetching run smoothly in the background.
 
-Verification:
-- Run `npx tsc --noEmit` across root and ensure 0 TypeScript errors.
-- Document in `handoff.md`.
-- Send message to parent.
+Write Ownership:
+You exclusively own:
+- `components/splash/AnimatedStorybook.tsx`
+- `components/splash/StardustParticles.tsx`
+- `components/splash/SplashRitual.tsx`
+- `app/_layout.tsx`
+
+Verification Requirements:
+1. Run `npx tsc --noEmit` and ensure 0 errors.
+2. Maintain `progress.md` with timestamps.
+3. Write a comprehensive `handoff.md` with:
+   - Summary of implemented components
+   - Verification commands executed and exact terminal outputs
+   - Code layout compliance
+4. Send a message back to parent when done.

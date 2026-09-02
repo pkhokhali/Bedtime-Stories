@@ -1,4 +1,4 @@
-import { loopingBeds, soundFiles } from '@/lib/sounds';
+import { loopingBeds, soundFiles, SoundscapeId } from '@/lib/sounds';
 import { SceneId, SoundId, StageKind } from '@/types/story';
 
 type AudioPlayer = import('expo-audio').AudioPlayer;
@@ -7,6 +7,12 @@ let bed: AudioPlayer | null = null;
 let bedId: SoundId | null = null;
 let currentBedVolume = 0.22;
 let fadeIntervalId: ReturnType<typeof setInterval> | null = null;
+
+let soundscapePlayer: AudioPlayer | null = null;
+let soundscapeId: SoundscapeId | null = null;
+let soundscapeVolume = 0.5;
+let soundscapeFadeIntervalId: ReturnType<typeof setInterval> | null = null;
+
 let ready = false;
 
 export const SCENE_BED_MAP: Record<SceneId, SoundId> = {
@@ -52,13 +58,13 @@ function release(player: AudioPlayer | null) {
   }
 }
 
-async function ensureMode() {
+export async function ensureMode() {
   if (ready) return;
   try {
     const { setAudioModeAsync } = await import('expo-audio');
     await setAudioModeAsync({
       playsInSilentMode: true,
-      shouldPlayInBackground: false,
+      shouldPlayInBackground: true,
       interruptionMode: 'mixWithOthers',
     });
     ready = true;
@@ -182,6 +188,99 @@ export async function stopBed() {
   currentBedVolume = 0.22;
 }
 
+// Continuous Soundscapes Engine (Standalone Ambient White Noise)
+export async function playContinuousSoundscape(id: SoundscapeId, volume: number = 0.5) {
+  try {
+    await ensureMode();
+    const { createAudioPlayer } = await import('expo-audio');
+    const clampedVol = Math.max(0, Math.min(1, volume));
+
+    if (soundscapeId === id && soundscapePlayer) {
+      if (soundscapePlayer.paused) soundscapePlayer.play();
+      soundscapePlayer.volume = clampedVol;
+      soundscapeVolume = clampedVol;
+      return;
+    }
+
+    await stopContinuousSoundscape();
+    const player = createAudioPlayer(soundFiles[id]);
+    player.loop = true;
+    player.volume = clampedVol;
+    soundscapeVolume = clampedVol;
+    player.play();
+    soundscapePlayer = player;
+    soundscapeId = id;
+  } catch {
+    // Soundscape fails gracefully
+  }
+}
+
+export async function stopContinuousSoundscape() {
+  if (soundscapeFadeIntervalId) {
+    clearInterval(soundscapeFadeIntervalId);
+    soundscapeFadeIntervalId = null;
+  }
+  release(soundscapePlayer);
+  soundscapePlayer = null;
+  soundscapeId = null;
+}
+
+export function setContinuousSoundscapeVolume(volume: number) {
+  const clamped = Math.max(0, Math.min(1, volume));
+  soundscapeVolume = clamped;
+  if (soundscapePlayer) {
+    try {
+      soundscapePlayer.volume = clamped;
+    } catch {
+      // ignore
+    }
+  }
+}
+
+export function getActiveSoundscape(): SoundscapeId | null {
+  return soundscapeId;
+}
+
+export function isSoundscapePlaying(): boolean {
+  return !!(soundscapePlayer && !soundscapePlayer.paused);
+}
+
+// 10-Second Volume Fade down to 0 for Bedtime Sleep Timer
+export function fadeAudioToSleep(durationMs: number = 10000): Promise<void> {
+  return new Promise((resolve) => {
+    const steps = Math.max(1, Math.floor(durationMs / 100));
+    let currentStep = 0;
+    const initialBedVol = currentBedVolume;
+    const initialScapeVol = soundscapeVolume;
+
+    const interval = setInterval(() => {
+      currentStep++;
+      const factor = Math.max(0, 1 - currentStep / steps);
+      if (bed) {
+        try {
+          bed.volume = Math.max(0, initialBedVol * factor);
+        } catch {}
+      }
+      if (soundscapePlayer) {
+        try {
+          soundscapePlayer.volume = Math.max(0, initialScapeVol * factor);
+        } catch {}
+      }
+      if (currentStep >= steps) {
+        clearInterval(interval);
+        stopAllAudio().then(resolve).catch(resolve);
+      }
+    }, 100);
+  });
+}
+
 export async function stopAllAudio() {
   await stopBed();
+  await stopContinuousSoundscape();
+  try {
+    const { stopSpeech } = await import('@/lib/speech');
+    stopSpeech();
+  } catch {
+    // ignore
+  }
 }

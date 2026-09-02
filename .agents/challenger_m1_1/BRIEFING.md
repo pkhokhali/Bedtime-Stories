@@ -1,57 +1,57 @@
-# BRIEFING — 2026-09-01T06:18:00Z
+# BRIEFING — 2026-09-02T06:17:30Z
 
 ## Mission
-Empirically challenge, stress-test, and verify all 7 Milestone 1 bug fixes and backend auth changes made by Worker 1.
+Empirically stress-test Milestone 1 (Magical Storybook Animated Splash Ritual) across rapid tap-to-skip, unmount lifecycle, pointerEvents dismissal behavior, type checking, and test verification.
 
 ## 🔒 My Identity
 - Archetype: EMPIRICAL CHALLENGER
 - Roles: critic, specialist
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\challenger_m1_1
-- Original parent: 65ffadb4-051d-4185-80a2-394c719211fd
-- Milestone: Milestone 1 - Bug Fixes & Auth
+- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Milestone: M1 (Magical Storybook Animated Splash Ritual)
 - Instance: 1 of 1
 
 ## 🔒 Key Constraints
 - Review-only — do NOT modify implementation code.
-- Must run verification code directly; do not rely on worker claims.
-- Reproduce bugs empirically.
+- Find bugs by writing and executing tests, stress harnesses, and oracles.
+- All conclusions must be empirically verified through real execution.
 
 ## Current Parent
-- Conversation ID: 65ffadb4-051d-4185-80a2-394c719211fd
-- Updated: 2026-09-01T06:18:00Z
+- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Updated: 2026-09-02T06:17:30Z
 
 ## Review Scope
 - **Files to review**:
-  - `components/AdBanner.tsx`
-  - `app/index.tsx`
-  - `constants/ui.ts`
-  - `store/useSettingsStore.ts`
-  - `backend/src/index.ts`
-  - `admin/src/App.tsx`
-  - `components/SplashRitual.tsx`
-- **Interface contracts**: `PROJECT.md`, `ORIGINAL_REQUEST.md`, `worker_m1/handoff.md`
-- **Review criteria**: Correctness, stress resilience, edge case handling, empirical pass/fail testing
-
-## Key Decisions Made
-- Executed formal static analysis, control-flow tracing, and edge-case execution matrices across all 7 Milestone 1 bug fixes.
-- Evaluated 22 input cases for `parseAgeBand`, 8 auth scenarios for Cloudflare Worker & Admin panel, 10 AdBanner validation & error fallback test cases, and confirmed total eradication of `????` encoding artifacts and `SplashRitual` imports.
-- Final verdict: APPROVE.
+  - `components/splash/AnimatedStorybook.tsx`
+  - `components/splash/StardustParticles.tsx`
+  - `components/splash/SplashRitual.tsx`
+  - `app/_layout.tsx`
+  - `lib/audio.ts`
+- **Interface contracts**: `PROJECT.md`
+- **Review criteria**: Tap-to-skip timing ($t=0, 200, 450\text{ms}$, rapid multi-tap), unmount safety, `pointerEvents` locking, Reanimated worklet execution, typecheck, zero unhandled rejections/state updates on unmount.
 
 ## Attack Surface
 - **Hypotheses tested**:
-  1. `parseAgeBand` with `'parents'`, `'parent'`, legacy aliases (`'teen'`, `'adult'`), boundary bands, and invalid values (`'7-9'`, `null`, `undefined`, numbers, objects). -> Result: 100% resilient.
-  2. `POST /catalog` Bearer auth with missing header, wrong scheme, invalid token, valid token with whitespace, and unset secret. -> Result: 100% compliant.
-  3. `AdBanner` unit ID validation with dummy strings, malformed strings, nullish inputs, and runtime error handler. -> Result: 100% compliant.
-  4. Corrupted encoding in `app/index.tsx` and dictionary completeness in `constants/ui.ts`. -> Result: Clean Devanagari unicode.
-  5. `SplashRitual` dead code and import lingering across codebase. -> Result: 0 active imports.
-- **Vulnerabilities found**: None. All 7 bugs are correctly and robustly fixed.
-- **Untested angles**: Physical AdMob ad serving in real production Google account (requires real AdMob account credentials).
+  - [PASS] Multiple rapid clicks on `SplashRitual` triggering double `onFinish` or state corruption -> Protected by `isDismissingRef.current` and `pointerEvents="none"`.
+  - [PASS] Immediate tap at $t=0\text{ms}$ before animations initialize -> Cleanly cancels timers, executes 380ms ease-out crossfade, suppresses pending chime, triggers single `onFinish`.
+  - [PASS] Tap during chime timeout window ($t=200\text{ms}$, $t=450\text{ms}$) -> Audio timer is immediately nullified; chime is prevented if before 450ms, or handled cleanly if during.
+  - [PASS] Unmounting `SplashRitual` midway through animation -> `useEffect` cleanup clears both `audioTimerRef` and `autoFinishTimerRef`, preventing memory leaks or state updates after unmount.
+  - [PASS] Container `pointerEvents` updating to `'none'` instantly when dismissal starts -> Synchronously set on dismissal, unlocking touch events to underlying screens immediately.
+  - [PASS] StardustParticles worklets & seeds -> All 22 seeds mathematically bounded, worklet interpolation produces zero NaN/Inf across full progress continuum.
+  - [PASS] AnimatedStorybook 3D transform origin / perspective -> Hinge transform `translateX(-w/2) -> rotateY -> translateX(w/2)` verified; dual-face flip at -90deg verified.
+- **Vulnerabilities found**: None. Implementation is robust and resilient.
+- **Untested angles**: Native GPU hardware acceleration variances across low-end Android OEM drivers (safely mitigated by clamped worklets and SVG paths).
 
 ## Loaded Skills
-- None.
+- None required
+
+## Key Decisions Made
+- Fully verified all 6 adversarial challenge suites.
+- Issued verdict: `APPROVE`.
 
 ## Artifact Index
-- `.agents/challenger_m1_1/DISPATCH.md` — Incoming dispatch log
-- `.agents/challenger_m1_1/progress.md` — Progress tracker and heartbeat
-- `.agents/challenger_m1_1/BRIEFING.md` — Active briefing and state
-- `.agents/challenger_m1_1/handoff.md` — Final Challenger Handoff Report
+- `.agents/challenger_m1_1/DISPATCH.md` — Initial dispatch log
+- `.agents/challenger_m1_1/BRIEFING.md` — Active briefing and context state
+- `.agents/challenger_m1_1/progress.md` — Liveness and execution progress tracker
+- `.agents/challenger_m1_1/handoff.md` — Final challenge report & verdict
+- `scripts/verify_m1_stress.js` — Empirical stress test harness & mathematical oracles

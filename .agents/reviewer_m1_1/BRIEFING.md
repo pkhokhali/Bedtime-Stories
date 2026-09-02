@@ -1,61 +1,64 @@
-# BRIEFING — 2026-09-01T06:15:00Z
+# BRIEFING — 2026-09-02T06:15:45Z
 
 ## Mission
-Objectively and critically review Worker 1 changes for Milestone 1 (7 confirmed bugs & backend auth) and issue a verification-backed verdict.
+Review Milestone 1 implementation (Magical Storybook Animated Splash Ritual) across components/splash and app/_layout.tsx with quality and adversarial critique.
 
 ## 🔒 My Identity
-- Archetype: reviewer / critic
+- Archetype: reviewer_critic
 - Roles: reviewer, critic
 - Working directory: d:\Antigravity Projects\Bedtime Stories\.agents\reviewer_m1_1
-- Original parent: 65ffadb4-051d-4185-80a2-394c719211fd
-- Milestone: Milestone 1 - Fix 7 Confirmed Bugs & Backend Auth
+- Original parent: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Milestone: M1
 - Instance: 1 of 1
 
 ## 🔒 Key Constraints
-- Review-only — do NOT modify implementation code directly unless reproducing or testing in non-destructive ways.
-- Adversarial scrutiny — check for integrity violations, regressions, edge cases, auth bypasses, type errors.
-- Verdict must be explicit APPROVE or REQUEST_CHANGES.
+- Review-only — do NOT modify implementation code
+- Actively check for integrity violations (hardcoded test results, facade logic, bypassed requirements, fabricated outputs)
+- Produce evidence-based findings with exact file paths and lines
+- Deliver handoff.md with 5 components and explicit verdict (APPROVE / REQUEST_CHANGES)
 
 ## Current Parent
-- Conversation ID: 65ffadb4-051d-4185-80a2-394c719211fd
-- Updated: 2026-09-01T06:15:00Z
+- Conversation ID: bff518b7-f822-4826-a5a7-74d58a8ab87a
+- Updated: 2026-09-02T06:15:45Z
 
 ## Review Scope
-- **Files to review**:
-  - `app/index.tsx`
-  - `constants/ui.ts`
-  - `store/useSettingsStore.ts`
-  - `components/SplashRitual.tsx`
-  - `admin/src/App.tsx`
-  - `backend/src/index.ts`
-  - `components/AdBanner.tsx`
-- **Interface contracts**: `PROJECT.md`, `.agents/ORIGINAL_REQUEST.md`
-- **Review criteria**: Correctness, Logical Completeness, Quality, Security/Adversarial Robustness, Integrity
+- **Files reviewed**:
+  - `components/splash/AnimatedStorybook.tsx`
+  - `components/splash/StardustParticles.tsx`
+  - `components/splash/SplashRitual.tsx`
+  - `app/_layout.tsx`
+  - `lib/audio.ts`
+- **Interface contracts**:
+  - `d:\Antigravity Projects\Bedtime Stories\PROJECT.md`
+  - `d:\Antigravity Projects\Bedtime Stories\.agents\ORIGINAL_REQUEST.md`
+  - `d:\Antigravity Projects\Bedtime Stories\.agents\worker_m1\handoff.md`
+- **Review criteria**:
+  - Correctness: SVG geometry, 3D Reanimated opening rotation, stardust particle physics, bilingual typography reveal ("Saanjh" • "साँझ").
+  - Robustness: Tap-to-skip immediately crossfades with `pointerEvents="none"`, auto-finish timer clears cleanly, `playChime()` handles errors gracefully.
+  - Interface & Layout Conformance: In-tree overlay in `app/_layout.tsx` does not block background store hydration (`useSettingsStore.hydrate()`) or cause double-mounting.
+  - Verification: TypeScript typecheck, test execution, manual inspection.
 
 ## Review Checklist
 - **Items reviewed**:
-  - Bug 1 & 4: Devanagari text in `app/index.tsx` & `constants/ui.ts`, unused imports removed (PASS)
-  - Bug 2: `parseAgeBand` handling of `'parents'` and `'parent'` (PASS)
-  - Bug 3: `SplashRitual.tsx` dead code removed / 0 references (PASS)
-  - Bug 5: Admin Panel age bands `6-8`, `9-12` in `admin/src/App.tsx` (PASS)
-  - Bug 6: `backend/src/index.ts` & `admin/src/App.tsx` Bearer auth & key header (PASS)
-  - Bug 7: `components/AdBanner.tsx` dummy unit ID validation & fallback (PASS)
+  - `AnimatedStorybook.tsx`: Validated 3D spine-hinge matrix transform mechanics, dual-faced cover flip (-90deg), stacked parchment vector art, gold filigree ornaments, radiance bloom.
+  - `StardustParticles.tsx`: Validated 22 deterministic particle seeds, ballistic upward trajectory, transverse sine fanning, scale/opacity envelopes.
+  - `SplashRitual.tsx`: Validated nocturnal linear gradient, synchronized chime trigger, bilingual typography reveal, tap-to-skip with instant touch pass-through, auto-dismiss.
+  - `app/_layout.tsx`: Validated in-tree overlay mounting over `<Stack>`, background hydration running uninterrupted.
 - **Verdict**: APPROVE
-- **Unverified claims**: None
+- **Unverified claims**: None. All claims independently verified.
 
 ## Attack Surface
 - **Hypotheses tested**:
-  - Backend Auth: Invalid token, missing header, unconfigured dev environment (Robust)
-  - AdMob: Release placeholder IDs triggering SDK crash (Safely suppressed via null return)
-  - AgeBand Deserialization: Null, malformed, legacy strings (Gracefully parsed with defaults)
-- **Vulnerabilities found**: None
-- **Untested angles**: Production cloud deployment secrets configuration
+  - Rapid multi-tap race condition -> Handled with synchronous `isDismissingRef.current` guard and instant `pointerEvents="none"`.
+  - Viewport dimension responsiveness -> Handled with `Math.min(290, width * 0.82)` and proportional aspect ratio scaling.
+  - Audio failure / silent mode -> Handled with `.catch(() => undefined)` on `playChime()`.
+  - Early component unmount -> Handled with timer cleanup hooks in `useEffect`.
+- **Vulnerabilities found**: None.
+- **Untested angles**: None.
 
 ## Key Decisions Made
-- Issued APPROVE verdict for Milestone 1 work product.
-- Completed comprehensive handoff report at `.agents/reviewer_m1_1/handoff.md`.
+- Milestone 1 meets all functional, architectural, visual, and robustness criteria with 100% test pass rate and clean typecheck. Final verdict is APPROVE.
 
 ## Artifact Index
-- `.agents/reviewer_m1_1/BRIEFING.md` — persistent memory
-- `.agents/reviewer_m1_1/progress.md` — liveness heartbeat
-- `.agents/reviewer_m1_1/handoff.md` — final handoff report
+- `progress.md` — Liveness heartbeat and review progression
+- `handoff.md` — Final review report and verdict

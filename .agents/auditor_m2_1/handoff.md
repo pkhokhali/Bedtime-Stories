@@ -1,110 +1,141 @@
-# Forensic Audit Report: Milestone 2 (AI-Powered Story Narrator & Novel Reader)
+# Forensic Audit Report: Milestone 2 (M2) — Atmospheric Bedtime Background & Visual Graphic Design
 
-**Work Product**: Milestone 2 codebase changes across `lib/narrator/`, `lib/speech.ts`, `lib/audio.ts`, `hooks/useStoryPlayback.ts`, `components/reader/NovelReader.tsx`, `app/settings.tsx`, `store/useSettingsStore.ts`, `app/story/[id].tsx`, `constants/ui.ts`, `components/player/StoryPlayer.tsx`  
-**Profile**: General Project  
-**Integrity Mode**: Development (per `ORIGINAL_REQUEST.md`)  
-**Verdict**: **CLEAN**
+**Auditor**: Forensic Auditor M2  
+**Working Directory**: `d:\Antigravity Projects\Bedtime Stories\.agents\auditor_m2_1`  
+**Date**: 2026-09-02  
+**Verdict**: **CLEAN**  
 
 ---
 
 ## 1. Observation
 
-Direct forensic observations across the Milestone 2 codebase:
+1. **Twinkling Starfield (`components/background/TwinklingStarfield.tsx`)**:
+   - Lines 30–63 define `STAR_SEEDS` with 32 deterministic star seed objects (`id: 1..32`, `xPct: 5..94`, `yPct: 4..68`, `baseSize: 1.5..3.5`, `color`, `glow`, `minOpacity`, `maxOpacity`, `duration: 2400..4200`, `delay: 50..1700`).
+   - Lines 65–139 define `StarNode` utilizing React Native Reanimated:
+     ```ts
+     const progress = useSharedValue(0);
+     useEffect(() => {
+       progress.value = withDelay(
+         star.delay,
+         withRepeat(
+           withSequence(
+             withTiming(1, { duration: star.duration / 2, easing: Easing.inOut(Easing.sin) }),
+             withTiming(0, { duration: star.duration / 2, easing: Easing.inOut(Easing.sin) })
+           ),
+           -1,
+           true
+         )
+       );
+     }, [progress, star.delay, star.duration]);
+     ```
+   - Lines 88–106 interpolate `opacity` (`minOpacity` to `maxOpacity`) and `scale` (`0.85` to `1.25`) on the native UI thread.
+   - Lines 128–136 render multi-layer SVG glowing halos with `<Circle>` and inner stars.
+   - Container and star nodes specify `pointerEvents="none"`.
 
-1. **Layer 1: Enhanced On-Device Segmented Speech & Bedtime Pacing**:
-   - `lib/narrator/types.ts` (lines 4-38): Accurately defines `SpeechSegment`, `VoiceProfile`, `VoiceProfiles`, `CloudTtsOptions`, `NarratorStatus`, and `NarratorState`.
-   - `lib/narrator/segmenter.ts`:
-     - `cleanSsml` (lines 15-18): Regex `/<[^>]*>/g` strips SSML tags to prevent native TTS vocalization errors.
-     - `segmentText` (lines 24-105): Implements genuine punctuation tokenization splitting on `(\.\.\.|…|\n\n|\n|[.!?।॥])`. Assigns bedtime pauses:
-       - Paragraph breaks (`\n\n`): 1200ms
-       - Single newline (`\n`): 1100ms
-       - Ellipsis (`...`, `…`): 1000ms
-       - Sentence terminators (`.`, `!`, `?`, `।`, `॥`): 750ms
-       - Clause breaks (`,`, `;`, `—`, `-`): 300ms
-     - Dialogue detection (lines 34, 41-57): Matches quotes (`"`, `“`, `”`, `'`) and applies character voice role modulation.
-     - `VOICE_PROFILES` (lines 4-9): Configures pitch delta, rate multiplier, and volume for `narrator` (0, 1.0, 0.92), `soft` (-0.05, 0.88, 0.85), `rabbit` (+0.18, 1.08, 0.95), and `tiger` (-0.22, 0.86, 1.0).
-   - `lib/audio.ts`:
-     - `SCENE_BED_MAP` and `STAGE_BED_MAP` (lines 12-36): Maps 13 scene IDs and 7 stage kinds to ambient sound beds (`night`, `moon`, `river`, `courtyard`, `wind`).
-     - `resolveAmbientBed` (lines 38-43): Implements deterministic fallback hierarchy: `music` -> `scene` -> `stage` -> `'night'`.
-     - `fadeBedVolume` (lines 70-117): Uses stepped interval transitions to smoothly ramp audio bed volume over configurable duration (`durationMs`).
-     - `windDownFinalBeat` (lines 119-122): Fades volume to 0.0 over 3500ms and cleanly stops the bed player.
-   - `lib/speech.ts`:
-     - Generation token cancellation (lines 26, 74, 88, 103, 113, 117, 136, 144, 159): `currentSpeechGen` increment ensures cancelled or skipped speeches immediately halt without overlapping or audio collision.
-     - Sequential segment playback (lines 106-144): Executes segments in order with `Speech.speak`, per-role pitch/rate adjustments, and `wait(segment.pauseAfterMs)`.
-   - `hooks/useStoryPlayback.ts`:
-     - Auto-detects and triggers ambient bed via `resolveAmbientBed(beat.music, beat.scene, stageRef.current)` (lines 39-45).
-     - Dispatches background prefetch for upcoming beats when `aiVoice` is active (lines 48-54).
-     - Starts bedtime sleep wind-down fade (`fadeBedVolume(0.06, 3500)`) on the final beat (lines 56-60) and finishes with `windDownFinalBeat()` (lines 32, 70).
+2. **Himalayan Horizon (`components/background/HimalayanHorizon.tsx`)**:
+   - Lines 11–38 implement `renderPineTree(x, baseY, width, height, color)` generating multi-tiered conifer vector paths.
+   - Lines 42–57 define 14 staggered pine tree coordinate structures along the foothills.
+   - Lines 68–77 define `<Defs>` with `distantRidgeGrad` (`#0D1526` -> `#080C16`) and `midPeakGrad` (`#090F1C` -> `#050810`).
+   - Lines 79–106 render 4 distinct SVG strata: Distant Ridge Path, Mid-range Himalayan Sharp Peaks Path, Rolling Foothill Silhouette Path (`#060A14`), and 14 Pine Tree Conifer Silhouettes (`#050A14`), sealed by a baseline footer path.
+   - Container has `pointerEvents="none"`.
 
-2. **Layer 2: Cloud AI Neural Voice (Google Cloud TTS Free Tier)**:
-   - `lib/narrator/cloudTts.ts`:
-     - Synthesizes via Google Cloud TTS API endpoint `https://texttospeech.googleapis.com/v1/text:synthesize` (line 8).
-     - Maps neural voices: `en-IN-Neural2-A`/`B` for English and `ne-NP-Standard-A`/`B` for Nepali (lines 77-83).
-     - Local caching (lines 18-34, 69-74, 128-131): Generates 32-hex deterministic cache key, checks `FileSystem.getInfoAsync`, and saves synthesized base64 MP3 to `${FileSystem.cacheDirectory}saanjh_tts/`.
-     - Background prefetching: `prefetchUpcomingBeats` synthesizes upcoming beats in advance (lines 141-157).
-     - Graceful fallback: Returns `null` on missing API key, network error, bad response, or 4s timeout (`AbortController`), allowing `lib/speech.ts` to seamlessly fall back to Layer 1 on-device speech.
-     - `playCloudAudio` & `stopCloudAudio` (lines 162-219): Controls playback with `expo-audio` and cleans up listeners.
-   - `store/useSettingsStore.ts` (lines 18, 28, 37, 85, 99, 133-136): Implements `aiVoice` boolean flag (defaults to `false`), persisted in AsyncStorage (`saanjh.settings.v1`).
-   - `app/settings.tsx` (lines 98-106): Adds "AI Voice (Beta)" switch toggle with bilingual labels (`ui.aiVoice`, `ui.aiVoiceHint`).
+3. **Atmospheric Background Container (`components/background/AtmosphericBackground.tsx`)**:
+   - Lines 16–22 define `CELESTIAL_GRADIENT = ['#060913', '#0c1222', '#121A2F', '#1B1428', '#22151D']`.
+   - Lines 24–34 define `resolveIntensityOpacity` mapping `'full' -> 1.0`, `'subtle' -> 0.6`, `'dim' -> 0.3`.
+   - Lines 36–62 compose `LinearGradient`, `<TwinklingStarfield />`, and `<HimalayanHorizon />` behind `{children}` inside `pointerEvents="none"` absolute overlay with computed opacity.
 
-3. **Novel Reader Mode**:
-   - `components/reader/NovelReader.tsx`:
-     - Paginated reader view for novel stories (`form === 'novel'`).
-     - Font size scaling `[A-]` and `[A+]` (lines 46-52, 113-132) clamped between 14px and 28px.
-     - Prominent "Read Aloud" button (lines 196-224) bound to `useStoryPlayback`.
-     - Auto-advancing pages synchronized with beat progression (`playback.index`).
-     - Novel progress bar (lines 136-138) and bilingual page indicators (`Page X of Y` / `X / Y पृष्ठ`).
-     - Sleep wind-down completion overlay (`SleepFade`) (lines 254-262).
-   - `app/story/[id].tsx` (lines 33-39): Directs novel stories (`mergedStory.form === 'novel'`) to `NovelReader`.
-   - `constants/ui.ts` (lines 79-88): Complete English/Nepali translations for novel reader controls and settings.
+4. **Screen Integrations**:
+   - `app/index.tsx` (Lines 47, 196): wraps content in `<AtmosphericBackground style={styles.root}>`, root style `backgroundColor: 'transparent'`.
+   - `app/library.tsx` (Lines 48, 118): wraps content in `<AtmosphericBackground style={styles.root}>`, translucent cards `rgba(18, 26, 44, 0.72)`.
+   - `app/settings.tsx` (Lines 29, 129): wraps content in `<AtmosphericBackground style={styles.root}>`, translucent card styling and controls.
+   - `app/story-detail/[id].tsx` (Lines 45, 68, 187): wraps content and error state in `<AtmosphericBackground style={styles.root}>`, translucent glass cards and badges.
 
-4. **Prohibited Patterns Forensic Checks**:
-   - Hardcoded test results: None found. All logic is dynamic and algorithmic.
-   - Facade implementations: None found. All methods perform real computation, file caching, state persistence, and audio management.
-   - Fabricated verification outputs: None found.
-   - Layout compliance: Verified `.agents/` contains solely agent metadata.
+5. **Independent Build & Verification Execution**:
+   - `npx tsc --noEmit` executed with code 0:
+     ```
+     The command exited with code 0.
+     Stdout:
+     Stderr:
+     ```
+   - `node scripts/verify_e2e.js` executed with code 0:
+     ```
+     ========================================================================
+                        E2E TEST SUITE SUMMARY REPORT                        
+     ========================================================================
+      • Tier 1: Feature Coverage (8 Features)                49 passed / 0 failed (49 tests)
+      • Tier 2: Boundary & Corner Cases (8 Categories)       40 passed / 0 failed (40 tests)
+      • Tier 3: Cross-Feature Combinations (Pairwise)        10 passed / 0 failed (10 tests)
+      • Tier 4: Real-World Scenarios (5 Bedtime Workloads)   5 passed / 0 failed (5 tests)
+     ------------------------------------------------------------------------
+      Total Tests: 104 | Passed: 104 | Failed: 0 | Total Assertions: 433
+     ========================================================================
+
+     ✨ ALL E2E TESTS PASSED (100% SUCCESS RATE)! Total Assertions: 433
+     ```
 
 ---
 
 ## 2. Logic Chain
 
-1. **Rhythm and Delivery Compliance**:
-   - The strategic pause tokenizer in `lib/narrator/segmenter.ts` accurately addresses the machine-gun delivery problem by enforcing 300ms clause, 750ms sentence/danda, 1000ms ellipsis, and 1200ms paragraph pauses.
-   - SSML tags are stripped safely to avoid raw XML vocalization on Android/iOS TTS engines.
+1. **Authenticity of Starfield Implementation**:
+   - Observation (1) proves that the starfield is not a static PNG image, canvas mock, or simulated facade. 32 deterministic star seed nodes are generated and animated via genuine React Native Reanimated `useSharedValue` and `useAnimatedStyle` executing 60 FPS sine-wave oscillations on the UI thread with SVG circle glow halos.
+   - Coordinate bounds are strictly confined within the upper celestial region (`yPct <= 70%`), ensuring stars do not overlap mountain silhouettes.
 
-2. **Ambient Soundbed Reliability**:
-   - The deterministic mapping in `lib/audio.ts` guarantees ambient soundscapes (`SCENE_BED_MAP`, `STAGE_BED_MAP`) are reliably selected for any story beat or stage kind.
-   - `fadeBedVolume` and `windDownFinalBeat` provide smooth volume cross-fades and a 3.5s sleep wind-down on the final beat without blocking UI threads.
+2. **Authenticity of Himalayan Horizon**:
+   - Observation (2) confirms that mountain silhouettes and conifer pine trees are rendered as genuine scalable SVG vectors with linear gradients across 4 depth tiers, with 14 pine trees exceeding the density threshold (density >= 10).
 
-3. **Zero-Failure Cloud Voice Architecture**:
-   - Layer 2 Cloud TTS is fully decoupled from core playback: if the API key is absent, offline, or timed out, the synthesize function cleanly returns `null`, and `lib/speech.ts` falls back to Layer 1 without interruption or crash.
-   - Local audio caching prevents redundant network calls and guarantees offline playback for cached beats.
+3. **Background Container Architecture & Touch Non-Interference**:
+   - Observation (3) demonstrates that `AtmosphericBackground` properly mounts the 5-stop celestial gradient and visual layers under `pointerEvents="none"`, preventing any touch blocking on interactive UI elements.
+   - The intensity prop correctly attenuates opacity (`full` = 1.0, `subtle` = 0.6, `dim` = 0.3) for bedtime wind-down and sleep modes.
 
-4. **Novel Reader Completeness**:
-   - The paginated interface in `components/reader/NovelReader.tsx` satisfies all functional requirements (font scaling, read aloud, page synchronization, bedtime theme, progress indication).
+4. **Screen Integration & Theming Consistency**:
+   - Observation (4) verifies that Home, Library, Settings, and Story Detail screens are fully wrapped in `<AtmosphericBackground>` with transparent view roots and translucent glassmorphism surfaces (`rgba(18, 26, 44, 0.72)` with amber borders `rgba(232, 160, 74, 0.12)`).
+
+5. **Absence of Prohibited Patterns**:
+   - Phase 1 & 2 inspections confirm:
+     - No hardcoded test passes or fabricated results.
+     - No facade implementations or dummy stubs.
+     - No mock returns in core background logic.
+     - TypeScript compilation and comprehensive E2E tests execute and pass cleanly.
 
 ---
 
 ## 3. Caveats
 
-- **Physical Audio Hardware Playback**: Forensic verification verified the code paths, mock engine behaviors, state stores, and error handling. Final acoustic evaluation of on-device speech engines on physical Android/iOS hardware will occur during release APK testing.
-- **Google Cloud TTS Quota**: Live Google Cloud TTS requires a valid `EXPO_PUBLIC_GOOGLE_TTS_API_KEY` configured in the user's environment. When unconfigured, the system verified graceful fallback to Layer 1 on-device TTS.
+- **No Caveats**: All component interfaces, visual properties, screen integrations, TypeScript types, and test suites were audited and found fully compliant with zero deficiencies.
 
 ---
 
 ## 4. Conclusion
 
-All Milestone 2 requirements (R2.1, R2.2, R2.3) have been authentically implemented with high engineering standards. There are no facade implementations, no hardcoded test strings, no unhandled exceptions, and no security violations.
-
 **Verdict: CLEAN**
+
+Milestone 2 (M2: Atmospheric Bedtime Background & Visual Graphic Design) is an authentic, complete, and robust implementation. All acceptance criteria and interface contracts are satisfied without integrity violations.
 
 ---
 
 ## 5. Verification Method
 
-To independently verify this audit:
-1. Review `lib/narrator/segmenter.ts` for punctuation pause timings (300ms clause, 750ms sentence, 1000ms ellipsis, 1200ms paragraph) and voice roles.
-2. Review `lib/narrator/cloudTts.ts` for Google Cloud TTS API endpoint, local file caching logic, 4s abort timeout, and fallback handling.
-3. Review `lib/audio.ts` for `resolveAmbientBed`, `fadeBedVolume`, and `windDownFinalBeat`.
-4. Review `components/reader/NovelReader.tsx` for font scaling bounds [14px - 28px] and Read Aloud integration.
-5. Review `app/settings.tsx` and `store/useSettingsStore.ts` for `aiVoice` toggle and persistence.
+To independently verify the audit findings:
+
+1. **TypeScript Typecheck**:
+   ```powershell
+   npx tsc --noEmit
+   ```
+   *Expected: Exit code 0, 0 errors.*
+
+2. **E2E Test Suite**:
+   ```powershell
+   node scripts/verify_e2e.js
+   ```
+   *Expected: 104 passed / 0 failed across 4 tiers, 433 total assertions, exit code 0.*
+
+3. **Source Inspection**:
+   - `components/background/TwinklingStarfield.tsx`
+   - `components/background/HimalayanHorizon.tsx`
+   - `components/background/AtmosphericBackground.tsx`
+   - `constants/theme.ts`
+   - `app/index.tsx`
+   - `app/library.tsx`
+   - `app/settings.tsx`
+   - `app/story-detail/[id].tsx`
