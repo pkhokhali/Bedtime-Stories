@@ -1,13 +1,21 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Saanjh 3.0 Cloudflare Workers API Backend",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/runner.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "saanjh",
+    "cloudflare-workers",
+    "hono",
+    "kv"
+  ],
+  "author": "Saanjh Team",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {

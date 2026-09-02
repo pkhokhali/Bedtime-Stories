@@ -7,17 +7,18 @@ import {
   Search,
   Download,
   AlertCircle,
-  CheckCircle2,
   X,
   RefreshCw,
   FileText,
   SlidersHorizontal,
-  Info,
+  WifiOff,
+  Wifi,
+  ShieldAlert,
 } from 'lucide-react';
 import type {
   Catalog,
   Story,
-  StoryForm,
+  StoryForm as StoryFormType,
 } from './types/story';
 import { AGE_BANDS } from './types/story';
 import {
@@ -28,14 +29,8 @@ import {
   ApiError,
 } from './utils/api';
 import { StoryCard } from './components/StoryCard';
-
-// Toast structure
-interface ToastMessage {
-  id: string;
-  type: 'success' | 'error' | 'info';
-  message: string;
-  timestamp: number;
-}
+import { ToastContainer } from './components/ToastContainer';
+import type { ToastItem, ToastType } from './components/Toast';
 
 export default function App() {
   // Main catalog state
@@ -46,6 +41,8 @@ export default function App() {
 
   // Authentication & Secrets
   const [adminSecret, setAdminSecret] = useState<string>(() => getStoredAdminSecret());
+  const [isSecretModalOpen, setIsSecretModalOpen] = useState(false);
+  const [tempSecret, setTempSecret] = useState('');
 
   // Expanded stories state
   const [expandedStoryIds, setExpandedStoryIds] = useState<Record<string, boolean>>({});
@@ -58,36 +55,61 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Toasts
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  // Network Offline State
+  const [isOffline, setIsOffline] = useState<boolean>(() => {
+    return typeof navigator !== 'undefined' && 'onLine' in navigator ? !navigator.onLine : false;
+  });
 
   // Backup Modal
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [backupJsonText, setBackupJsonText] = useState('');
   const [backupError, setBackupError] = useState('');
 
-  // Toast Helper
-  const addToast = useCallback((type: 'success' | 'error' | 'info', message: string) => {
+  // Centralized Toast Helper
+  const addToast = useCallback((type: ToastType, message: string, durationMs = 4500) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const newToast: ToastMessage = { id, type, message, timestamp: Date.now() };
+    const newToast: ToastItem = { id, type, message, timestamp: Date.now(), durationMs };
     setToasts((prev) => [...prev, newToast]);
-
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
   }, []);
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
+
+  // Online / Offline event listeners
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      addToast('success', 'Internet connection restored. You can now publish changes.');
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+      addToast('error', 'Network connection lost. You are currently offline.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [addToast]);
 
   // Load catalog on mount
   const loadCatalog = useCallback(async () => {
     setLoading(true);
     try {
+      if (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine) {
+        throw new ApiError('Network offline: Failed to fetch catalog from server.', 0);
+      }
       const data = await fetchCatalog();
       setCatalog(data);
       setOriginalCatalogJson(JSON.stringify(data));
-      addToast('info', `Loaded ${data.stories.length} stories (v${data.version})`);
+      addToast('info', `Loaded ${data.stories.length} stories (Version ${data.version || 1})`);
     } catch (err: any) {
       addToast('error', err.message || 'Failed to load catalog from server');
     } finally {
@@ -108,11 +130,17 @@ export default function App() {
   // Save changes to Cloudflare Workers KV
   const handleSaveCatalog = async () => {
     if (!catalog) return;
+
+    if (isOffline || (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine)) {
+      addToast('error', 'Network error: Cannot publish changes while offline.');
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await saveCatalog(catalog, adminSecret);
       if (res.success) {
-        const updated = {
+        const updated: Catalog = {
           ...catalog,
           version: res.version,
         };
@@ -124,6 +152,8 @@ export default function App() {
       if (err instanceof ApiError) {
         if (err.isUnauthorized) {
           addToast('error', 'Unauthorized: Invalid or missing Admin Secret key.');
+          setTempSecret(adminSecret);
+          setIsSecretModalOpen(true);
         } else if (err.isOffline) {
           addToast('error', 'Network error: Cannot publish changes while offline.');
         } else {
@@ -143,8 +173,14 @@ export default function App() {
     setStoredAdminSecret(val);
   };
 
+  const handleSaveSecretModal = () => {
+    handleSecretChange(tempSecret.trim());
+    setIsSecretModalOpen(false);
+    addToast('success', 'Admin Secret key updated.');
+  };
+
   // Story Management Actions
-  const handleAddStory = (form: StoryForm = 'story') => {
+  const handleAddStory = (form: StoryFormType = 'story') => {
     if (!catalog) return;
     const newId = `story-${Date.now().toString(36)}`;
     const newStory: Story = {
@@ -320,6 +356,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 pb-28 font-sans">
+      {/* Offline Banner */}
+      {isOffline && (
+        <div className="bg-rose-600 text-white px-4 py-2 text-xs font-semibold flex items-center justify-center gap-2 shadow-md">
+          <WifiOff size={15} />
+          <span>You are currently offline. Local changes will not be saved to Cloudflare Workers until reconnected.</span>
+        </div>
+      )}
+
       {/* 1. TOP STICKY APP HEADER */}
       <header className="bg-slate-950 text-white shadow-lg sticky top-0 z-30 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
@@ -329,14 +373,23 @@ export default function App() {
               <BookOpen size={22} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-lg font-bold tracking-tight">Saanjh Admin CMS</h1>
                 <span className="text-[11px] font-bold px-2 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full">
                   v{catalog?.version || 1}
                 </span>
                 {isDirty && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 bg-rose-500 text-white rounded-full animate-pulse">
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 bg-rose-500 text-white rounded-full animate-pulse shadow-sm">
                     Unsaved Changes
+                  </span>
+                )}
+                {isOffline ? (
+                  <span className="text-[11px] font-medium px-2 py-0.5 bg-rose-900/60 text-rose-300 border border-rose-700/50 rounded-full flex items-center gap-1">
+                    <WifiOff size={11} /> Offline
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-medium px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 rounded-full flex items-center gap-1">
+                    <Wifi size={11} /> Online
                   </span>
                 )}
               </div>
@@ -407,7 +460,7 @@ export default function App() {
               disabled={saving || !catalog}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
                 isDirty
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-950/30'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-950/30 ring-2 ring-amber-400/40'
                   : 'bg-emerald-700 hover:bg-emerald-600 text-white'
               } disabled:opacity-50`}
             >
@@ -573,7 +626,65 @@ export default function App() {
         )}
       </main>
 
-      {/* 4. BACKUP & RESTORE MODAL */}
+      {/* 4. ADMIN SECRET MODAL */}
+      {isSecretModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden">
+            <div className="p-4 bg-rose-950 text-white flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <ShieldAlert size={20} className="text-rose-400" />
+                <h3 className="text-sm font-bold">Admin Authentication Required</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSecretModalOpen(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-slate-600 leading-relaxed">
+                The Cloudflare Workers API returned <strong>401 Unauthorized</strong>. Please enter the valid <code>ADMIN_SECRET</code> key configured for this environment:
+              </p>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Admin Secret Key (Bearer Token)
+                </label>
+                <input
+                  type="password"
+                  value={tempSecret}
+                  onChange={(e) => setTempSecret(e.target.value)}
+                  placeholder="Enter secret key..."
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSecretModalOpen(false)}
+                className="px-4 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveSecretModal}
+                className="px-4 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm"
+              >
+                Save & Authenticate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. BACKUP & RESTORE MODAL */}
       {isBackupModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
@@ -647,35 +758,8 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. FLOATING TOAST NOTIFICATION CONTAINER */}
-      <div className="fixed bottom-5 right-5 z-50 space-y-2.5 max-w-sm pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`pointer-events-auto p-3.5 rounded-xl shadow-xl border flex items-start justify-between gap-3 text-xs font-medium animate-in slide-in-from-bottom-5 duration-200 ${
-              toast.type === 'success'
-                ? 'bg-emerald-900 text-emerald-100 border-emerald-700'
-                : toast.type === 'error'
-                ? 'bg-rose-900 text-rose-100 border-rose-700'
-                : 'bg-slate-900 text-slate-100 border-slate-700'
-            }`}
-          >
-            <div className="flex items-start gap-2">
-              {toast.type === 'success' && <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />}
-              {toast.type === 'error' && <AlertCircle size={16} className="text-rose-400 shrink-0 mt-0.5" />}
-              {toast.type === 'info' && <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />}
-              <span className="leading-snug">{toast.message}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => removeToast(toast.id)}
-              className="text-white/60 hover:text-white shrink-0 p-0.5"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        ))}
-      </div>
+      {/* 6. FLOATING TOAST NOTIFICATION CONTAINER */}
+      <ToastContainer toasts={toasts} onDismiss={removeToast} position="bottom-right" />
     </div>
   );
 }

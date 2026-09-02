@@ -143,8 +143,8 @@ export class SmartSplitter {
     const beats: Beat[] = [];
 
     for (let i = 0; i < count; i++) {
-      const enPart = parasEn[i] || (parasEn.length > 0 ? parasEn[parasEn.length - 1] : '');
-      const nePart = parasNe[i] || (parasNe.length > 0 ? parasNe[parasNe.length - 1] : '');
+      const enPart = parasEn[i] || '';
+      const nePart = parasNe[i] || '';
 
       // Assign scene based on progression cadence or default
       const scene: SceneId =

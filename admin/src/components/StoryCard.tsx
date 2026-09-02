@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -12,10 +12,6 @@ import {
   Clock,
   Layers,
   Image as ImageIcon,
-  Upload,
-  Loader2,
-  Check,
-  AlertCircle,
 } from 'lucide-react';
 import type {
   Story,
@@ -27,8 +23,8 @@ import type {
 } from '../types/story';
 import { BeatEditor } from './BeatEditor';
 import { StoryStageControl } from './AudioMetadataControls';
+import { ImageUploader } from './ImageUploader';
 import { estimateRuntimeMinutes } from '../utils/splitter';
-import { uploadImage } from '../utils/api';
 
 export interface StoryCardProps {
   story: Story;
@@ -65,8 +61,6 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   onNotify,
 }) => {
   const [activeTab, setActiveTab] = useState<'details' | 'beats' | 'media'>('details');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
 
   const handleLocalizedChange = (
     field: 'title' | 'subtitle' | 'theme',
@@ -85,32 +79,6 @@ export const StoryCard: React.FC<StoryCardProps> = ({
       beats,
       runtimeMinutes: calculatedRuntime,
     });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    setUploadError('');
-    try {
-      const res = await uploadImage(file, adminSecret);
-      if (res.success && res.url) {
-        onUpdate({ coverImage: res.url });
-        if (onNotify) {
-          onNotify('success', `Cover image uploaded: ${res.filename}`);
-        }
-      }
-    } catch (err: any) {
-      const msg = err.message || 'Image upload failed';
-      setUploadError(msg);
-      if (onNotify) {
-        onNotify('error', msg);
-      }
-    } finally {
-      setIsUploading(false);
-      e.target.value = '';
-    }
   };
 
   const beatCount = story.beats?.length || 0;
@@ -562,82 +530,24 @@ export const StoryCard: React.FC<StoryCardProps> = ({
           {/* TAB 3: COVER & MEDIA */}
           {activeTab === 'media' && (
             <div className="space-y-6">
-              {/* Direct Cover Image Upload & URL */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                    <ImageIcon size={16} className="text-amber-600" />
-                    <span>Story Cover Artwork</span>
-                  </label>
-                  {story.coverImage && (
-                    <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                      <Check size={14} /> Image Attached
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                  {/* Image Preview Card */}
-                  <div className="aspect-4/3 w-full max-w-xs rounded-xl bg-slate-200 overflow-hidden border border-slate-300 flex items-center justify-center relative shadow-inner">
-                    {story.coverImage ? (
-                      <img
-                        src={story.coverImage}
-                        alt="Cover Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-center p-4 text-slate-400">
-                        <ImageIcon size={32} className="mx-auto mb-1 opacity-50" />
-                        <span className="text-xs">No cover image</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Upload Actions & URL Input */}
-                  <div className="md:col-span-2 space-y-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
-                        Hosted Cover Image URL
-                      </label>
-                      <input
-                        type="url"
-                        value={story.coverImage || ''}
-                        onChange={(e) => onUpdate({ coverImage: e.target.value })}
-                        placeholder="https://saanjh-api.prabinkhokhali89.workers.dev/images/img_xxx.jpg"
-                        className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-colors">
-                        {isUploading ? (
-                          <Loader2 size={16} className="animate-spin text-amber-400" />
-                        ) : (
-                          <Upload size={16} className="text-amber-400" />
-                        )}
-                        <span>{isUploading ? 'Uploading Image...' : 'Upload Image File (.jpg, .png, .webp)'}</span>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                          onChange={handleFileUpload}
-                          disabled={isUploading}
-                          className="hidden"
-                        />
-                      </label>
-                      <p className="text-[11px] text-slate-500 mt-1.5">
-                        Direct upload to Cloudflare KV Edge Storage (Max 5MB). Automatically fills cover URL.
-                      </p>
-                    </div>
-
-                    {uploadError && (
-                      <div className="p-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs flex items-center gap-2">
-                        <AlertCircle size={14} className="shrink-0" />
-                        <span>{uploadError}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              {/* Standalone Direct Cover Image Uploader Component */}
+              <ImageUploader
+                currentUrl={story.coverImage}
+                onUploadSuccess={(url) => {
+                  onUpdate({ coverImage: url });
+                  if (onNotify) {
+                    onNotify('success', 'Cover image uploaded and updated successfully!');
+                  }
+                }}
+                onUrlChange={(url) => onUpdate({ coverImage: url })}
+                onRemove={() => onUpdate({ coverImage: '' })}
+                adminSecret={adminSecret}
+                onError={(err) => {
+                  if (onNotify) {
+                    onNotify('error', err);
+                  }
+                }}
+              />
 
               {/* Streaming Media URLs */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
