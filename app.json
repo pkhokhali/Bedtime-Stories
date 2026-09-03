@@ -65,7 +65,8 @@
             "kotlinVersion": "2.3.0"
           }
         }
-      ]
+      ],
+      "./plugins/withSkipKotlinMetadataCheck.js"
     ],
     "experiments": {
       "typedRoutes": true
