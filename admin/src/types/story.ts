@@ -104,7 +104,7 @@ export type Pose =
   | 'lookDown';
 
 /** Media format for streaming or pre-recorded audio/video stories */
-export type MediaType = 'video' | 'audio' | 'text';
+export type MediaType = 'video' | 'audio' | 'text' | 'youtube';
 
 // ============================================================================
 // 2. CORE DATA STRUCTURES (BEAT, STORY & CATALOG)
@@ -187,6 +187,9 @@ export interface Story {
 
   /** Media format for streaming stories */
   mediaType?: MediaType;
+
+  /** YouTube Video ID for youtube mediaType */
+  youtubeId?: string;
 
   /** English streaming audio or video URL */
   mediaUrl?: string;

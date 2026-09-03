@@ -555,7 +555,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                   Legacy / Streaming Media URLs (Optional)
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Media Type
@@ -563,41 +563,59 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                     <select
                       value={story.mediaType || 'audio'}
                       onChange={(e) =>
-                        onUpdate({ mediaType: e.target.value as 'video' | 'audio' | 'text' })
+                        onUpdate({ mediaType: e.target.value as 'video' | 'audio' | 'text' | 'youtube' })
                       }
                       className="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-amber-500"
                     >
                       <option value="audio">Audio Stream</option>
                       <option value="video">Video Stream</option>
+                      <option value="youtube">YouTube Video</option>
                       <option value="text">Text Only</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      English Audio/Video URL
-                    </label>
-                    <input
-                      type="url"
-                      value={story.mediaUrl || ''}
-                      onChange={(e) => onUpdate({ mediaUrl: e.target.value })}
-                      placeholder="https://cdn.example.com/story.mp3"
-                      className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono text-blue-700"
-                    />
-                  </div>
+                  {story.mediaType === 'youtube' ? (
+                    <div className="md:col-span-3">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                        YouTube Video ID
+                      </label>
+                      <input
+                        type="text"
+                        value={story.youtubeId || ''}
+                        onChange={(e) => onUpdate({ youtubeId: e.target.value })}
+                        placeholder="e.g. dQw4w9WgXcQ"
+                        className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono text-red-600"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="md:col-span-1">
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                          English Audio/Video URL
+                        </label>
+                        <input
+                          type="url"
+                          value={story.mediaUrl || ''}
+                          onChange={(e) => onUpdate({ mediaUrl: e.target.value })}
+                          placeholder="https://cdn.example.com/story.mp3"
+                          className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono text-blue-700"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      Nepali Audio/Video URL
-                    </label>
-                    <input
-                      type="url"
-                      value={story.mediaUrl_ne || ''}
-                      onChange={(e) => onUpdate({ mediaUrl_ne: e.target.value })}
-                      placeholder="https://cdn.example.com/story_ne.mp3"
-                      className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono text-amber-700"
-                    />
-                  </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                          Nepali Audio/Video URL
+                        </label>
+                        <input
+                          type="url"
+                          value={story.mediaUrl_ne || ''}
+                          onChange={(e) => onUpdate({ mediaUrl_ne: e.target.value })}
+                          placeholder="https://cdn.example.com/story_ne.mp3"
+                          className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono text-amber-700"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

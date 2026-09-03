@@ -31,8 +31,12 @@ import {
 import { StoryCard } from './components/StoryCard';
 import { ToastContainer } from './components/ToastContainer';
 import type { ToastItem, ToastType } from './components/Toast';
+import { LoginScreen } from './components/LoginScreen';
+import { useAuth } from './hooks/useAuth';
 
 export default function App() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  
   // Main catalog state
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [originalCatalogJson, setOriginalCatalogJson] = useState<string>('');
@@ -353,6 +357,18 @@ export default function App() {
     URL.revokeObjectURL(url);
     addToast('info', 'Downloaded local catalog backup file.');
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <RefreshCw size={32} className="text-amber-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 pb-28 font-sans">

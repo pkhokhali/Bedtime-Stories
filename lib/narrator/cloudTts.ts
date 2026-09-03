@@ -13,6 +13,89 @@ let currentCloudAudioPlayer: AudioPlayer | null = null;
 let currentCloudAudioSub: { remove: () => void } | null = null;
 
 /**
+ * Premium voice name mapping for warm, natural bedtime narration.
+ * Neural2 voices deliver dramatically more human-like speech than Standard.
+ */
+const VOICE_MAP: Record<string, Record<VoiceGender, string>> = {
+  en: {
+    female: 'en-IN-Neural2-A',  // Warm Indian-English female
+    male: 'en-IN-Neural2-B',    // Deep soothing Indian-English male
+  },
+  ne: {
+    female: 'ne-NP-Standard-A', // Nepali female (best available)
+    male: 'ne-NP-Standard-B',   // Nepali male (best available)
+  },
+};
+
+/**
+ * Speaking rate presets tuned for bedtime storytelling — deliberately slower
+ * than conversational speech to promote calm and sleepiness.
+ */
+const PACE_RATES: Record<VoicePace, number> = {
+  slow: 0.72,
+  gentle: 0.85,
+  clear: 0.95,
+};
+
+/**
+ * Character voice pitch offsets (in semitones) for SSML prosody.
+ * Narrator is neutral; characters get distinct, expressive pitches.
+ */
+const ROLE_PITCH_ST: Record<VoiceRole, string> = {
+  narrator: '+0st',
+  soft: '-1st',
+  rabbit: '+3st',
+  tiger: '-4st',
+};
+
+/**
+ * Wraps plain text in SSML markup optimized for warm bedtime narration.
+ * - Applies gentle prosody (slow rate, soft pitch)
+ * - Inserts <break> tags between sentences for natural breathing pauses
+ * - Wraps dialogue in character-specific prosody
+ */
+function wrapInSsml(
+  text: string,
+  role: VoiceRole,
+  pace: VoicePace,
+  gender: VoiceGender,
+): string {
+  const rate = PACE_RATES[pace] || 0.85;
+  const pitchSt = ROLE_PITCH_ST[role] || '+0st';
+
+  // Split by sentence terminators to insert breathing pauses
+  const sentences = text
+    .split(/([.!?।॥]+[\s]*)/)
+    .filter(Boolean);
+
+  let ssmlBody = '';
+  for (let i = 0; i < sentences.length; i++) {
+    const chunk = sentences[i].trim();
+    if (!chunk) continue;
+
+    // Sentence terminators (pure punctuation) — skip but don't add breaks
+    if (/^[.!?।॥]+$/.test(chunk)) continue;
+
+    ssmlBody += chunk;
+
+    // Add natural breathing pause between sentences (not after the last one)
+    if (i < sentences.length - 1) {
+      const pauseMs = pace === 'slow' ? 900 : pace === 'gentle' ? 700 : 500;
+      ssmlBody += ` <break time="${pauseMs}ms"/> `;
+    }
+  }
+
+  // Wrap in prosody for bedtime warmth
+  const ratePercent = `${Math.round(rate * 100)}%`;
+
+  return `<speak>
+  <prosody rate="${ratePercent}" pitch="${pitchSt}" volume="soft">
+    ${ssmlBody}
+  </prosody>
+</speak>`;
+}
+
+/**
  * Deterministic hash function for cache keys
  */
 export function getCacheKey(
@@ -22,7 +105,8 @@ export function getCacheKey(
   pace: VoicePace,
   role: VoiceRole = 'narrator'
 ): string {
-  const combined = `${text}_${language}_${gender}_${pace}_${role}`;
+  // Include 'v2' in hash to bust cache from old Standard voices
+  const combined = `v2_${text}_${language}_${gender}_${pace}_${role}`;
   let hash = 0;
   for (let i = 0; i < combined.length; i++) {
     hash = (hash << 5) - hash + combined.charCodeAt(i);
@@ -45,7 +129,8 @@ export async function ensureCacheDirectory(): Promise<void> {
 }
 
 /**
- * Synthesizes speech using Google Cloud TTS API and caches the MP3 locally.
+ * Synthesizes speech using Google Cloud TTS API with SSML and caches the MP3 locally.
+ * Uses Neural2/WaveNet voices for dramatically more natural, warm bedtime narration.
  * Returns local file URI if successful, or null to trigger graceful fallback to Layer 1.
  */
 export async function getSynthesizedAudioUri(
@@ -72,33 +157,24 @@ export async function getSynthesizedAudioUri(
       return localFilePath;
     }
 
-    // 2. Map Voice Configuration
+    // 2. Map Voice Configuration — Neural2 for English, Standard for Nepali
     const isNepali = options.language === 'ne';
-    const voiceName = isNepali
-      ? options.gender === 'female'
-        ? 'ne-NP-Standard-A'
-        : 'ne-NP-Standard-B'
-      : options.gender === 'female'
-        ? 'en-IN-Neural2-A'
-        : 'en-IN-Neural2-B';
+    const langKey = isNepali ? 'ne' : 'en';
+    const voiceName = VOICE_MAP[langKey]?.[options.gender]
+      || (isNepali ? 'ne-NP-Standard-A' : 'en-IN-Neural2-A');
 
-    const speakingRate =
-      options.pace === 'slow' ? 0.78 : options.pace === 'gentle' ? 0.88 : 0.98;
+    // 3. Generate SSML for warm bedtime narration
+    const ssmlText = wrapInSsml(text, role, options.pace, options.gender);
 
-    let pitch = 0.0;
-    if (role === 'rabbit') pitch = 2.5;
-    else if (role === 'tiger') pitch = -2.5;
-    else if (role === 'soft') pitch = -0.5;
-
-    // 3. Synthesize via Google Cloud TTS with 4s timeout
+    // 4. Synthesize via Google Cloud TTS with 8s timeout (longer for Neural2 quality)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${GOOGLE_TTS_ENDPOINT}?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        input: { text },
+        input: { ssml: ssmlText },
         voice: {
           languageCode: isNepali ? 'ne-NP' : 'en-IN',
           name: voiceName,
@@ -106,8 +182,12 @@ export async function getSynthesizedAudioUri(
         },
         audioConfig: {
           audioEncoding: 'MP3',
-          speakingRate,
-          pitch,
+          // Speaking rate and pitch are controlled by SSML prosody tags
+          // These API-level params serve as global defaults
+          speakingRate: 1.0,
+          pitch: 0.0,
+          // Effects profile for warm audio (headphone-optimized)
+          effectsProfileId: ['headphone-class-device'],
         },
       }),
       signal: controller.signal,
@@ -124,7 +204,7 @@ export async function getSynthesizedAudioUri(
       return null;
     }
 
-    // 4. Save Base64 to Local File
+    // 5. Save Base64 to Local File
     await FileSystem.writeAsStringAsync(localFilePath, data.audioContent, {
       encoding: FileSystem.EncodingType.Base64,
     });

@@ -8,6 +8,7 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { getStory } from '@/data/catalog';
 import { useState, useEffect } from 'react';
 import { useEvent } from 'expo';
+import YouTubePlayer from '@/components/player/YouTubePlayer';
 
 export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: string, isLocalMedia?: boolean }) {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: s
   }, [status, hasMultipleParts, currentPartIndex]);
 
 
-  if (!story || !videoSource) {
+  if (!story || (!videoSource && story.mediaType !== 'youtube')) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Story media not found.</Text>
@@ -70,7 +71,16 @@ export default function MediaStoryPlayer({ storyId, isLocalMedia }: { storyId: s
 
   return (
     <View style={styles.container}>
-      {story.mediaType === 'audio' ? (
+      {story.mediaType === 'youtube' && story.youtubeId ? (
+        <View style={styles.youtubeContainer}>
+          <YouTubePlayer 
+            youtubeId={story.youtubeId} 
+            onEnded={() => {
+              // Handle playback end if needed
+            }}
+          />
+        </View>
+      ) : story.mediaType === 'audio' ? (
         <View style={styles.audioContainer}>
           {story.coverImage ? (
             <Image source={{ uri: story.coverImage }} style={styles.coverImage} />
@@ -115,6 +125,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  youtubeContainer: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    backgroundColor: '#000',
   },
   audioContainer: {
     flex: 1,

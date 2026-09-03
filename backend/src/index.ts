@@ -84,7 +84,8 @@ export interface Story {
   cast?: 'rabbit' | 'none';
   locked?: boolean;
   beats?: Beat[];
-  mediaType?: 'video' | 'audio' | 'text';
+  mediaType?: 'video' | 'audio' | 'text' | 'youtube';
+  youtubeId?: string;
   mediaUrl?: string;
   mediaUrl_ne?: string;
   coverImage?: string;
@@ -224,6 +225,24 @@ app.get('/', (c) => {
     version: '3.0.0',
     status: 'healthy',
   });
+});
+
+// 1.5 Admin Login
+app.post('/admin/login', async (c) => {
+  try {
+    const { email, password } = await c.req.json();
+    
+    // Hardcoded credentials for now, as requested. In a real app, this should be in DB/KV
+    if (email === 'admin@saanjh.app' && password === 'admin123') {
+      // In a real app, generate a secure JWT. For now, we return the ADMIN_SECRET
+      const token = c.env.ADMIN_SECRET || 'fallback-secret-for-dev';
+      return c.json({ success: true, token });
+    }
+    
+    return c.json({ success: false, error: 'Invalid credentials' }, 401);
+  } catch (err) {
+    return c.json({ success: false, error: 'Bad request' }, 400);
+  }
 });
 
 // 2. GET Catalog (Public with fallback)
