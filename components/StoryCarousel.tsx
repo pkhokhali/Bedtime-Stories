@@ -29,7 +29,7 @@ export function StoryCarousel({ title, stories }: Props) {
               styles.card,
               pressed && styles.cardPressed
             ]} 
-            onPress={() => router.push('/story-detail/' + story.id)}
+            onPress={() => router.push(('/story-detail/' + story.id) as any)}
           >
             <View style={styles.coverWrapper}>
               {story.coverImage ? (

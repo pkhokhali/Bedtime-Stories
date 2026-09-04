@@ -37,7 +37,7 @@ export default function YouTubePlayer({ youtubeId, onEnded, onReady, onError }: 
           setIsReady(true);
           onReady?.();
         }}
-        onError={(err) => onError?.(err)}
+        onError={(err: any) => onError?.(err)}
         webViewProps={{
           injectedJavaScript: `
             var element = document.getElementsByClassName('ytp-chrome-top')[0];
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill as any,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000',

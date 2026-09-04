@@ -45,7 +45,7 @@ export default function StoryPlayer() {
       playback.status === 'playing'
     ) {
       playback.pause();
-      router.push('/subscribe');
+      router.push('/subscribe' as any);
     }
   }, [playback.index, playback.status, story?.isPremium, story?.freeBeatsCount, router, playback]);
 
@@ -83,7 +83,7 @@ export default function StoryPlayer() {
         }}
         onTogglePlay={() => {
           if (story.isPremium && story.freeBeatsCount !== undefined && playback.index >= story.freeBeatsCount) {
-             router.push('/subscribe');
+             router.push('/subscribe' as any);
              return;
           }
           playback.toggle();

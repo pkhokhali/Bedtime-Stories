@@ -33,6 +33,7 @@ export const colors = {
   celestialDark: '#060913',
   celestialSlate: '#0c1222',
   celestialBlue: '#121A2F',
+  emerald: '#10B981',
 };
 
 export const celestialPalette = {
@@ -55,9 +56,14 @@ export const spacing = {
 };
 
 export const radii = {
+  sm: 6,
+  md: 12,
+  lg: 16,
+  xl: 24,
   card: 22,
   pill: 28,
   chip: 14,
+  full: 1000,
 };
 
 export const brand = {

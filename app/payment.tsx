@@ -58,7 +58,7 @@ export default function PaymentScreen() {
       // Mock Success Logic
       Alert.alert(
         'Payment Successful! 🎉',
-        \`Thank you for subscribing to the \${tier} plan via \${gatewayName}. Your premium features are now unlocked.\`,
+        `Thank you for subscribing to the ${tier} plan via ${gatewayName}. Your premium features are now unlocked.`,
         [{ text: 'OK', onPress: () => router.navigate('/') }]
       );
     } else if (url.includes('saanjh.app/payment-failure')) {
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f4',
   },
   loader: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill as any,
     backgroundColor: '#f4f4f4',
     justifyContent: 'center',
     alignItems: 'center',

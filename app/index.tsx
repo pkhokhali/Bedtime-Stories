@@ -127,7 +127,7 @@ export default function HomeScreen() {
               <View style={styles.heroButtons}>
                 <Pressable
                   style={styles.playButton}
-                  onPress={() => router.push('/story/' + featuredStory.id)}
+                  onPress={() => router.push(('/story/' + featuredStory.id) as any)}
                 >
                   <Ionicons name="play" size={22} color="#000" />
                   <Text style={[styles.playButtonText, isNe && styles.neBold]}>
@@ -137,7 +137,7 @@ export default function HomeScreen() {
 
                 <Pressable
                   style={styles.detailsButton}
-                  onPress={() => router.push('/story-detail/' + featuredStory.id)}
+                  onPress={() => router.push(('/story-detail/' + featuredStory.id) as any)}
                 >
                   <Ionicons name="information-circle-outline" size={22} color="#fff" />
                   <Text style={[styles.detailsButtonText, isNe && styles.neBold]}>

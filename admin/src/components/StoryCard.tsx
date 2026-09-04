@@ -548,8 +548,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                     </span>
                   </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* TAB 2: BEATS & AUDIO */}
           {activeTab === 'beats' && (

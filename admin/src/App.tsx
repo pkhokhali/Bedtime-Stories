@@ -40,9 +40,7 @@ export default function App() {
   const [saving, setSaving] = useState(false);
 
   // Authentication & Secrets
-  const [adminSecret, setAdminSecret] = useState<string>(() => getStoredAdminSecret());
-  const [isSecretModalOpen, setIsSecretModalOpen] = useState(false);
-  const [tempSecret, setTempSecret] = useState('');
+  const adminSecret = getStoredAdminSecret();
 
   // Expanded stories state
   const [expandedStoryIds, setExpandedStoryIds] = useState<Record<string, boolean>>({});
@@ -151,9 +149,8 @@ export default function App() {
     } catch (err: any) {
       if (err instanceof ApiError) {
         if (err.isUnauthorized) {
-          addToast('error', 'Unauthorized: Invalid or missing Admin Secret key.');
-          setTempSecret(adminSecret);
-          setIsSecretModalOpen(true);
+          addToast('error', 'Session expired or unauthorized. Please log in again.');
+          logout();
         } else if (err.isOffline) {
           addToast('error', 'Network error: Cannot publish changes while offline.');
         } else {
@@ -165,18 +162,6 @@ export default function App() {
     } finally {
       setSaving(false);
     }
-  };
-
-  // Secret persistence
-  const handleSecretChange = (val: string) => {
-    setAdminSecret(val);
-    setStoredAdminSecret(val);
-  };
-
-  const handleSaveSecretModal = () => {
-    handleSecretChange(tempSecret.trim());
-    setIsSecretModalOpen(false);
-    addToast('success', 'Admin Secret key updated.');
   };
 
   // Story Management Actions
@@ -582,31 +567,6 @@ export default function App() {
       </main>
 
       {/* Modals & Toasts */}
-      {isSecretModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden">
-            <div className="p-4 bg-white flex justify-between items-center border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-800">Admin Secret Required</h3>
-              <button onClick={() => setIsSecretModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
-            </div>
-            <div className="p-5">
-              <p className="text-xs text-slate-500 mb-3">Please enter your Cloudflare Workers Admin Secret to publish changes.</p>
-              <input
-                type="password"
-                value={tempSecret}
-                onChange={(e) => setTempSecret(e.target.value)}
-                placeholder="Secret Key..."
-                className="w-full border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                autoFocus
-              />
-            </div>
-            <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-              <button onClick={() => setIsSecretModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg font-medium">Cancel</button>
-              <button onClick={handleSaveSecretModal} className="px-3 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {isBackupModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">

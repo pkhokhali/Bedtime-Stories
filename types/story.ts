@@ -62,7 +62,7 @@ export type Beat = {
   sfx?: SoundId;
 };
 
-export type MediaType = 'video' | 'audio';
+export type MediaType = 'video' | 'audio' | 'youtube';
 
 export type Story = {
   id: string;
@@ -86,6 +86,7 @@ export type Story = {
   mediaUrl?: string; // English
   mediaUrl_ne?: string; // Nepali
   mediaAssets?: any[]; // For local bundled files using require(), array supports multi-part stories
+  youtubeId?: string;
   coverImage?: string;
   isHidden?: boolean;
 };

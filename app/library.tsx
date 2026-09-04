@@ -89,9 +89,17 @@ export default function LibraryScreen() {
             >
               <View style={[styles.dot, { backgroundColor: story.accent }]} />
               <View style={styles.body}>
-                <Text style={[styles.kicker, language === 'ne' && styles.kickerNe]}>
-                  {categoryLabel(story, language)}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={[styles.kicker, language === 'ne' && styles.kickerNe]}>
+                    {categoryLabel(story, language)}
+                  </Text>
+                  {(story.isPremium || story.locked) && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(217, 119, 6, 0.2)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, gap: 4, marginBottom: 4 }}>
+                      <Ionicons name="lock-closed" size={10} color={colors.amber} />
+                      <Text style={{ color: colors.amber, fontSize: 10, fontFamily: 'Nunito_700Bold', textTransform: 'uppercase' }}>Premium</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={[styles.cardTitle, language === 'ne' && styles.cardTitleNe]}>
                   {story.title[language]}
                 </Text>

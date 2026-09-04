@@ -341,6 +341,18 @@ app.post('/catalog', async (c) => {
           400
         );
       }
+      if (story.isPremium !== undefined && typeof story.isPremium !== 'boolean') {
+        return c.json(
+          { success: false, error: `Story '${story.id}' has invalid isPremium flag` },
+          400
+        );
+      }
+      if (story.freeBeatsCount !== undefined && typeof story.freeBeatsCount !== 'number') {
+        return c.json(
+          { success: false, error: `Story '${story.id}' has invalid freeBeatsCount` },
+          400
+        );
+      }
 
       // Validate Beats if present
       if (story.beats !== undefined) {
