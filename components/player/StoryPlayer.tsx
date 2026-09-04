@@ -36,6 +36,19 @@ export default function StoryPlayer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Paywall Check Effect
+  useEffect(() => {
+    if (
+      story?.isPremium &&
+      story.freeBeatsCount !== undefined &&
+      playback.index >= story.freeBeatsCount &&
+      playback.status === 'playing'
+    ) {
+      playback.pause();
+      router.push('/subscribe');
+    }
+  }, [playback.index, playback.status, story?.isPremium, story?.freeBeatsCount, router, playback]);
+
   if (!story || !story.beats?.length) {
     return (
       <View style={styles.missing}>
@@ -68,7 +81,13 @@ export default function StoryPlayer() {
           playback.stop();
           router.back();
         }}
-        onTogglePlay={playback.toggle}
+        onTogglePlay={() => {
+          if (story.isPremium && story.freeBeatsCount !== undefined && playback.index >= story.freeBeatsCount) {
+             router.push('/subscribe');
+             return;
+          }
+          playback.toggle();
+        }}
       />
       <View style={[styles.dock, { paddingBottom: Math.max(insets.bottom, 12) + 28 }]}>
         <SeekBar

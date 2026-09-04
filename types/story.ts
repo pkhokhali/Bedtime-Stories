@@ -77,6 +77,8 @@ export type Story = {
   stage?: StageKind;
   cast?: 'rabbit' | 'none';
   locked?: boolean;
+  isPremium?: boolean;
+  freeBeatsCount?: number;
   beats?: Beat[];
   
   // Fields for remote streaming/downloaded stories

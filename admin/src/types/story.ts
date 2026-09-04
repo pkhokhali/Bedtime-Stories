@@ -182,6 +182,12 @@ export interface Story {
   /** Premium lock status flag */
   locked?: boolean;
 
+  /** Indicates if the story requires a premium subscription */
+  isPremium?: boolean;
+
+  /** Number of beats a free user can read before hitting the paywall */
+  freeBeatsCount?: number;
+
   /** Ordered array of story beats for TTS narration and reader display */
   beats?: Beat[];
 

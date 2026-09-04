@@ -20,14 +20,12 @@ import { hydrateVoices } from '@/lib/speech';
 import { colors } from '@/constants/theme';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { fetchRemoteCatalog } from '@/lib/catalogFetcher';
-import { VideoSplash } from '@/components/VideoSplash';
 import { startGlobalSleepTimerTicker, stopGlobalSleepTimerTicker } from '@/lib/sleepTimer';
 
 export { ErrorBoundary } from 'expo-router';
 
 export default function RootLayout() {
   const hydrate = useSettingsStore((s) => s.hydrate);
-  const [showSplash, setShowSplash] = useState(true);
 
   useFonts({
     Nunito_500Medium,
@@ -67,10 +65,6 @@ export default function RootLayout() {
         <Stack.Screen name="story/[id]" options={{ animation: 'fade' }} />
       </Stack>
 
-      {/* Magical Storybook Animated Splash Ritual Overlay */}
-      {showSplash && (
-        <VideoSplash onFinish={() => setShowSplash(false)} />
-      )}
     </GestureHandlerRootView>
   );
 }

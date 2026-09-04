@@ -493,26 +493,60 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                 </div>
 
                 <div className="flex items-center gap-4 pt-4 md:col-span-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer" title="Hide story from the main app">
                     <input
                       type="checkbox"
                       checked={!story.isHidden}
                       onChange={(e) => onUpdate({ isHidden: !e.target.checked })}
                       className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4"
                     />
-                    <span>Publish Live (Visible in App)</span>
+                    <span>Publish Live</span>
                   </label>
 
-                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer" title="Lock the story completely">
                     <input
                       type="checkbox"
                       checked={Boolean(story.locked)}
                       onChange={(e) => onUpdate({ locked: e.target.checked })}
                       className="rounded text-rose-600 focus:ring-rose-500 w-4 h-4"
                     />
-                    <span>Premium Locked</span>
+                    <span>Legacy Lock</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer" title="Requires subscription to read fully">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(story.isPremium)}
+                      onChange={(e) => onUpdate({ isPremium: e.target.checked })}
+                      className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4"
+                    />
+                    <span>Is Premium</span>
                   </label>
                 </div>
+              </div>
+
+              {/* Row 7: Freemium Settings */}
+              {story.isPremium && (
+                <div className="bg-purple-50 rounded-xl p-4 border border-purple-100 flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2 text-purple-700">
+                    <Lock size={18} />
+                    <span className="text-sm font-bold">Premium Story Limits</span>
+                  </div>
+                  <div className="flex-1 flex items-center gap-3">
+                    <label className="text-xs font-semibold text-purple-800">
+                      Free Beats Allowed:
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={story.freeBeatsCount ?? 0}
+                      onChange={(e) => onUpdate({ freeBeatsCount: parseInt(e.target.value, 10) || 0 })}
+                      className="w-24 border border-purple-200 rounded-lg p-1.5 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    />
+                    <span className="text-xs text-purple-600">
+                      (Set to 0 to lock entirely. Currently {story.beats?.length || 0} total beats)
+                    </span>
+                  </div>
               </div>
             </div>
           )}

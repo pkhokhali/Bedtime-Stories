@@ -55,7 +55,7 @@ export function StoryCarousel({ title, stories }: Props) {
                     <Text style={styles.badgeText}>Video</Text>
                   </View>
                 )}
-                {story.locked && (
+                {(story.isPremium || story.locked) && (
                   <View style={[styles.badge, styles.badgePremium]}>
                     <Text style={styles.badgeText}>Premium</Text>
                   </View>

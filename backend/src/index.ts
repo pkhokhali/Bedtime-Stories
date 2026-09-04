@@ -83,6 +83,8 @@ export interface Story {
   stage?: StageKind;
   cast?: 'rabbit' | 'none';
   locked?: boolean;
+  isPremium?: boolean;
+  freeBeatsCount?: number;
   beats?: Beat[];
   mediaType?: 'video' | 'audio' | 'text' | 'youtube';
   youtubeId?: string;

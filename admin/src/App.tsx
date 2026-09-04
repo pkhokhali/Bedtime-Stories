@@ -31,7 +31,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { useAuth } from './hooks/useAuth';
 
 export default function App() {
-  const { isAuthenticated, login, loading: authLoading, error: authError } = useAuth();
+  const { isAuthenticated, login, logout, loading: authLoading, error: authError } = useAuth();
   
   // Main catalog state
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -429,7 +429,7 @@ export default function App() {
             <img src="https://ui-avatars.com/api/?name=SA&background=475569&color=fff" className="w-9 h-9 rounded-full shadow-sm" alt="Admin" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-800 truncate">Super Admin</p>
-              <p className="text-[11px] text-slate-500 truncate">v{catalog?.version || 1}</p>
+              <button onClick={logout} className="text-[11px] font-medium text-rose-500 hover:text-rose-600 truncate text-left">Sign Out</button>
             </div>
           </div>
         </div>
