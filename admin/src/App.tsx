@@ -3,17 +3,13 @@ import {
   BookOpen,
   Plus,
   Save,
-  Key,
   Search,
   Download,
-  AlertCircle,
   X,
   RefreshCw,
   FileText,
-  SlidersHorizontal,
   WifiOff,
   Wifi,
-  ShieldAlert,
 } from 'lucide-react';
 import type {
   Catalog,
@@ -35,7 +31,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { useAuth } from './hooks/useAuth';
 
 export default function App() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, login, loading: authLoading, error: authError } = useAuth();
   
   // Main catalog state
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -367,414 +363,283 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    return <LoginScreen login={login} loading={authLoading} error={authError} />;
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 pb-28 font-sans">
-      {/* Offline Banner */}
+    <div className="admin-container font-sans flex text-slate-800 min-h-screen w-full bg-[#F8FAFC]">
+      {/* Offline Banner Overlay */}
       {isOffline && (
-        <div className="bg-rose-600 text-white px-4 py-2 text-xs font-semibold flex items-center justify-center gap-2 shadow-md">
+        <div className="fixed top-0 left-0 w-full z-50 bg-rose-600 text-white px-4 py-2 text-xs font-semibold flex items-center justify-center gap-2 shadow-md">
           <WifiOff size={15} />
           <span>You are currently offline. Local changes will not be saved to Cloudflare Workers until reconnected.</span>
         </div>
       )}
 
-      {/* 1. TOP STICKY APP HEADER */}
-      <header className="bg-slate-950 text-white shadow-lg sticky top-0 z-30 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-4">
-          {/* Logo & Subtitle */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl shadow-md text-slate-950 font-bold">
-              <BookOpen size={22} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg font-bold tracking-tight">Saanjh Admin CMS</h1>
-                <span className="text-[11px] font-bold px-2 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full">
-                  v{catalog?.version || 1}
+      {/* Sidebar */}
+      <aside className="w-64 bg-[#F8FAFC] border-r border-slate-200 flex flex-col shrink-0 hidden md:flex">
+        {/* App Identity */}
+        <div className="h-16 flex items-center px-6 gap-3 border-b border-slate-200 shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm text-white">
+            <BookOpen size={16} />
+          </div>
+          <h1 className="font-bold text-slate-800 tracking-tight text-lg">Saanjh <span className="text-xs font-normal text-slate-400">Admin</span></h1>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+          <p className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Overview</p>
+          <a href="#" className="flex items-center gap-3 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium text-sm">
+             Dashboard
+          </a>
+          
+          <p className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-6">Content</p>
+          <a href="#" onClick={(e) => {e.preventDefault(); setFormFilter('story'); setCategoryFilter('all');}} className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-sm transition-colors">
+             Stories & Novels
+          </a>
+          <a href="#" onClick={(e) => {e.preventDefault(); setFormFilter('all');}} className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-sm transition-colors">
+             Categories
+          </a>
+
+          <p className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-6">System</p>
+          <a href="#" onClick={(e) => {e.preventDefault(); handleOpenBackupModal();}} className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-sm transition-colors">
+             Backup / Restore
+          </a>
+        </nav>
+
+        {/* User Profile / Status */}
+        <div className="p-4 border-t border-slate-200 shrink-0">
+          <div className="flex items-center justify-between mb-3">
+             {isOffline ? (
+                <span className="text-[11px] font-medium px-2 py-0.5 bg-rose-100 text-rose-600 border border-rose-200 rounded-full flex items-center gap-1">
+                  <WifiOff size={11} /> Offline
                 </span>
-                {isDirty && (
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 bg-rose-500 text-white rounded-full animate-pulse shadow-sm">
-                    Unsaved Changes
-                  </span>
-                )}
-                {isOffline ? (
-                  <span className="text-[11px] font-medium px-2 py-0.5 bg-rose-900/60 text-rose-300 border border-rose-700/50 rounded-full flex items-center gap-1">
-                    <WifiOff size={11} /> Offline
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-medium px-2 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 rounded-full flex items-center gap-1">
-                    <Wifi size={11} /> Online
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-400">
-                Bilingual Content Studio • {catalog?.stories.length || 0} Stories Configured
-              </p>
-            </div>
-          </div>
-
-          {/* Right Actions: Secret, New Story, Save Live */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Secret Toggle / Input */}
-            <div className="relative flex items-center">
-              <Key size={14} className="absolute left-2.5 text-slate-400 pointer-events-none" />
-              <input
-                type="password"
-                value={adminSecret}
-                onChange={(e) => handleSecretChange(e.target.value)}
-                placeholder="Admin Secret Key"
-                className="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg pl-8 pr-3 py-1.5 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500 w-36 sm:w-44 transition-all"
-                title="Bearer Token for Cloudflare Workers API authorization"
-              />
-            </div>
-
-            {/* Refresh from server */}
-            <button
-              type="button"
-              onClick={loadCatalog}
-              disabled={loading}
-              title="Reload catalog from Cloudflare Workers KV"
-              className="p-2 text-slate-400 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition-colors"
-            >
-              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-            </button>
-
-            {/* Backup / Restore */}
-            <button
-              type="button"
-              onClick={handleOpenBackupModal}
-              title="Backup & Restore Catalog JSON"
-              className="p-2 text-slate-400 hover:text-white bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg transition-colors"
-            >
-              <SlidersHorizontal size={15} />
-            </button>
-
-            {/* New Story Button */}
-            <button
-              type="button"
-              onClick={() => handleAddStory('story')}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors"
-            >
-              <Plus size={15} /> Story
-            </button>
-
-            {/* New Novel Button */}
-            <button
-              type="button"
-              onClick={() => handleAddStory('novel')}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs font-semibold rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors"
-            >
-              <Plus size={15} /> Novel
-            </button>
-
-            {/* Save All Live Button */}
-            <button
-              type="button"
-              onClick={handleSaveCatalog}
-              disabled={saving || !catalog}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
-                isDirty
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-950/30 ring-2 ring-amber-400/40'
-                  : 'bg-emerald-700 hover:bg-emerald-600 text-white'
-              } disabled:opacity-50`}
-            >
-              <Save size={15} /> {saving ? 'Publishing...' : isDirty ? 'Publish All Changes' : 'Published Live'}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* 2. SEARCH & FILTER TOOLBAR */}
-      <section className="bg-white border-b border-slate-200 shadow-2xs sticky top-[57px] z-20">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative flex-1 min-w-[240px] max-w-md">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by title (EN / NE), story ID, or theme..."
-              className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-              >
-                <X size={13} />
-              </button>
-            )}
-          </div>
-
-          {/* Filters Bar */}
-          <div className="flex items-center gap-2 flex-wrap text-xs">
-            {/* Category Filter */}
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
-            >
-              <option value="all">Category: All</option>
-              <option value="roots">Roots (Folklore)</option>
-              <option value="universal">Universal</option>
-              <option value="custom">Custom</option>
-            </select>
-
-            {/* AgeBand Filter (Matching all 8 mobile bands) */}
-            <select
-              value={ageBandFilter}
-              onChange={(e) => setAgeBandFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
-            >
-              <option value="all">Age: All Bands</option>
-              {AGE_BANDS.map((band) => (
-                <option key={band} value={band}>
-                  {band === 'parents' ? 'Parents (Novel)' : `Ages ${band}`}
-                </option>
-              ))}
-            </select>
-
-            {/* Form Filter */}
-            <select
-              value={formFilter}
-              onChange={(e) => setFormFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
-            >
-              <option value="all">Format: All</option>
-              <option value="story">Bedtime Stories</option>
-              <option value="novel">Bedtime Novels</option>
-            </select>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-1 focus:ring-amber-500 outline-none"
-            >
-              <option value="all">Status: All</option>
-              <option value="published">Live Published</option>
-              <option value="hidden">Hidden Drafts</option>
-            </select>
-
-            {/* Expand / Collapse All */}
-            <div className="h-4 w-px bg-slate-300 mx-1 hidden sm:block" />
-
-            <button
-              type="button"
-              onClick={expandAllStories}
-              className="text-[11px] font-medium text-slate-600 hover:text-slate-900 px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded"
-            >
-              Expand All
-            </button>
-            <button
-              type="button"
-              onClick={collapseAllStories}
-              className="text-[11px] font-medium text-slate-600 hover:text-slate-900 px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded"
-            >
-              Collapse All
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. MAIN STORY LIST */}
-      <main className="max-w-7xl mx-auto px-4 mt-6">
-        {loading ? (
-          <div className="text-center py-24 bg-white rounded-2xl border border-slate-200 shadow-xs">
-            <RefreshCw size={36} className="mx-auto text-amber-600 animate-spin mb-3" />
-            <h3 className="text-base font-bold text-slate-800">Loading Story Database...</h3>
-            <p className="text-xs text-slate-500 mt-1">Connecting to Cloudflare Workers KV API</p>
-          </div>
-        ) : filteredStories.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-300 p-6">
-            <FileText size={42} className="mx-auto text-slate-400 mb-3 opacity-60" />
-            <h3 className="text-base font-bold text-slate-700">No Stories Match Current Filters</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Try adjusting your search query or reset the category/age filters.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setCategoryFilter('all');
-                setAgeBandFilter('all');
-                setFormFilter('all');
-                setStatusFilter('all');
-              }}
-              className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center text-xs text-slate-500 px-1">
-              <span>
-                Showing <strong>{filteredStories.length}</strong> of{' '}
-                <strong>{catalog?.stories.length || 0}</strong> stories
-              </span>
-              {isDirty && (
-                <span className="text-rose-600 font-semibold flex items-center gap-1">
-                  <AlertCircle size={14} /> You have unsaved changes
+              ) : (
+                <span className="text-[11px] font-medium px-2 py-0.5 bg-emerald-100 text-emerald-600 border border-emerald-200 rounded-full flex items-center gap-1">
+                  <Wifi size={11} /> Online
                 </span>
               )}
+              {isDirty && (
+                <span className="text-[11px] font-bold px-2.5 py-0.5 bg-rose-500 text-white rounded-full shadow-sm">
+                  Unsaved
+                </span>
+              )}
+          </div>
+          <div className="flex items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name=SA&background=475569&color=fff" className="w-9 h-9 rounded-full shadow-sm" alt="Admin" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-800 truncate">Super Admin</p>
+              <p className="text-[11px] text-slate-500 truncate">v{catalog?.version || 1}</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Workspace */}
+      <main className="flex-1 flex flex-col bg-slate-50 overflow-hidden min-w-0">
+        
+        {/* Topbar */}
+        <header className="h-16 border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 bg-white/80 backdrop-blur-md shrink-0">
+          <h2 className="font-semibold text-lg hidden sm:block">Dashboard</h2>
+          
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search content..." 
+                className="pl-9 pr-8 py-1.5 bg-slate-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-40 sm:w-64 transition-all" 
+              />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button onClick={loadCatalog} disabled={loading} title="Refresh" className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors">
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+              </button>
+              <button 
+                onClick={handleSaveCatalog} 
+                disabled={saving || !catalog}
+                className={`${isDirty ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20 shadow-md' : 'bg-slate-200 text-slate-500 opacity-80 cursor-not-allowed'} px-4 py-1.5 rounded-lg font-medium text-sm transition-all flex items-center gap-2`}
+              >
+                <Save size={14} /> <span className="hidden sm:inline">{saving ? 'Publishing...' : 'Publish'}</span>
+              </button>
+              <button onClick={() => handleAddStory('story')} className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg font-medium text-sm transition-all flex items-center gap-1.5">
+                <Plus size={14} /> <span className="hidden sm:inline">Story</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+          
+          {/* Metric Cards (Clean, macOS style) */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <p className="text-sm font-medium text-slate-500">Total Stories</p>
+                <span className="text-indigo-500 bg-indigo-50 p-1.5 rounded-lg"><BookOpen size={16} /></span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800">{catalog?.stories?.length || 0}</h3>
+              <p className="text-xs text-emerald-600 mt-2 font-medium">+2 this week</p>
+            </div>
+            
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <p className="text-sm font-medium text-slate-500">Published Live</p>
+                <span className="text-emerald-500 bg-emerald-50 p-1.5 rounded-lg"><FileText size={16} /></span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800">{catalog?.stories?.filter(s => !s.isHidden).length || 0}</h3>
+              <p className="text-xs text-emerald-600 mt-2 font-medium">Active in app</p>
             </div>
 
-            {filteredStories.map((story, i) => (
-              <StoryCard
-                key={story.id}
-                story={story}
-                index={i}
-                isExpanded={Boolean(expandedStoryIds[story.id])}
-                onToggleExpand={() => toggleExpandStory(story.id)}
-                onUpdate={(updates) => handleUpdateStory(story.id, updates)}
-                onDuplicate={() => handleDuplicateStory(story.id)}
-                onDelete={() => handleDeleteStory(story.id)}
-                adminSecret={adminSecret}
-                onNotify={addToast}
-              />
-            ))}
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <p className="text-sm font-medium text-slate-500">Drafts</p>
+                <span className="text-amber-500 bg-amber-50 p-1.5 rounded-lg"><Save size={16} /></span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800">{catalog?.stories?.filter(s => s.isHidden).length || 0}</h3>
+              <p className="text-xs text-slate-500 mt-2 font-medium">Needs review</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-start mb-2">
+                <p className="text-sm font-medium text-slate-500">Active Listeners</p>
+                <span className="text-pink-500 bg-pink-50 p-1.5 rounded-lg"><Wifi size={16} /></span>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800">8,592</h3>
+              <p className="text-xs text-emerald-600 mt-2 font-medium">Coming soon</p>
+            </div>
           </div>
-        )}
+
+          {/* Filters Bar below metrics */}
+          <div className="bg-white rounded-t-xl border border-slate-200 border-b-0 shadow-sm px-6 py-4 flex flex-wrap items-center gap-3">
+             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 outline-none">
+                <option value="all">Category: All</option>
+                <option value="roots">Roots (Folklore)</option>
+                <option value="universal">Universal</option>
+                <option value="custom">Custom</option>
+             </select>
+             <select value={ageBandFilter} onChange={(e) => setAgeBandFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 outline-none">
+                <option value="all">Age: All</option>
+                {AGE_BANDS.map(band => <option key={band} value={band}>{band === 'parents' ? 'Parents' : 'Ages '+band}</option>)}
+             </select>
+             <select value={formFilter} onChange={(e) => setFormFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 outline-none">
+                <option value="all">Format: All</option>
+                <option value="story">Stories</option>
+                <option value="novel">Novels</option>
+             </select>
+             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 outline-none">
+                <option value="all">Status: All</option>
+                <option value="published">Published</option>
+                <option value="hidden">Drafts</option>
+             </select>
+             <div className="flex-1 min-w-[20px]"></div>
+             <button onClick={expandAllStories} className="text-[11px] font-medium text-slate-600 hover:text-indigo-600 bg-slate-50 px-2 py-1 rounded">Expand All</button>
+             <button onClick={collapseAllStories} className="text-[11px] font-medium text-slate-600 hover:text-indigo-600 bg-slate-50 px-2 py-1 rounded">Collapse All</button>
+          </div>
+
+          {/* Story List */}
+          <div className="bg-white rounded-b-xl border border-slate-200 shadow-sm min-h-[400px]">
+             {loading ? (
+                <div className="text-center py-24">
+                  <RefreshCw size={36} className="mx-auto text-indigo-500 animate-spin mb-3" />
+                  <h3 className="text-sm font-bold text-slate-700">Loading Stories...</h3>
+                </div>
+              ) : filteredStories.length === 0 ? (
+                <div className="text-center py-24">
+                  <FileText size={42} className="mx-auto text-slate-300 mb-3" />
+                  <h3 className="text-sm font-bold text-slate-600">No Stories Found</h3>
+                  <p className="text-xs text-slate-400 mt-1">Try resetting your filters.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {filteredStories.map((story, i) => (
+                    <StoryCard
+                      key={story.id}
+                      story={story}
+                      index={i}
+                      isExpanded={Boolean(expandedStoryIds[story.id])}
+                      onToggleExpand={() => toggleExpandStory(story.id)}
+                      onUpdate={(updates) => handleUpdateStory(story.id, updates)}
+                      onDuplicate={() => handleDuplicateStory(story.id)}
+                      onDelete={() => handleDeleteStory(story.id)}
+                      adminSecret={adminSecret}
+                      onNotify={addToast}
+                    />
+                  ))}
+                </div>
+              )}
+          </div>
+        </div>
       </main>
 
-      {/* 4. ADMIN SECRET MODAL */}
+      {/* Modals & Toasts */}
       {isSecretModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden">
-            <div className="p-4 bg-rose-950 text-white flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <ShieldAlert size={20} className="text-rose-400" />
-                <h3 className="text-sm font-bold">Admin Authentication Required</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsSecretModalOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X size={18} />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden">
+            <div className="p-4 bg-white flex justify-between items-center border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800">Admin Secret Required</h3>
+              <button onClick={() => setIsSecretModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
             </div>
-
-            <div className="p-5 space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
-                The Cloudflare Workers API returned <strong>401 Unauthorized</strong>. Please enter the valid <code>ADMIN_SECRET</code> key configured for this environment:
-              </p>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Admin Secret Key (Bearer Token)
-                </label>
-                <input
-                  type="password"
-                  value={tempSecret}
-                  onChange={(e) => setTempSecret(e.target.value)}
-                  placeholder="Enter secret key..."
-                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                  autoFocus
-                />
-              </div>
+            <div className="p-5">
+              <p className="text-xs text-slate-500 mb-3">Please enter your Cloudflare Workers Admin Secret to publish changes.</p>
+              <input
+                type="password"
+                value={tempSecret}
+                onChange={(e) => setTempSecret(e.target.value)}
+                placeholder="Secret Key..."
+                className="w-full border border-slate-200 rounded-lg p-2 text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                autoFocus
+              />
             </div>
-
-            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsSecretModalOpen(false)}
-                className="px-4 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveSecretModal}
-                className="px-4 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm"
-              >
-                Save & Authenticate
-              </button>
+            <div className="p-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+              <button onClick={() => setIsSecretModalOpen(false)} className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg font-medium">Cancel</button>
+              <button onClick={handleSaveSecretModal} className="px-3 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 5. BACKUP & RESTORE MODAL */}
       {isBackupModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
-            <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal size={18} className="text-amber-400" />
-                <h3 className="text-sm font-bold">Catalog JSON Backup & Restore</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsBackupModalOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X size={18} />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="p-4 bg-slate-50 flex justify-between items-center border-b border-slate-200">
+              <h3 className="text-sm font-bold text-slate-800">Backup & Restore</h3>
+              <button onClick={() => setIsBackupModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
             </div>
-
-            <div className="p-4 flex-1 flex flex-col overflow-hidden space-y-3">
+            <div className="p-4 flex-1 flex flex-col overflow-hidden space-y-2">
               <div className="flex justify-between items-center">
-                <p className="text-xs text-slate-600">
-                  Export complete database JSON for offline backup or paste external catalog data:
-                </p>
-                <button
-                  type="button"
-                  onClick={handleDownloadBackup}
-                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1 border border-slate-300"
-                >
+                <p className="text-xs text-slate-500">Edit JSON or download backup.</p>
+                <button onClick={handleDownloadBackup} className="px-3 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg flex items-center gap-1 shadow-sm">
                   <Download size={13} /> Download .json
                 </button>
               </div>
-
               <textarea
                 value={backupJsonText}
-                onChange={(e) => {
-                  setBackupJsonText(e.target.value);
-                  setBackupError('');
-                }}
-                className="flex-1 font-mono text-xs p-3 bg-slate-900 text-slate-100 rounded-xl border border-slate-700 resize-none focus:outline-none min-h-[300px]"
+                onChange={(e) => { setBackupJsonText(e.target.value); setBackupError(''); }}
+                className="flex-1 font-mono text-[11px] p-3 bg-slate-900 text-green-400 rounded-xl border border-slate-700 resize-none outline-none min-h-[300px]"
               />
-
-              {backupError && (
-                <div className="p-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs flex items-center gap-2">
-                  <AlertCircle size={14} className="shrink-0" />
-                  <span>{backupError}</span>
-                </div>
-              )}
+              {backupError && <p className="text-xs text-rose-600 mt-1">{backupError}</p>}
             </div>
-
             <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
-              <span className="text-xs text-slate-500">
-                Catalog Version {catalog?.version || 1}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsBackupModalOpen(false)}
-                  className="px-4 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-lg font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleApplyBackupJson}
-                  className="px-4 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white rounded-lg shadow-sm"
-                >
-                  Restore / Apply JSON
-                </button>
+              <span className="text-xs text-slate-500">Version {catalog?.version || 1}</span>
+              <div className="flex gap-2">
+                <button onClick={() => setIsBackupModalOpen(false)} className="px-4 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg">Cancel</button>
+                <button onClick={handleApplyBackupJson} className="px-4 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm">Apply Changes</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 6. FLOATING TOAST NOTIFICATION CONTAINER */}
       <ToastContainer toasts={toasts} onDismiss={removeToast} position="bottom-right" />
     </div>
   );
