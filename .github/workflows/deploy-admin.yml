@@ -35,7 +35,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: saanjh-admin # Important: Ensure this matches your project name in Cloudflare
+          projectName: bedtime-stories # Important: Ensure this matches your project name in Cloudflare
           directory: admin/dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main
