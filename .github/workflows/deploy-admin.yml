@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'admin/**' # Only trigger when changes are made inside the admin folder
 
 jobs:
   deploy:
