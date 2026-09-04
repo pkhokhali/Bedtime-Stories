@@ -21,7 +21,6 @@ import {
   fetchCatalog,
   saveCatalog,
   getStoredAdminSecret,
-  setStoredAdminSecret,
   ApiError,
 } from './utils/api';
 import { StoryCard } from './components/StoryCard';

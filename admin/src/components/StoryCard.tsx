@@ -549,9 +549,11 @@ export const StoryCard: React.FC<StoryCardProps> = ({
                   </div>
               </div>
             )}
+          </div>
+        )}
 
-          {/* TAB 2: BEATS & AUDIO */}
-          {activeTab === 'beats' && (
+        {/* TAB 2: BEATS & AUDIO */}
+        {activeTab === 'beats' && (
             <BeatEditor
               beats={story.beats || []}
               onChange={handleBeatsChange}
