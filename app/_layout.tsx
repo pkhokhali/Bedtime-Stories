@@ -20,7 +20,7 @@ import { hydrateVoices } from '@/lib/speech';
 import { colors } from '@/constants/theme';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { fetchRemoteCatalog } from '@/lib/catalogFetcher';
-import { SplashRitual } from '@/components/splash/SplashRitual';
+import { VideoSplash } from '@/components/VideoSplash';
 import { startGlobalSleepTimerTicker, stopGlobalSleepTimerTicker } from '@/lib/sleepTimer';
 
 export { ErrorBoundary } from 'expo-router';
@@ -69,7 +69,7 @@ export default function RootLayout() {
 
       {/* Magical Storybook Animated Splash Ritual Overlay */}
       {showSplash && (
-        <SplashRitual onFinish={() => setShowSplash(false)} />
+        <VideoSplash onFinish={() => setShowSplash(false)} />
       )}
     </GestureHandlerRootView>
   );

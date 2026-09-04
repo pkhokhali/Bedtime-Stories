@@ -233,7 +233,7 @@ app.post('/admin/login', async (c) => {
     const { email, password } = await c.req.json();
     
     // Hardcoded credentials for now, as requested. In a real app, this should be in DB/KV
-    if (email === 'admin@saanjh.app' && password === 'admin123') {
+    if (email?.trim() === 'admin@saanjh.app' && password?.trim() === 'admin123') {
       // In a real app, generate a secure JWT. For now, we return the ADMIN_SECRET
       const token = c.env.ADMIN_SECRET || 'fallback-secret-for-dev';
       return c.json({ success: true, token });

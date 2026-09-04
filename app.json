@@ -4,7 +4,7 @@
     "slug": "saanjh-bedtime",
     "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/custom_icon.jpg",
     "scheme": "saanjh",
     "userInterfaceStyle": "dark",
     "primaryColor": "#E8A04A",
@@ -17,7 +17,7 @@
       "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#1A1410",
-        "foregroundImage": "./assets/images/adaptive-icon.png"
+        "foregroundImage": "./assets/images/custom_icon.jpg"
       },
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",

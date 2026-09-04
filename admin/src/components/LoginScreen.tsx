@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { BookOpen, Key, AlertCircle, Loader2 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
 
-export const LoginScreen: React.FC = () => {
+interface LoginScreenProps {
+  login: (email: string, pass: string) => Promise<void>;
+  loading: boolean;
+  error: string;
+}
+
+export const LoginScreen: React.FC<LoginScreenProps> = ({ login, loading, error }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
